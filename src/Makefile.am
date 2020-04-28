@@ -1,6 +1,8 @@
 lib_LIBRARIES = libbiguint.a
 
-libbiguint_a_SOURCES = biguint128.c uint.c intio.c
+include_HEADERS = biguint128.h biguint256.h uint_types.h
+
+libbiguint_a_SOURCES = biguint128.c uint.c intio.c intio.h uint.h
 
 nodist_libbiguint_a_SOURCES = biguint256.c
 
