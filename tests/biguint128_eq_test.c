@@ -14,10 +14,10 @@ typedef enum {
 typedef struct {
  char *left;
  char *right;
- BigUIntSortRelation rel
+ BigUIntSortRelation rel;
 } BigUIntSortRelTestVector;
 
-BigUIntSortRelTestVector samples[]={
+const BigUIntSortRelTestVector samples[]={
  {"0","0",BIGUINT_EQ},
  {"0","1",BIGUINT_LT},
  {"FFFFFFFF","FFFFFFFF",BIGUINT_EQ},

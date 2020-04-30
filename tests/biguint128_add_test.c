@@ -5,7 +5,7 @@
 
 #define BIGUINT_BITS 128
 
-char *hex_samples[][3]={
+const char* const hex_samples[][3]={
  { "0", "1", "1"},
  { "1", "0", "1"},
  { "0", "FFFFFFFF", "FFFFFFFF"},
@@ -22,9 +22,9 @@ int hex_sample_len = sizeof(hex_samples) / (sizeof(char*[3]));
 int test_addsub0() {
  int fail = 0;
  for (int i=0; i<hex_sample_len; ++i) {
-  char *sample_a = hex_samples[i][0];
-  char *sample_b = hex_samples[i][1];
-  char *sample_c = hex_samples[i][2];
+  const char * const sample_a = hex_samples[i][0];
+  const char * const sample_b = hex_samples[i][1];
+  const char * const sample_c = hex_samples[i][2];
   if (BIGUINT_BITS / 4 < strlen(sample_a) || BIGUINT_BITS / 4 < strlen(sample_b) || BIGUINT_BITS / 4 < strlen(sample_c))
    continue;
   BigUInt128 a = biguint128_ctor_hexcstream(sample_a, strlen(sample_a));
