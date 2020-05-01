@@ -1,7 +1,6 @@
 #include "biguint128.h"
 #include "intio.h"
 #include "uint.h"
-#include <stdio.h>
 
 #define FOREACHCELL(i) for (buint_size_t i=0u; i<BIGUINT128_CELLS; ++i)
 #define UINT_BYTES sizeof(UInt)
