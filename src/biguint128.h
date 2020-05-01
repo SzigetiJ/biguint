@@ -15,6 +15,7 @@ typedef struct {
 
 // constructors
 BigUInt128 biguint128_ctor_default();
+BigUInt128 biguint128_ctor_unit();
 BigUInt128 biguint128_ctor_standard(const UInt*);
 BigUInt128 biguint128_ctor_copy(const BigUInt128 *);
 BigUInt128 biguint128_value_of_uint(UInt a);

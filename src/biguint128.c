@@ -15,6 +15,13 @@ BigUInt128 biguint128_ctor_default() {
  return retv;
 };
 
+BigUInt128 biguint128_ctor_unit() {
+ BigUInt128 retv = biguint128_ctor_default();
+ retv.dat[0]=1;
+ return retv;
+
+}
+
 BigUInt128 biguint128_ctor_standard(const UInt *a) {
  BigUInt128 retv;
  FOREACHCELL(i) {
