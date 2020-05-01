@@ -5,7 +5,7 @@
 
 #define BIGUINT_BITS 128
 
-const char* const hex_samples[][3]={
+const char* const hex_samples[][3] = {
  { "0", "1", "1"},
  { "1", "0", "1"},
  { "0", "FFFFFFFF", "FFFFFFFF"},

@@ -22,4 +22,3 @@ All the provided types are accompanied by the following functions:
 
 The source code of type `BigUInt128` is written in general manner.
 The source of all other biguint types are generated codes derived from `BigUInt128`.
-
