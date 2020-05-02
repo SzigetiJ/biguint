@@ -1,5 +1,6 @@
 ## Big Unsigned Integers
 
+![GitHub](https://img.shields.io/github/license/SzigetiJ/biguint)
 ![C/C++ CI](https://github.com/SzigetiJ/biguint/workflows/C/C++%20CI/badge.svg)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0aed3d8a24aa41f6b622a85a170b1823)](https://app.codacy.com/manual/SzigetiJ/biguint?utm_source=github.com&utm_medium=referral&utm_content=SzigetiJ/biguint&utm_campaign=Badge_Grade_Dashboard)
 
