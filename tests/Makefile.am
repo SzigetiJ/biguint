@@ -1,4 +1,5 @@
 TESTS = \
+	intio_test \
 	biguint128_ctor_test \
 	biguint256_ctor_test \
 	biguint128_io_test \
@@ -9,6 +10,7 @@ TESTS = \
 	biguint256_add_test
 
 check_PROGRAMS = \
+	intio_test \
 	biguint128_ctor_test \
 	biguint256_ctor_test \
 	biguint128_io_test \
