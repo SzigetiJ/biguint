@@ -24,7 +24,6 @@ bool test_get_digit() {
   16,23,24,31,32,
   255,255,255,255,255
   };
- const unsigned int sample_values_len = sizeof(sample_values)/sizeof(unsigned char);
 
  bool fail = false;
 

@@ -86,5 +86,5 @@ int main(int argc, char **argv) {
  assert(test_sortrel0() == 0);
 
  return 0;
-};
+}
 

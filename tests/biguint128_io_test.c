@@ -42,7 +42,7 @@ int test_io_hex0() {
   if (BIGUINT_BITS / 4 < strlen(sample))
    continue;
   BigUInt128 a = biguint128_ctor_hexcstream(sample, strlen(sample));
-  buint_size_t len = biguint128_print_hex(&a, buffer, sizeof(buffer) / sizeof(char));
+  buint_size_t len = biguint128_print_hex(&a, buffer, sizeof(buffer) / sizeof(char)-1);
   buffer[len]=0;
   int result = strcmp(sample, buffer);
   if (result!=0) {
@@ -61,7 +61,7 @@ int test_io_dec0() {
   if (((BIGUINT_BITS / 10 + 1) * 3 + 1) < strlen(sample))
    continue;
   BigUInt128 a = biguint128_ctor_deccstream(sample, strlen(sample));
-  buint_size_t len = biguint128_print_dec(&a, buffer, sizeof(buffer) / sizeof(char));
+  buint_size_t len = biguint128_print_dec(&a, buffer, sizeof(buffer) / sizeof(char)-1);
   buffer[len]=0;
   int result = strcmp(sample, buffer);
   if (result!=0) {
@@ -78,5 +78,5 @@ int main(int argc, char **argv) {
  assert(test_io_dec0() == 0);
 
  return 0;
-};
+}
 

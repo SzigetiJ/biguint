@@ -35,20 +35,20 @@ int test_addsub0() {
   buint_bool result_sum = biguint128_eq(&c, &sum);
   if (!result_sum) {
    char buffer[4][BIGUINT_BITS / 4 + 1];
-   buffer[0][biguint128_print_hex(&a, buffer[0], sizeof(buffer[0])/sizeof(char))]=0;
-   buffer[1][biguint128_print_hex(&b, buffer[1], sizeof(buffer[1])/sizeof(char))]=0;
-   buffer[2][biguint128_print_hex(&c, buffer[2], sizeof(buffer[2])/sizeof(char))]=0;
-   buffer[3][biguint128_print_hex(&sum, buffer[3], sizeof(buffer[3])/sizeof(char))]=0;
+   buffer[0][biguint128_print_hex(&a, buffer[0], sizeof(buffer[0])/sizeof(char)-1)]=0;
+   buffer[1][biguint128_print_hex(&b, buffer[1], sizeof(buffer[1])/sizeof(char)-1)]=0;
+   buffer[2][biguint128_print_hex(&c, buffer[2], sizeof(buffer[2])/sizeof(char)-1)]=0;
+   buffer[3][biguint128_print_hex(&sum, buffer[3], sizeof(buffer[3])/sizeof(char)-1)]=0;
    fprintf(stderr, "[%s + %s] -- expected: [%s], actual [%s]\n", buffer[0], buffer[1], buffer[2], buffer[3]);
    fail = 1;
   }
   buint_bool result_diff = biguint128_eq(&a, &diff);
   if (!result_diff) {
    char buffer[4][BIGUINT_BITS / 4 + 1];
-   buffer[0][biguint128_print_hex(&c, buffer[0], sizeof(buffer[0])/sizeof(char))]=0;
-   buffer[1][biguint128_print_hex(&b, buffer[1], sizeof(buffer[1])/sizeof(char))]=0;
-   buffer[2][biguint128_print_hex(&a, buffer[2], sizeof(buffer[2])/sizeof(char))]=0;
-   buffer[3][biguint128_print_hex(&diff, buffer[3], sizeof(buffer[3])/sizeof(char))]=0;
+   buffer[0][biguint128_print_hex(&c, buffer[0], sizeof(buffer[0])/sizeof(char)-1)]=0;
+   buffer[1][biguint128_print_hex(&b, buffer[1], sizeof(buffer[1])/sizeof(char)-1)]=0;
+   buffer[2][biguint128_print_hex(&a, buffer[2], sizeof(buffer[2])/sizeof(char)-1)]=0;
+   buffer[3][biguint128_print_hex(&diff, buffer[3], sizeof(buffer[3])/sizeof(char)-1)]=0;
    fprintf(stderr, "[%s - %s] -- expected: [%s], actual [%s]\n", buffer[0], buffer[1], buffer[2], buffer[3]);
    fail = 1;
   }
@@ -62,5 +62,5 @@ int main(int argc, char **argv) {
  assert(test_addsub0() == 0);
 
  return 0;
-};
+}
 
