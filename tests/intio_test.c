@@ -78,8 +78,65 @@ bool test_get_hexbyte_valid() {
  return !fail;
 }
 
+bool test_set_hexdigit() {
+ const char expects[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+ bool fail = false;
+
+ for (int i = 0; i < 16; ++i) {
+  char result;
+  set_hexdigit(&result, i);
+  if (result !=expects[i]) {
+   fprintf(stderr, "%s: set_hexdigit(&digit, %d) digit expected: '%c' actual: '%c'\n", __func__, i, expects[i], result);
+   fail = true;
+  }
+ }
+ return !fail;
+}
+
+bool test_set_decdigit() {
+ const char expects[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+
+ bool fail = false;
+
+ for (int i = 0; i < 10; ++i) {
+  char result;
+  set_hexdigit(&result, i);
+  if (result !=expects[i]) {
+   fprintf(stderr, "%s: set_decdigit(&digit, %d) digit expected: '%c' actual: '%c'\n", __func__, i, expects[i], result);
+   fail = true;
+  }
+ }
+ return !fail;
+}
+
+bool test_set_hexbyte() {
+ const unsigned char samples[]={
+  0x00, 0x01, 0x0F, 0x10, 0x1F, 0x7F, 0x80, 0xFF
+ };
+ const unsigned int samples_len = sizeof(samples) / sizeof(unsigned char);
+ const char expects[] = {
+  "00" "01" "0F" "10" "1F" "7F" "80" "FF"};
+
+ bool fail = false;
+
+ for (int sample_i = 0; sample_i < samples_len; ++sample_i) {
+  char result[2];
+  set_hexbyte(result, samples[sample_i]);
+  if (!(result[0] == expects[2*sample_i]) && (result[1] == expects[2*sample_i + 1])) {
+   fprintf(stderr, "%s: set_hexbyte(&result, %u) result expected: \"%c%c\" actual: \"%c%c\"\n",
+    __func__, samples[sample_i], expects[2*sample_i], expects[2*sample_i + 1], result[0], result[1]);
+   fail = true;
+  }
+ }
+ return !fail;
+}
+
 int main(int argc, char **argv) {
  assert(test_get_digit());
  assert(test_get_hexbyte_valid());
+ assert(test_set_hexdigit());
+ assert(test_set_decdigit());
+ assert(test_set_hexbyte());
 }
 
