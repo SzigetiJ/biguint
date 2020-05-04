@@ -89,5 +89,5 @@ int main(int argc, char **argv) {
  assert(test_ctor_copy());
 
  return 0;
-};
+}
 
