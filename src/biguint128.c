@@ -271,7 +271,7 @@ void biguint128_sbit(BigUInt128 *a, buint_size_t bit) {
 buint_size_t biguint128_print_hex(BigUInt128 *a, char *buf, buint_size_t buf_len) {
  buint_size_t retv = biguint128_msb(a)/4 + 1;
  if (buf_len < retv) {
-  return -1;
+  return 0;
  }
  buint_bool ready = 0;
  for (buint_size_t i=0; !ready && i<BIGUINT128_CELLS; ++i) {

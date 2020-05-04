@@ -1,7 +1,8 @@
 #include "biguint128.h"
-#include "stdio.h"
-#include "string.h"
-#include "assert.h"
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include <assert.h>
 
 #define BIGUINT_BITS 128
 
@@ -34,8 +35,8 @@ const char* const dec_samples[]={
 };
 int dec_sample_len = sizeof(dec_samples) / sizeof(char*);
 
-int test_io_hex0() {
- int fail = 0;
+bool test_io_hex0() {
+ bool fail = false;
  char buffer[BIGUINT_BITS / 4 + 1];
  for (int i=0; i<hex_sample_len; ++i) {
   const char* const sample = hex_samples[i];
@@ -47,14 +48,34 @@ int test_io_hex0() {
   int result = strcmp(sample, buffer);
   if (result!=0) {
    fprintf(stderr, "expected: [%s], actual [%s]\n", sample, buffer);
-   fail = 1;
+   fail = true;
   }
  }
- return fail;
+ return !fail;
 }
 
-int test_io_dec0() {
- int fail = 0;
+bool test_io_hex1() {
+ bool fail = false;
+ char buffer[BIGUINT_BITS / 4 + 1];
+ for (int i=0; i<hex_sample_len; ++i) {
+  const char* const sample = hex_samples[i];
+  if (BIGUINT_BITS / 4 < strlen(sample))
+   continue;
+  BigUInt128 a = biguint128_ctor_hexcstream(sample, strlen(sample));
+  buint_size_t len = biguint128_print_hex(&a, buffer, strlen(sample)-1);
+  buffer[len]=0;
+
+  if (len!=0) {
+   fprintf(stderr, "expected: [] (insufficient buffer capacity), actual [%s]\n", buffer);
+   fail = true;
+  }
+ }
+ return !fail;
+}
+
+
+bool test_io_dec0() {
+ bool fail = false;
  char buffer[(BIGUINT_BITS / 10 + 1) * 3 + 2];
  for (int i=0; i<dec_sample_len; ++i) {
   const char* const sample = dec_samples[i];
@@ -66,16 +87,17 @@ int test_io_dec0() {
   int result = strcmp(sample, buffer);
   if (result!=0) {
    fprintf(stderr, "expected: [%s], actual [%s]\n", sample, buffer);
-   fail = 1;
+   fail = true;
   }
  }
- return fail;
+ return !fail;
 }
 
 int main(int argc, char **argv) {
 
- assert(test_io_hex0() == 0);
- assert(test_io_dec0() == 0);
+ assert(test_io_hex0());
+ assert(test_io_hex1());
+ assert(test_io_dec0());
 
  return 0;
 }
