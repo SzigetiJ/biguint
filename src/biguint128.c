@@ -41,19 +41,19 @@ BigUInt128 biguint128_ctor_unit() {
 
 }
 
-BigUInt128 biguint128_ctor_standard(const UInt *a) {
+BigUInt128 biguint128_ctor_standard(const UInt *dat) {
  BigUInt128 retv;
  FOREACHCELL(i) {
-  retv.dat[i]=a[i];
+  retv.dat[i]=dat[i];
  }
  return retv;
 };
 
-BigUInt128 biguint128_ctor_copy(const BigUInt128 *a) {
- return biguint128_ctor_standard(a->dat);
+BigUInt128 biguint128_ctor_copy(const BigUInt128 *orig) {
+ return biguint128_ctor_standard(orig->dat);
 }
 
-BigUInt128 biguint128_ctor_hexcstream(const char *a, buint_size_t len) {
+BigUInt128 biguint128_ctor_hexcstream(const char *hex_digits, buint_size_t len) {
  BigUInt128 retv=biguint128_ctor_default();
  buint_bool ready = 0;
  for (buint_size_t i = 0; !ready && i < BIGUINT128_CELLS; ++i) {
@@ -62,9 +62,9 @@ BigUInt128 biguint128_ctor_hexcstream(const char *a, buint_size_t len) {
    if (offset < len) {
     unsigned char x;
     if (offset + 1 < len) {
-     get_hexbyte(a + len - offset - 2, &x);
+     get_hexbyte(hex_digits + len - offset - 2, &x);
     } else {
-     get_digit(a[len - offset - 1], 16, &x);
+     get_digit(hex_digits[len - offset - 1], 16, &x);
     }
     retv.dat[i]|= x << 8*j;
    } else {
@@ -75,12 +75,12 @@ BigUInt128 biguint128_ctor_hexcstream(const char *a, buint_size_t len) {
  return retv;
 }
 
-BigUInt128 biguint128_ctor_deccstream(const char *a, buint_size_t len) {
+BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len) {
  BigUInt128 retv=biguint128_ctor_default();
  BigUInt128 base = biguint128_value_of_uint(10);
  for (buint_size_t i = 0; i < len; ++i) {
   unsigned char d;
-  get_digit(a[i], 10, &d);
+  get_digit(dec_digits[i], 10, &d);
   BigUInt128 dx = biguint128_value_of_uint(d);
   retv = biguint128_mul(&retv, &base);
   retv = biguint128_add(&retv, &dx);
@@ -89,9 +89,9 @@ BigUInt128 biguint128_ctor_deccstream(const char *a, buint_size_t len) {
 }
 
 
-BigUInt128 biguint128_value_of_uint(UInt a) {
+BigUInt128 biguint128_value_of_uint(UInt value) {
  BigUInt128 retv = biguint128_ctor_default();
- retv.dat[0] = a;
+ retv.dat[0] = value;
  return retv;
 }
 
