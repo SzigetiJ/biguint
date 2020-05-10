@@ -23,16 +23,43 @@
 
 #include "uint_types.h"
 
+/**
+ Auxiliary type for functions returning
+ either double UInt long value (e.g., multiplication)
+ or pair of values (e.g., split)
+*/
 typedef struct {
  UInt first;
  UInt second;
 } UIntPair;
 
-UInt uint_add(UInt, UInt, buint_bool*);
-UInt uint_sub(UInt, UInt, buint_bool*);
-UIntPair uint_split(UInt, buint_size_t);
-UIntPair uint_mul(UInt, UInt);
-buint_size_t uint_msb(UInt);
+/**
+ @brief Addition of two UInt values with carry bit.
+ @param carry Input carry bit read from, output carry bit written to.
+*/
+UInt uint_add(UInt a, UInt b, buint_bool *carry);
+
+/**
+ @brief Substraction of UInt value from UInt value with carry bit.
+ @param a minuend
+ @param b subtrahend
+ @param carry Input carry bit read from, output carry bit written to.
+*/
+UInt uint_sub(UInt a, UInt b, buint_bool *carry);
+/**
+ @brief Splits a value into two at bit lsb.
+ @return first: high bits greater or equal to lsb; second: low bits.
+*/
+UIntPair uint_split(UInt a, buint_size_t bit);
+/**
+ @brief Multiplication of two values.
+ @return first: high bits; second: low bits.
+*/
+UIntPair uint_mul(UInt a, UInt b);
+/**
+ @return most significant bit (set to 1) of the value.
+*/
+buint_size_t uint_msb(UInt a);
 
 #endif
 

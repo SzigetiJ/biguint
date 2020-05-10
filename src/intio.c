@@ -51,12 +51,6 @@ IntIoError get_digit(char a, unsigned char base, unsigned char *result) {
  return INTIO_NO_ERROR;
 }
 
-/**
- Reads two characters and interprets them as a hexadecimal number in range 0..255.
- \param a Points to first hex digit (big-endian). The second digit is at a+1.
- \param result Pointer to write the result to.
- \return Error code.
-*/
 IntIoError get_hexbyte(const char *a, unsigned char *result) {
  unsigned char lo, hi;
  IntIoError err_hi = get_digit(a[0], 16, &hi);

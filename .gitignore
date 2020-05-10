@@ -50,3 +50,7 @@ Makefile
 
 ## Generated sources
 tests/biguint256*.c
+
+## Generated dox
+/html
+/latex
