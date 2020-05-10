@@ -49,7 +49,20 @@ m4/lt~obsolete.m4
 Makefile
 
 ## Generated sources
-tests/biguint256*.c
+/tests/biguint256*.c
+/src/biguint256.*
+
+## Compiled sources
+/src/*.o
+/src/*.a
+/tests/*.o
+/tests/*_test
+
+## Other generated files
+/src/.deps
+/tests/.deps
+/tests/*.trs
+/tests/*.log
 
 ## Generated dox
 /html
