@@ -50,7 +50,11 @@ Makefile
 
 ## Generated sources
 /tests/biguint256*.c
+/tests/biguint384*.c
+/tests/biguint512*.c
 /src/biguint256.*
+/src/biguint384.*
+/src/biguint512.*
 
 ## Compiled sources
 /src/*.o
@@ -58,11 +62,14 @@ Makefile
 /tests/*.o
 /tests/*_test
 
+/examples/*.o
+
 ## Other generated files
 /src/.deps
 /tests/.deps
 /tests/*.trs
 /tests/*.log
+/examples/.deps
 
 ## Generated dox
 /html

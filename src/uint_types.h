@@ -21,10 +21,20 @@
 #ifndef _UINT_TYPES_H_
 #define _UINT_TYPES_H_
 
-typedef unsigned char buint_size_t;	///< Array length, bit/byte/digit index.
-typedef unsigned char buint_bool;	///< Logical value.
-typedef unsigned int UInt;	///< Alias on the basic store unit.
+#ifdef USE_STD_TYPES
+  #include <stddef.h>
+  #include <stdbool.h>
+  #include <stdint.h>
 
-#endif
+  typedef size_t buint_size_t;	///< Array length, bit/byte/digit index.
+  typedef bool buint_bool;	///< Logical value.
+  typedef uint32_t UInt;	///< Alias on the basic store unit.
+#else
+  typedef unsigned char buint_size_t;	///< Array length, bit/byte/digit index.
+  typedef unsigned char buint_bool;	///< Logical value.
+  typedef unsigned int UInt;	///< Alias on the basic store unit.
+#endif  // USE_STD_TYPES
+
+#endif  // _UINT_TYPES_H_
 
 
