@@ -11,6 +11,8 @@ C library providing fixed length unsigned integer types longer than 64 bits.
 Currently libbiguint provides the following types:
 * `BigUInt128` (128 bits)
 * `BigUInt256` (256 bits)
+* `BigUInt384` (384 bits)
+* `BigUInt512` (512 bits)
 
 All the provided types are accompanied by the following functions:
 * addition and substraction (add, sub);
@@ -23,3 +25,7 @@ All the provided types are accompanied by the following functions:
 
 The source code of type `BigUInt128` is written in general manner.
 The source of all other biguint types are generated codes derived from `BigUInt128`.
+
+## Examples
+
+Check out directory ![examples](examples).
