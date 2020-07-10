@@ -3,6 +3,7 @@ TESTDIR=../tests
 
 CC=gcc
 CFLAGS=-Wall -Wpedantic -O0 -std=c99 -fprofile-arcs -ftest-coverage -I$(SRCDIR)
+CFLAGS_X=-Wall -Wpedantic -O0 -std=c99 -I$(SRCDIR)
 LDFLAGS=-fprofile-arcs -ftest-coverage
 
 TEST_X0 = ctor io eq bit add mul
@@ -49,7 +50,7 @@ $(INFO_FILE): $(TEST_X0_COVS) $(TEST_X1_COVS)
 	$(CC) $(LDFLAGS) -o $@ $^
 
 %_test.o: $(TESTDIR)/%_test.c
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS_X) -o $@ $<
 
 l_%.o: $(SRCDIR)/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
