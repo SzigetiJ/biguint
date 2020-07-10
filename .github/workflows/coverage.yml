@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install lcov
+      run: sudo apt-get install lcov
     - name: generate
       run: make
       working-directory: coverage
