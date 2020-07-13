@@ -32,13 +32,12 @@ BigUInt128 biguint128_ctor_default() {
   retv.dat[i]=0;
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_ctor_unit() {
  BigUInt128 retv = biguint128_ctor_default();
  retv.dat[0]=1;
  return retv;
-
 }
 
 BigUInt128 biguint128_ctor_standard(const UInt *dat) {
@@ -47,7 +46,7 @@ BigUInt128 biguint128_ctor_standard(const UInt *dat) {
   retv.dat[i]=dat[i];
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_ctor_copy(const BigUInt128 *orig) {
  return biguint128_ctor_standard(orig->dat);
@@ -102,7 +101,7 @@ BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b) {
   retv.dat[i] = uint_add(a->dat[i], b->dat[i], &carry);
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
@@ -111,7 +110,7 @@ BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b) {
   retv.dat[i] = uint_sub(a->dat[i], b->dat[i], &carry);
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();
@@ -128,7 +127,7 @@ BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift) {
   }
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();
@@ -145,7 +144,7 @@ BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift) {
   }
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_and(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
@@ -153,7 +152,7 @@ BigUInt128 biguint128_and(const BigUInt128 *a, const BigUInt128 *b) {
   retv.dat[i] = a->dat[i] & b->dat[i];
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_or(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
@@ -161,7 +160,7 @@ BigUInt128 biguint128_or(const BigUInt128 *a, const BigUInt128 *b) {
   retv.dat[i] = a->dat[i] | b->dat[i];
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_not(const BigUInt128 *a) {
  BigUInt128 retv;
@@ -169,7 +168,7 @@ BigUInt128 biguint128_not(const BigUInt128 *a) {
   retv.dat[i] = ~a->dat[i];
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_xor(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
@@ -177,7 +176,7 @@ BigUInt128 biguint128_xor(const BigUInt128 *a, const BigUInt128 *b) {
   retv.dat[i] = a->dat[i] ^ b->dat[i];
  }
  return retv;
-};
+}
 
 BigUInt128 biguint128_mul(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv = biguint128_ctor_default();
@@ -204,7 +203,7 @@ BigUInt128 biguint128_mul(const BigUInt128 *a, const BigUInt128 *b) {
  }
  BigUInt128 rx = biguint128_add(&retv, &carry);
  return rx;
-};
+}
 
 BigUIntPair128 biguint128_div(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 div = biguint128_ctor_default();
@@ -237,7 +236,7 @@ buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
   if (b->dat[j]<a->dat[j]) return 0;
  }
  return 0;
-};
+}
 
 buint_bool biguint128_eq(const BigUInt128 *a, const BigUInt128 *b) {
  FOREACHCELL(i) {
@@ -260,7 +259,7 @@ buint_size_t biguint128_msb(const BigUInt128 *a) {
   return 0;
  }
  return j * 8 * sizeof(UInt) + uint_msb(a->dat[j]);
-};
+}
 
 void biguint128_sbit(BigUInt128 *a, buint_size_t bit) {
  buint_size_t dat_byte = bit / UINT_BITS;
