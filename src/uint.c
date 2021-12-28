@@ -24,14 +24,14 @@ UInt uint_add(UInt a, UInt b, buint_bool *carry) {
  UInt cx = *carry?1:0;
  UInt c = a + b + cx;
  *carry = *carry ? c <= a : c < a;
- return c; 
+ return c;
 }
 
 UInt uint_sub(UInt a, UInt b, buint_bool *carry) {
  UInt cx = *carry?1:0;
  UInt c = a - b - cx;
  *carry = *carry ? a <= c : a < c;
- return c; 
+ return c;
 }
 
 UIntPair uint_split(UInt a, buint_size_t lsb) {
@@ -39,18 +39,20 @@ UIntPair uint_split(UInt a, buint_size_t lsb) {
  UInt mask = (lsb<8*sizeof(a)?((UInt)1 << lsb):0) - 1;
  retv.first = a & ~mask;
  retv.second = a & mask;
- return retv; 
+ return retv;
 }
 
 UIntPair uint_mul(UInt a, UInt b) {
  UIntPair retv;
  buint_size_t uint_mbits = 4*sizeof(UInt);
 
+ // split
  UIntPair ap = uint_split(a, uint_mbits);
  ap.first>>=uint_mbits;
  UIntPair bp = uint_split(b, uint_mbits);
  bp.first>>=uint_mbits;
 
+ // calculating the products
  retv.first = ap.first * bp.first;
  retv.second = ap.second * bp.second;
 
@@ -63,6 +65,9 @@ UIntPair uint_mul(UInt a, UInt b) {
  dp.first>>=uint_mbits;
  dp.second<<=uint_mbits;
 
+ // summing
+ // Note: retv.first will not overflow,
+ // thus no need to check the carry bit.
  UInt retv_lo0 = retv.second + cp.second;
  if (retv_lo0 < retv.second) {
   ++retv.first;
@@ -77,11 +82,12 @@ UIntPair uint_mul(UInt a, UInt b) {
 }
 
 buint_size_t uint_msb(UInt a) {
+ // kind of binary search..
  buint_size_t n = 4 * sizeof(UInt);
  buint_size_t inf = 0;
  for (buint_size_t s = n / 2; 0 < s; s/=2) {
   if (a < (UInt)1 <<n) {
-   n-=s;
+   n-=s;    // same as n=inf+s
   } else {
    inf = n;
    n+=s;

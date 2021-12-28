@@ -82,6 +82,13 @@ BigUInt128 biguint128_ctor_hexcstream(const char *hex_digits, buint_size_t len);
 */
 BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len);
 
+/**
+ * @brief Import from byte array.
+ * Overwrites the existing BigUInt128 instance.
+ * @return Number of read bytes.
+*/
+buint_size_t biguint128_import(BigUInt128 *dest, const char *src);
+
 
 // addition / substraction
 /**
@@ -184,6 +191,12 @@ buint_size_t biguint128_print_hex(BigUInt128 *a, char *buf, buint_size_t buf_len
  @return Length of the written characters. Zero: buf_len is to small to store the value.
 */
 buint_size_t biguint128_print_dec(BigUInt128 *a, char *buf, buint_size_t buf_len);
+
+/**
+ @brief Exports data into byte array.
+ @return Number of written bytes.
+*/
+buint_size_t biguint128_export(const BigUInt128 *a, char *dest);
 
 #endif
 

@@ -20,6 +20,7 @@
 *****************************************************************************/
 #include "biguint128.h"
 #include "intio.h"
+#include "string.h"
 #include "uint.h"
 
 #define FOREACHCELL(i) for (buint_size_t i=0u; i<BIGUINT128_CELLS; ++i)
@@ -93,6 +94,12 @@ BigUInt128 biguint128_value_of_uint(UInt value) {
  retv.dat[0] = value;
  return retv;
 }
+
+buint_size_t biguint128_import(BigUInt128 *dest, const char *src) {
+ memcpy(&dest->dat, src, BIGUINT128_CELLS * UINT_BYTES);
+ return BIGUINT128_CELLS * UINT_BYTES;
+}
+
 
 BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
@@ -314,6 +321,12 @@ buint_size_t biguint128_print_dec(BigUInt128 *a, char *buf, buint_size_t buf_len
  }
  return size;
 }
+
+buint_size_t biguint128_export(const BigUInt128 *a, char *dest) {
+ memcpy(dest, &a->dat, BIGUINT128_CELLS * UINT_BYTES);
+ return BIGUINT128_CELLS * UINT_BYTES;
+}
+
 
 #undef FOREACHCELL
 #undef UINT_BYTES
