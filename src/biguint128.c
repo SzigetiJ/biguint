@@ -274,7 +274,7 @@ void biguint128_sbit(BigUInt128 *a, buint_size_t bit) {
  a->dat[dat_byte]|= 1<<dat_bit;
 }
 
-buint_size_t biguint128_print_hex(BigUInt128 *a, char *buf, buint_size_t buf_len) {
+buint_size_t biguint128_print_hex(const BigUInt128 *a, char *buf, buint_size_t buf_len) {
  buint_size_t retv = biguint128_msb(a)/4 + 1;
  if (buf_len < retv) {
   return 0;
@@ -297,7 +297,7 @@ buint_size_t biguint128_print_hex(BigUInt128 *a, char *buf, buint_size_t buf_len
  return retv;
 }
 
-buint_size_t biguint128_print_dec_anywhere(BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset) {
+buint_size_t biguint128_print_dec_anywhere(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset) {
  buint_bool ready = 0;
  BigUInt128 divisor = biguint128_value_of_uint(10);
  BigUInt128 zero = biguint128_value_of_uint(0);
@@ -313,7 +313,7 @@ buint_size_t biguint128_print_dec_anywhere(BigUInt128 *a, char *buf, buint_size_
  }
  return buf_len - *offset;
 }
-buint_size_t biguint128_print_dec(BigUInt128 *a, char *buf, buint_size_t buf_len) {
+buint_size_t biguint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t buf_len) {
  buint_size_t offset;
  buint_size_t size = biguint128_print_dec_anywhere(a, buf, buf_len, &offset);
  for (buint_size_t i = 0; i < size; ++i) {

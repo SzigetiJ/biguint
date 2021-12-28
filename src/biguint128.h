@@ -179,7 +179,7 @@ void biguint128_sbit(BigUInt128 *a, buint_size_t bit);
  @param buf_len Length of the target buffer.
  @return Length of the written characters. Zero: buf_len is to small to store the value.
 */
-buint_size_t biguint128_print_hex(BigUInt128 *a, char *buf, buint_size_t buf_len);
+buint_size_t biguint128_print_hex(const BigUInt128 *a, char *buf, buint_size_t buf_len);
 /**
  @brief Export the value in character array format, base 10.
  The method does not write terminating 0 character.
@@ -190,7 +190,7 @@ buint_size_t biguint128_print_hex(BigUInt128 *a, char *buf, buint_size_t buf_len
  @param buf_len Length of the target buffer.
  @return Length of the written characters. Zero: buf_len is to small to store the value.
 */
-buint_size_t biguint128_print_dec(BigUInt128 *a, char *buf, buint_size_t buf_len);
+buint_size_t biguint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t buf_len);
 
 /**
  @brief Exports data into byte array.
