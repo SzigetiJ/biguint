@@ -306,12 +306,12 @@ void biguint128_cbit(BigUInt128 *a, buint_size_t bit) {
  buint_size_p bit_p = bitpos_(bit);
  a->dat[bit_p.byte_sel]&= ~(UInt)(1<<bit_p.bit_sel);
 }
-void biguint128_obit(BigUInt128 *a, buint_size_t bit, bool value) {
+void biguint128_obit(BigUInt128 *a, buint_size_t bit, buint_bool value) {
  value?
   biguint128_sbit(a,bit):
   biguint128_cbit(a,bit);
 }
-bool biguint128_gbit(BigUInt128 *a, buint_size_t bit) {
+buint_bool biguint128_gbit(BigUInt128 *a, buint_size_t bit) {
  buint_size_p bit_p = bitpos_(bit);
  return 0 < (a->dat[bit_p.byte_sel] & (1<<bit_p.bit_sel));
 }

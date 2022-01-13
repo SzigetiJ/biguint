@@ -188,13 +188,13 @@ void biguint128_cbit(BigUInt128 *a, buint_size_t bit);
  @param bit Index of the bit.
  @param value Set or clear the bit.
 */
-void biguint128_obit(BigUInt128 *a, buint_size_t bit, bool value);
+void biguint128_obit(BigUInt128 *a, buint_size_t bit, buint_bool value);
 /**
  @brief Get a bit of the value.
  @param a (Pointer to) the value to operate on.
  @param bit Index of the bit.
 */
-bool biguint128_gbit(BigUInt128 *a, buint_size_t bit);
+buint_bool biguint128_gbit(BigUInt128 *a, buint_size_t bit);
 
 // out
 /**
