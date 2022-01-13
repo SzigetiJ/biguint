@@ -97,9 +97,19 @@ buint_size_t biguint128_import(BigUInt128 *dest, const char *src);
 BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b);
 
 /**
+ @brief Add-assignment with overflow.
+*/
+BigUInt128 *biguint128_add_assign(BigUInt128 *a, const BigUInt128 *b);
+
+/**
  @brief Substraction with underflow.
 */
 BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b);
+
+/**
+ @brief Sub-assignment with underflow.
+*/
+BigUInt128 *biguint128_sub_assign(BigUInt128 *a, const BigUInt128 *b);
 
 // shift operations
 /**
@@ -166,6 +176,25 @@ buint_size_t biguint128_msb(const BigUInt128 *a);
  @param bit Index of the bit.
 */
 void biguint128_sbit(BigUInt128 *a, buint_size_t bit);
+/**
+ @brief Clears a bit (set to 0) of the value.
+ @param a (Pointer to) the value to operate on.
+ @param bit Index of the bit.
+*/
+void biguint128_cbit(BigUInt128 *a, buint_size_t bit);
+/**
+ @brief Overwrite a bit of the value.
+ @param a (Pointer to) the value to operate on.
+ @param bit Index of the bit.
+ @param value Set or clear the bit.
+*/
+void biguint128_obit(BigUInt128 *a, buint_size_t bit, bool value);
+/**
+ @brief Get a bit of the value.
+ @param a (Pointer to) the value to operate on.
+ @param bit Index of the bit.
+*/
+bool biguint128_gbit(BigUInt128 *a, buint_size_t bit);
 
 // out
 /**

@@ -74,9 +74,38 @@ int test_addsub0() {
  return fail;
 }
 
+int test_addsub1() {
+ int fail = 0;
+ for (int i=0; i<hex_sample_len; ++i) {
+   BigUInt128 a_orig, a, b, c;
+   BigUInt128 *value_refs[] = {&a, &b, &c};
+   bool readOk = true;
+
+   for (int j = 0; j<3; ++j) {
+     readOk&=read_hex_or_fail(hex_samples[i][j], value_refs[j]);
+   }
+   a_orig=a;
+   if (!readOk) continue;
+
+   // operation
+  biguint128_add_assign(&a, &b);
+
+  // eval sum
+  buint_bool result_sum = biguint128_eq(&c, &a);
+  if (!result_sum) {
+    fprintf_biguint128_binop_testresult(stderr, &a_orig, &b, &c, &a, "+=");
+   fail = 1;
+  }
+
+ }
+
+ return fail;
+}
+
 int main(int argc, char **argv) {
 
  assert(test_addsub0() == 0);
+ assert(test_addsub1() == 0);
 
  return 0;
 }

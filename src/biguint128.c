@@ -23,9 +23,24 @@
 #include "string.h"
 #include "uint.h"
 
+// local definitions (cleaned up at end of file)
 #define FOREACHCELL(i) for (buint_size_t i=0u; i<BIGUINT128_CELLS; ++i)
 #define UINT_BYTES sizeof(UInt)
 #define UINT_BITS (8 * UINT_BYTES)
+
+// predeclarations
+static inline buint_size_p bitpos_(buint_size_t a);
+static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset);
+
+// implementations
+/**
+ * Splits a bit position into pair of byte index [0..UINT_BYTES) and internal bit position [0,8)
+ * @param a Bit position in BigUInt.
+ * @return byte_sel: byte index, bit_sel: bit position inside the indexed byte.
+ */
+static inline buint_size_p bitpos_(buint_size_t a) {
+ return (buint_size_p){a/UINT_BITS,a%UINT_BITS};
+}
 
 BigUInt128 biguint128_ctor_default() {
  BigUInt128 retv;
@@ -110,6 +125,15 @@ BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b) {
  return retv;
 }
 
+BigUInt128 *biguint128_add_assign(BigUInt128 *a, const BigUInt128 *b) {
+ buint_bool carry = 0;
+ FOREACHCELL(i) {
+  a->dat[i] = uint_add(a->dat[i], b->dat[i], &carry);
+ }
+ return a;
+}
+
+
 BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
  buint_bool carry = 0;
@@ -119,17 +143,24 @@ BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b) {
  return retv;
 }
 
+BigUInt128 *biguint128_sub_assign(BigUInt128 *a, const BigUInt128 *b) {
+ buint_bool carry = 0;
+ FOREACHCELL(i) {
+  a->dat[i] = uint_sub(a->dat[i], b->dat[i], &carry);
+ }
+ return a;
+}
+
 BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();
- buint_size_t bit_shift = shift % UINT_BITS;
- buint_size_t byte_shift = shift / UINT_BITS;
+ buint_size_p shift_p = bitpos_(shift);
 
  FOREACHCELL(i) {
-  UIntPair x = uint_split(a->dat[i], UINT_BITS - bit_shift);
-  if (i < BIGUINT128_CELLS - byte_shift) {
-   retv.dat[i + byte_shift]|= x.second << bit_shift;
-   if (i < BIGUINT128_CELLS - byte_shift - 1) {
-    retv.dat[i + byte_shift + 1]|= x.first >> UINT_BITS - bit_shift;
+  UIntPair x = uint_split(a->dat[i], UINT_BITS - shift_p.bit_sel);
+  if (i < BIGUINT128_CELLS - shift_p.byte_sel) {
+   retv.dat[i + shift_p.byte_sel]|= x.second << shift_p.bit_sel;
+   if (i < BIGUINT128_CELLS - shift_p.byte_sel - 1) {
+    retv.dat[i + shift_p.byte_sel + 1]|= x.first >> UINT_BITS - shift_p.bit_sel;
    }
   }
  }
@@ -138,15 +169,14 @@ BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift) {
 
 BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();
- buint_size_t bit_shift = shift % UINT_BITS;
- buint_size_t byte_shift = shift / UINT_BITS;
+ buint_size_p shift_p = bitpos_(shift);
 
  FOREACHCELL(i) {
-  UIntPair x = uint_split(a->dat[i], bit_shift);
-  if (byte_shift <= i) {
-   retv.dat[i - byte_shift]|= x.first >> bit_shift;
-   if (byte_shift + 1 <= i) {
-    retv.dat[i - byte_shift - 1]|= x.second << UINT_BITS - bit_shift;
+  UIntPair x = uint_split(a->dat[i], shift_p.bit_sel);
+  if (shift_p.byte_sel <= i) {
+   retv.dat[i - shift_p.byte_sel]|= x.first >> shift_p.bit_sel;
+   if (shift_p.byte_sel + 1 <= i) {
+    retv.dat[i - shift_p.byte_sel - 1]|= x.second << UINT_BITS - shift_p.bit_sel;
    }
   }
  }
@@ -269,9 +299,21 @@ buint_size_t biguint128_msb(const BigUInt128 *a) {
 }
 
 void biguint128_sbit(BigUInt128 *a, buint_size_t bit) {
- buint_size_t dat_byte = bit / UINT_BITS;
- buint_size_t dat_bit = bit % UINT_BITS;
- a->dat[dat_byte]|= 1<<dat_bit;
+ buint_size_p bit_p = bitpos_(bit);
+ a->dat[bit_p.byte_sel]|= 1<<bit_p.bit_sel;
+}
+void biguint128_cbit(BigUInt128 *a, buint_size_t bit) {
+ buint_size_p bit_p = bitpos_(bit);
+ a->dat[bit_p.byte_sel]&= ~(UInt)(1<<bit_p.bit_sel);
+}
+void biguint128_obit(BigUInt128 *a, buint_size_t bit, bool value) {
+ value?
+  biguint128_sbit(a,bit):
+  biguint128_cbit(a,bit);
+}
+bool biguint128_gbit(BigUInt128 *a, buint_size_t bit) {
+ buint_size_p bit_p = bitpos_(bit);
+ return 0 < (a->dat[bit_p.byte_sel] & (1<<bit_p.bit_sel));
 }
 
 buint_size_t biguint128_print_hex(const BigUInt128 *a, char *buf, buint_size_t buf_len) {
@@ -297,7 +339,7 @@ buint_size_t biguint128_print_hex(const BigUInt128 *a, char *buf, buint_size_t b
  return retv;
 }
 
-buint_size_t biguint128_print_dec_anywhere(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset) {
+static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset) {
  buint_bool ready = 0;
  BigUInt128 divisor = biguint128_value_of_uint(10);
  BigUInt128 zero = biguint128_value_of_uint(0);
@@ -315,7 +357,7 @@ buint_size_t biguint128_print_dec_anywhere(const BigUInt128 *a, char *buf, buint
 }
 buint_size_t biguint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t buf_len) {
  buint_size_t offset;
- buint_size_t size = biguint128_print_dec_anywhere(a, buf, buf_len, &offset);
+ buint_size_t size = biguint128_print_dec_anywhere_(a, buf, buf_len, &offset);
  for (buint_size_t i = 0; i < size; ++i) {
   buf[i] = buf[offset + i];
  }
@@ -327,8 +369,7 @@ buint_size_t biguint128_export(const BigUInt128 *a, char *dest) {
  return BIGUINT128_CELLS * UINT_BYTES;
 }
 
-
+// cleanup
 #undef FOREACHCELL
 #undef UINT_BYTES
 #undef UINT_BITS
-

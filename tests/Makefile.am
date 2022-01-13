@@ -64,6 +64,6 @@ biguint256_add_test.c: biguint128_add_test.c
 biguint256_mul_test.c: biguint128_mul_test.c
 	$(SED) 's/128/256/g' < $< > $@
 
-AM_CFLAGS = -I${top_srcdir}/src
+AM_CFLAGS = -I${top_srcdir}/src -I../src
 LDADD = ../src/libbiguint.a
 

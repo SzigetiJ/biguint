@@ -5,7 +5,7 @@ bin_PROGRAMS = powers10001 powers3 fibratio \
  factorial384 \
  factorial512
 
-AM_CFLAGS = -I${top_srcdir}/src
+AM_CFLAGS = -I${top_srcdir}/src -I../src
 LDADD = ../src/libbiguint.a
 
 CLEANFILES = \

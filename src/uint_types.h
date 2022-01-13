@@ -35,6 +35,12 @@
   typedef unsigned int UInt;	///< Alias on the basic store unit.
 #endif  // USE_STD_TYPES
 
+  typedef struct {
+ buint_size_t byte_sel;
+ buint_size_t bit_sel;
+} buint_size_p;
+
+
 #endif  // _UINT_TYPES_H_
 
 
