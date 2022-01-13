@@ -90,7 +90,7 @@ BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len);
 buint_size_t biguint128_import(BigUInt128 *dest, const char *src);
 
 
-// addition / substraction
+// addition / subtraction
 /**
  @brief Addition with overflow.
 */
@@ -102,7 +102,12 @@ BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b);
 BigUInt128 *biguint128_add_assign(BigUInt128 *a, const BigUInt128 *b);
 
 /**
- @brief Substraction with underflow.
+ @brief Add-replacement with overflow.
+ */
+void biguint128_add_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b);
+
+/**
+ @brief Subtraction with underflow.
 */
 BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b);
 
@@ -110,6 +115,12 @@ BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b);
  @brief Sub-assignment with underflow.
 */
 BigUInt128 *biguint128_sub_assign(BigUInt128 *a, const BigUInt128 *b);
+
+/**
+ @brief Sub-replacement with overflow.
+ */
+void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b);
+
 
 // shift operations
 /**

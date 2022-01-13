@@ -40,7 +40,7 @@ typedef struct {
 UInt uint_add(UInt a, UInt b, buint_bool *carry);
 
 /**
- @brief Substraction of UInt value from UInt value with carry bit.
+ @brief Subtraction of UInt value from UInt value with carry bit.
  @param a minuend
  @param b subtrahend
  @param carry Input carry bit read from, output carry bit written to.

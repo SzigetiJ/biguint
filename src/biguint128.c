@@ -116,40 +116,64 @@ buint_size_t biguint128_import(BigUInt128 *dest, const char *src) {
 }
 
 
+///////////////
+// BEGIN ADD //
+
 BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
- buint_bool carry = 0;
- FOREACHCELL(i) {
-  retv.dat[i] = uint_add(a->dat[i], b->dat[i], &carry);
- }
+ biguint128_add_replace(&retv, a, b);
  return retv;
 }
 
 BigUInt128 *biguint128_add_assign(BigUInt128 *a, const BigUInt128 *b) {
- buint_bool carry = 0;
- FOREACHCELL(i) {
-  a->dat[i] = uint_add(a->dat[i], b->dat[i], &carry);
- }
+ biguint128_add_replace(a,a,b);
  return a;
 }
 
+/**
+ * Adds *a and *b and stores the result in *dest.
+ * @param dest
+ * @param a
+ * @param b
+ */
+void biguint128_add_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b) {
+ buint_bool carry = 0;
+ FOREACHCELL(i) {
+  dest->dat[i] = uint_add(a->dat[i], b->dat[i], &carry);
+ }
+}
+// END ADD   //
+///////////////
+
+///////////////
+// BEGIN SUB //
 
 BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
- buint_bool carry = 0;
- FOREACHCELL(i) {
-  retv.dat[i] = uint_sub(a->dat[i], b->dat[i], &carry);
- }
+ biguint128_sub_replace(&retv, a, b);
  return retv;
 }
 
 BigUInt128 *biguint128_sub_assign(BigUInt128 *a, const BigUInt128 *b) {
- buint_bool carry = 0;
- FOREACHCELL(i) {
-  a->dat[i] = uint_sub(a->dat[i], b->dat[i], &carry);
- }
+ biguint128_sub_replace(a,a,b);
  return a;
 }
+
+/**
+ * Subtracts *b from *a and stores the result in *dest.
+ * @param dest
+ * @param a
+ * @param b
+ */
+void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b) {
+ buint_bool carry = 0;
+ FOREACHCELL(i) {
+  dest->dat[i] = uint_sub(a->dat[i], b->dat[i], &carry);
+ }
+}
+// END SUB   //
+///////////////
+
 
 BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();

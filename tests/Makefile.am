@@ -67,3 +67,4 @@ biguint256_mul_test.c: biguint128_mul_test.c
 AM_CFLAGS = -I${top_srcdir}/src -I../src
 LDADD = ../src/libbiguint.a
 
+SUBDIRS=performance

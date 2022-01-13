@@ -11,6 +11,7 @@ AC_CONFIG_FILES([
   Makefile
   src/Makefile
   tests/Makefile
+  tests/performance/Makefile
   examples/Makefile
 ])
 
