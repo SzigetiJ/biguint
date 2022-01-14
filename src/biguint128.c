@@ -23,13 +23,24 @@
 #include "string.h"
 #include "uint.h"
 
-// local definitions (cleaned up at end of file)
+// Local definitions (cleaned up at end of file)
 #define FOREACHCELL(i) for (buint_size_t i=0u; i<BIGUINT128_CELLS; ++i)
 #define UINT_BYTES sizeof(UInt)
 #define UINT_BITS (8 * UINT_BYTES)
 
-// predeclarations
+// Assertions
+// SIZEOF_UINT checked by configure script
+#if (SIZEOF_UINT < 2)
+#error Current implementation requires UInt basic storage type being at least 2 bytes wide.
+#endif
+
+// static function declarations
 static inline buint_size_p bitpos_(buint_size_t a);
+static inline BigUInt128 *clrall_(BigUInt128 *a);
+
+static inline BigUIntPair128 d1024_(const BigUInt128 *a);
+static inline BigUIntPair128 d1000_(const BigUInt128 *a);
+
 static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset);
 
 // implementations
@@ -42,12 +53,81 @@ static inline buint_size_p bitpos_(buint_size_t a) {
  return (buint_size_p){a/UINT_BITS,a%UINT_BITS};
 }
 
-BigUInt128 biguint128_ctor_default() {
- BigUInt128 retv;
+/**
+ * Clears all data (set to 0).
+ * @param a Subject of operation;
+ * @return a.
+ */
+static inline BigUInt128 *clrall_(BigUInt128 *a) {
  FOREACHCELL(i) {
-  retv.dat[i]=0;
+  a->dat[i]=0;
+ }
+ return a;
+}
+
+/**
+ * Division by 1024. Division by 1000 relies on this function.
+ * @param a Divident.
+ * @return Pair of quotient and remainder.
+ */
+static inline BigUIntPair128 d1024_(const BigUInt128 *a) {
+ static const BigUInt128 x1023={0x3FF};
+
+ BigUIntPair128 retv;
+ retv.first= biguint128_shr(a, 10);
+ retv.second= biguint128_and(a, &x1023);
+ return retv;
+}
+
+/**
+ * Division by 1000. Definitely faster than biguint128_div().
+ * The decimal printer function HEX->DEC conversion,
+ * and without this function it would take a long time.
+ * Maybe this function will be promoted to the interface,
+ * since div/mod by 1000 is called frequently
+ * (e.g., ms->s, mm->m, etc. conversions).
+ * @param a Divident.
+ * @return Pair of quotient and remainder.
+ */
+static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
+ // The procedure goes like this:
+ // We have to containers (retv.first, retv.second), and at the end
+ // these will store the quotient and the remainder, respectively.
+ // Initially, retv.first is empty and retv.second stores the whole amount of a.
+ // Step-by-step retv.first is increased while retv.second is decreased.
+ // Note that 1000 * retv.first + retv.second = *a remains invariant
+ // during the whole process.
+ // In phase #1 we exploit that
+ // a = 1024*b + c = (1000*b) + (24*b+c)
+ // and reduce retv.second iteratively until it gets small enough.
+ // In phase #2 we just subtract 1000 from the remainder if it is still too high.
+ // Well, the while loop is an overkill for this limit (2000).
+ static const BigUInt128 x1={1};
+ static const BigUInt128 x1000={0x3E8};
+ static const BigUInt128 x2000={0x7D0};
+
+ BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
+ // Phase 1:
+ while (biguint128_lt(&x2000, &retv.second)) {
+  BigUIntPair128 x= d1024_(&retv.second);
+  biguint128_add_assign(&retv.first, &x.first);
+  BigUInt128 d_mul8= biguint128_shl(&x.first, 3);
+  BigUInt128 d_mul16= biguint128_shl(&x.first, 4);
+  retv.second = biguint128_add(&x.second, &d_mul16);
+  biguint128_add_assign(&retv.second, &d_mul8);
+ }
+ // Phase 2:
+ while (!biguint128_lt(&retv.second,&x1000)) {
+  biguint128_add_assign(&retv.first,&x1);
+  biguint128_sub_assign(&retv.second,&x1000);
  }
  return retv;
+}
+
+
+BigUInt128 biguint128_ctor_default() {
+ BigUInt128 retv;
+ return *clrall_(&retv);
 }
 
 BigUInt128 biguint128_ctor_unit() {
@@ -177,18 +257,30 @@ void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
 
 BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();
+ return *biguint128_shl_or(&retv, a, shift);;
+}
+
+/**
+ * Shift left operator, result put into dest with OR operation.
+ * dest and a must not point to the same structure.
+ * @param dest Reference to result.
+ * @param a Subject of the function.
+ * @param shift Amount of shift.
+ * @return dest.
+ */
+BigUInt128 *biguint128_shl_or(BigUInt128 *dest, const BigUInt128 *a, const buint_size_t shift) {
  buint_size_p shift_p = bitpos_(shift);
 
  FOREACHCELL(i) {
   UIntPair x = uint_split(a->dat[i], UINT_BITS - shift_p.bit_sel);
   if (i < BIGUINT128_CELLS - shift_p.byte_sel) {
-   retv.dat[i + shift_p.byte_sel]|= x.second << shift_p.bit_sel;
+   dest->dat[i + shift_p.byte_sel]|= x.second << shift_p.bit_sel;
    if (i < BIGUINT128_CELLS - shift_p.byte_sel - 1) {
-    retv.dat[i + shift_p.byte_sel + 1]|= x.first >> UINT_BITS - shift_p.bit_sel;
+    dest->dat[i + shift_p.byte_sel + 1]|= x.first >> UINT_BITS - shift_p.bit_sel;
    }
   }
  }
- return retv;
+ return dest;
 }
 
 BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift) {
@@ -205,6 +297,27 @@ BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift) {
   }
  }
  return retv;
+}
+
+BigUInt128 *biguint128_shr_assign(BigUInt128 *a, const buint_size_t shift) {
+ const buint_size_p shift_p = bitpos_(shift);
+ UInt carry=uint_split_shift(a->dat[shift_p.byte_sel],shift_p.bit_sel).first;
+
+ // There are 2 ranges in the produced a->dat:
+ //  [0, BIGUINT128_CELLS-shift_p.byte_sel]: these values are derived from equal and higher indexed a->dat entries;
+ //  [BIGUINT128_CELLS-shift_p.byte_sel, BIGUINT128_CELLS): these values are cleared
+ // the special entry is dat[BIGUINT128_CELLS-shift_p.byte_sel]: low part is copied, high part is cleared.
+ FOREACHCELL(i) {
+  if (shift_p.byte_sel + i + 1 < BIGUINT128_CELLS){
+   UIntPair x= uint_split_shift(a->dat[shift_p.byte_sel + 1 + i], shift_p.bit_sel);
+   a->dat[i]= x.second | carry;
+   carry= x.first;
+  } else {
+    a->dat[i]= carry;
+    carry= 0;
+  }
+ }
+ return a;
 }
 
 BigUInt128 biguint128_and(const BigUInt128 *a, const BigUInt128 *b) {
@@ -283,7 +396,7 @@ BigUIntPair128 biguint128_div(const BigUInt128 *a, const BigUInt128 *b) {
     biguint128_sbit(&retv.first, xbit - i);
     xobj = biguint128_sub(&xobj, &xdiv);
    }
-   xdiv = biguint128_shr(&xdiv, 1);
+   biguint128_shr_assign(&xdiv, 1);
   }
   retv.second = xobj;
  }
@@ -365,17 +478,33 @@ buint_size_t biguint128_print_hex(const BigUInt128 *a, char *buf, buint_size_t b
 
 static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset) {
  buint_bool ready = 0;
- BigUInt128 divisor = biguint128_value_of_uint(10);
  BigUInt128 zero = biguint128_value_of_uint(0);
  BigUInt128 temp = biguint128_ctor_copy(a);
- for (buint_size_t i=0; !ready && i < buf_len; ++i) {
-  buint_size_t buf_idx = buf_len - i - 1;
-  BigUIntPair128 res = biguint128_div(&temp, &divisor);
-  unsigned char d = res.second.dat[0];
-  set_decdigit(buf + buf_idx, d);
+
+ for (buint_size_t i= 0; !ready && i < buf_len; i+= 3) {
+  BigUIntPair128 res= d1000_(&temp);
+
+  buint_size_t buf_idx0= buf_len - i - 1;
+  buint_size_t buf_idx1= buf_len - i - 2;
+  buint_size_t buf_idx2= buf_len - i - 3;
+
+  UInt d= res.second.dat[0];
+  char d0= d%10;
+  char d1= (d/10)%10;
+  char d2= (d/10)/10;
+
+  set_decdigit(buf + buf_idx0, d0);
+  *offset= buf_idx0;
+  if (buf_idx0 != 0) {
+   set_decdigit(buf + buf_idx1, d1);
+   if (d1) *offset= buf_idx1;
+   if (buf_idx1 != 0) {
+    set_decdigit(buf + buf_idx2, d2);
+    if (d2) *offset= buf_idx2;
+   }
+  }
   ready = biguint128_eq(&zero, &res.first);
   temp = res.first;
-  *offset = buf_idx;
  }
  return buf_len - *offset;
 }

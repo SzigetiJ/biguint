@@ -42,6 +42,14 @@ UIntPair uint_split(UInt a, buint_size_t lsb) {
  return retv;
 }
 
+UIntPair uint_split_shift(UInt a, buint_size_t lsb) {
+ UIntPair retv;
+ retv.first= a >> lsb;
+ retv.second= a << (8*sizeof(UInt) - lsb);
+ return retv;
+}
+
+
 UIntPair uint_mul(UInt a, UInt b) {
  UIntPair retv;
  buint_size_t uint_mbits = 4*sizeof(UInt);

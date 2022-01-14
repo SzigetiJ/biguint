@@ -7,6 +7,8 @@ AC_PROG_SED
 
 AC_DEFINE(USE_STD_TYPES)
 
+AC_CHECK_SIZEOF([UInt],,[#include "$srcdir/src/uint_types.h"])
+
 AC_CONFIG_FILES([
   Makefile
   src/Makefile

@@ -47,10 +47,18 @@ UInt uint_add(UInt a, UInt b, buint_bool *carry);
 */
 UInt uint_sub(UInt a, UInt b, buint_bool *carry);
 /**
- @brief Splits a value into two at bit lsb.
+ @brief Splits a value by means of bit masking into two.
  @return first: high bits greater or equal to lsb; second: low bits.
 */
-UIntPair uint_split(UInt a, buint_size_t bit);
+UIntPair uint_split(UInt a, buint_size_t lsb);
+
+/**
+ @brief Splits a value by means if bit shifting into two.
+ @return first: high bits of value a (greater or equal to lsb) at the bottom bits;
+ second: low bits of a at the top bits.
+ */
+UIntPair uint_split_shift(UInt a, buint_size_t lsb);
+
 /**
  @brief Multiplication of two values.
  @return first: high bits; second: low bits.

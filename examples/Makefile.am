@@ -1,5 +1,6 @@
 
 bin_PROGRAMS = powers10001 powers3 fibratio \
+ exprtree \
  factorial128 \
  factorial256 \
  factorial384 \

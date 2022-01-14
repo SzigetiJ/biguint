@@ -127,10 +127,12 @@ void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
  @brief Shift left operation.
 */
 BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift);
+BigUInt128 *biguint128_shl_or(BigUInt128 *dest, const BigUInt128 *a, const buint_size_t shift);
 /**
  @brief Shift right operation.
 */
 BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift);
+BigUInt128 *biguint128_shr_assign(BigUInt128 *a, const buint_size_t shift);
 
 // bitwise functions
 /**
