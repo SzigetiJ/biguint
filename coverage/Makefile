@@ -2,8 +2,8 @@ SRCDIR=../src
 TESTDIR=../tests
 
 CC=gcc
-CFLAGS=-Wall -Wpedantic -O0 -std=c99 -fprofile-arcs -ftest-coverage -I$(SRCDIR)
-CFLAGS_X=-Wall -Wpedantic -O0 -std=c99 -I$(SRCDIR)
+CFLAGS=-Wall -Wpedantic -O0 -std=c99 -fprofile-arcs -ftest-coverage -I$(SRCDIR) -DSIZEOF_UINT=4
+CFLAGS_X=-Wall -Wpedantic -O0 -std=c99 -I$(SRCDIR) -DSIZEOF_UINT=4
 LDFLAGS=-fprofile-arcs -ftest-coverage
 
 TEST_X0 = ctor io eq bit add mul
