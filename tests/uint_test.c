@@ -119,9 +119,68 @@ bool test_uint_mul() {
  return !fail;
 }
 
+// This test assumes 32bit wide UInt type
+bool test_uint_spsh32() {
+ bool fail=false;
+ UInt samples_a[]= {
+  0,
+  0xFFFFFFFF,
+  0xAA555555
+ };
+ buint_size_t samples_lsb[]={
+  0,1,16,31,32,64
+ };
+ unsigned int samples_len_a=sizeof(samples_a)/sizeof(UInt);
+ unsigned int samples_len_lsb=sizeof(samples_lsb)/sizeof(buint_size_p);
+
+ UIntPair splt_expects[][6]={
+  {{0,0}, {0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
+  {{0xFFFFFFFF,0}, {0xFFFFFFFE,0x00000001}, {0xFFFF0000,0x0000FFFF}, {0x80000000,0x7FFFFFFF}, {0,0xFFFFFFFF},{0,0xFFFFFFFF}},
+  {{0xAA555555,0}, {0xAA555554,0x00000001}, {0xAA550000,0x00005555}, {0x80000000,0x2A555555}, {0,0xAA555555},{0,0xAA555555}}
+ };
+
+ UIntPair spsh_expects[][6]={
+  {{0,0}, {0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
+  {{0xFFFFFFFF,0}, {0x7FFFFFFF,0x80000000},{0xFFFF,0xFFFF0000},{0x1,0xFFFFFFFE},{0,0xFFFFFFFF},{0,0}},
+  {{0xAA555555,0}, {0x552AAAAA,0x80000000}, {0xAA55,0x55550000}, {0x1,0x54AAAA}, {0,0xAA555555},{0,0}}
+ };
+
+ for (unsigned int a_i=0; a_i<samples_len_a;++a_i) {
+  for (unsigned int lsb_i=0; lsb_i<samples_len_lsb;++lsb_i) {
+   UIntPair spsh_expect = spsh_expects[a_i][lsb_i];
+   UIntPair spsh_actual = uint_split_shift(samples_a[a_i], samples_lsb[lsb_i]);
+
+   if (!(spsh_actual.first==spsh_expect.first
+           && spsh_actual.second==spsh_expect.second)) {
+    fprintf(stderr, "%s: uint_split_shift(%08X,%u) return value expected: [%08X,%08X] actual: [%08X,%08X]\n",
+     __func__, samples_a[a_i], samples_lsb[lsb_i],
+            spsh_expect.first, spsh_expect.second,
+            spsh_actual.first, spsh_actual.second);
+     fail = true;
+   }
+
+   UIntPair splt_expect = splt_expects[a_i][lsb_i];
+   UIntPair splt_actual = uint_split(samples_a[a_i], samples_lsb[lsb_i]);
+
+   if (!(splt_actual.first==splt_expect.first
+           && splt_actual.second==splt_expect.second)) {
+    fprintf(stderr, "%s: uint_split(%08X,%u) return value expected: [%08X,%08X] actual: [%08X,%08X]\n",
+     __func__, samples_a[a_i], samples_lsb[lsb_i],
+            splt_expect.first, splt_expect.second,
+            splt_actual.first, splt_actual.second);
+     fail = true;
+   }
+  }
+ }
+
+ return !fail;
+}
+
+
 int main(int argc, char **argv) {
  assert(test_uint_add());
  assert(test_uint_sub());
  assert(test_uint_mul());
+ assert(test_uint_spsh32());
 }
 

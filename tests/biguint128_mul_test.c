@@ -113,11 +113,76 @@ bool test_mul2() {
  return !fail;
 }
 
+bool test_div0() {
+ bool fail = false;
+ BigUInt128 zero = biguint128_ctor_default();
+ for (int i=0; i<hex_sample_len; ++i) {
+  const char * const sample_a = hex_samples[i][0];
+  const char * const sample_b = hex_samples[i][1];
+  const char * const sample_c = hex_samples[i][2];
+  if (BIGUINT_STRLEN_MAX < strlen(sample_a)
+   || BIGUINT_STRLEN_MAX < strlen(sample_b)
+   || BIGUINT_STRLEN_MAX < strlen(sample_c)
+  )
+   continue;
+  BigUInt128 a = biguint128_ctor_hexcstream(sample_a, strlen(sample_a));
+  BigUInt128 b = biguint128_ctor_hexcstream(sample_b, strlen(sample_b));
+  BigUInt128 c = biguint128_ctor_hexcstream(sample_c, strlen(sample_c));
+
+  buint_bool div_eq_a=true;
+  buint_bool div_eq_b=true;
+  buint_bool mod_eq_a=true;
+  buint_bool mod_eq_b=true;
+  BigUIntPair128 div_c_a;
+  BigUIntPair128 div_c_b;
+  if (!biguint128_eq(&zero,&a)) {
+   div_c_a = biguint128_div(&c, &a);
+   div_eq_a = biguint128_eq(&b, &div_c_a.first);
+   mod_eq_a = biguint128_eq(&zero, &div_c_a.second);
+  }
+  if (!biguint128_eq(&zero,&b)) {
+   div_c_b = biguint128_div(&c, &b);
+   div_eq_b = biguint128_eq(&a, &div_c_b.first);
+   mod_eq_b = biguint128_eq(&zero, &div_c_b.second);
+  }
+
+  if (!div_eq_a || !mod_eq_a) {
+   char buffer[6][BIGUINT_STRLEN_MAX + 1];
+   buffer[0][biguint128_print_hex(&c, buffer[0], sizeof(buffer[0])/sizeof(char)-1)]=0;
+   buffer[1][biguint128_print_hex(&a, buffer[1], sizeof(buffer[1])/sizeof(char)-1)]=0;
+   buffer[2][biguint128_print_hex(&b, buffer[2], sizeof(buffer[2])/sizeof(char)-1)]=0;
+   buffer[3][biguint128_print_hex(&zero, buffer[3], sizeof(buffer[3])/sizeof(char)-1)]=0;
+   buffer[4][biguint128_print_hex(&div_c_a.first, buffer[4], sizeof(buffer[4])/sizeof(char)-1)]=0;
+   buffer[5][biguint128_print_hex(&div_c_a.second, buffer[5], sizeof(buffer[5])/sizeof(char)-1)]=0;
+   fprintf(stderr, "[%s / %s] -- expected: [%s,%s], actual [%s,%s]\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
+   fail = true;
+  }
+
+  if (!div_eq_b || !mod_eq_b) {
+   char buffer[6][BIGUINT_STRLEN_MAX + 1];
+   buffer[0][biguint128_print_hex(&c, buffer[0], sizeof(buffer[0])/sizeof(char)-1)]=0;
+   buffer[1][biguint128_print_hex(&b, buffer[1], sizeof(buffer[1])/sizeof(char)-1)]=0;
+   buffer[2][biguint128_print_hex(&a, buffer[2], sizeof(buffer[2])/sizeof(char)-1)]=0;
+   buffer[3][biguint128_print_hex(&zero, buffer[3], sizeof(buffer[3])/sizeof(char)-1)]=0;
+   buffer[4][biguint128_print_hex(&div_c_b.first, buffer[4], sizeof(buffer[4])/sizeof(char)-1)]=0;
+   buffer[5][biguint128_print_hex(&div_c_b.second, buffer[5], sizeof(buffer[5])/sizeof(char)-1)]=0;
+   fprintf(stderr, "[%s / %s] -- expected: [%s,%s], actual [%s,%s]\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
+   fail = true;
+  }
+
+ }
+
+ return !fail;
+}
+
+
 int main(int argc, char **argv) {
 
  assert(test_mul0());
  assert(test_mul1());
  assert(test_mul2());
+
+ assert(test_div0());
 
  return 0;
 }

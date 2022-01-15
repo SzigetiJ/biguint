@@ -20,6 +20,8 @@
 *****************************************************************************/
 #include "uint.h"
 
+#define UINT_BITS (buint_size_t)(8*sizeof(UInt))
+
 UInt uint_add(UInt a, UInt b, buint_bool *carry) {
  UInt cx = *carry?1:0;
  UInt c = a + b + cx;
@@ -36,16 +38,20 @@ UInt uint_sub(UInt a, UInt b, buint_bool *carry) {
 
 UIntPair uint_split(UInt a, buint_size_t lsb) {
  UIntPair retv;
- UInt mask = (lsb<8*sizeof(a)?((UInt)1 << lsb):0) - 1;
+ UInt mask = (lsb < UINT_BITS ? ((UInt)1 << lsb):0) - 1;
  retv.first = a & ~mask;
  retv.second = a & mask;
  return retv;
 }
 
+/**
+ * Note, this function works only for lsb range 0..UINT_BITS.
+ * Value of lsb is not checked.
+ */
 UIntPair uint_split_shift(UInt a, buint_size_t lsb) {
  UIntPair retv;
  retv.first= a >> lsb;
- retv.second= a << (8*sizeof(UInt) - lsb);
+ retv.second= (0<lsb) ? (a << (UINT_BITS - lsb)) : 0;
  return retv;
 }
 
@@ -104,3 +110,4 @@ buint_size_t uint_msb(UInt a) {
  return a < (UInt)1 << n ? inf : n;
 }
 
+#undef UINT_BITS
