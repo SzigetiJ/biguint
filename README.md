@@ -14,12 +14,14 @@ Currently libbiguint provides the following types:
 * `BigUInt256` (256 bits)
 * `BigUInt384` (384 bits)
 * `BigUInt512` (512 bits)
+* `BigUInt<number>` (1024 or even more bits)
 
 All the provided types are accompanied by the following functions:
 * addition and subtraction (add, sub);
 * multiplication and division (mul, div/mod);
 * bit shift operations (shl, shr);
 * bitwise operations (and, or, xor, not);
+* bitwise manipulation (get, set, clr, overwrite);
 * comparison (lt, eq);
 * parsing and printing (from/to hex and dec strings);
 * default and standard _constructors_ (initializer functions).
@@ -65,10 +67,11 @@ make install
 
 The `configure` script supports different build profiles:
 it generates the outputs (Makefiles) in the current working directory;
-and the generated Makefiles will put their output in their container directory.
-Well, except for `make install`.
+and executing `make` with the generated Makefiles
+will put their output in the container directory of the given Makefiles.
+Well, except for `make install`, of course.
 
-You can create, e.g., a Debug and a Release profile within the base directory of the project:
+You can create, e.g., a **Debug** and a **Release** profile within the base directory of the project:
 
 ```sh
 mkdir Debug
@@ -90,8 +93,8 @@ cd ..
 ```
 
 Cross compilation is also supported. You can create a profile for the target.
-Note, you have to give options `--host` and `--build` to `configure`
-[see manual](https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.70/html_node/Hosts-and-Cross_002dCompilation.html#Hosts-and-Cross_002dCompilation).
+Note, you have to give options `--host` and `--build` to `configure` see the
+[online manual](https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.70/html_node/Hosts-and-Cross_002dCompilation.html#Hosts-and-Cross_002dCompilation).
 
 ## How to use
 
@@ -118,4 +121,4 @@ int main() {
 
 ## Examples
 
-Check out directory ![examples](examples).
+Check out the ![examples](examples) directory.
