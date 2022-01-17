@@ -9,7 +9,8 @@ nodist_libbiguint_a_SOURCES = biguint256.c biguint384.c biguint512.c
 CLEANFILES = \
  biguint256.h biguint256.c \
  biguint384.h biguint384.c \
- biguint512.h biguint512.c
+ biguint512.h biguint512.c \
+ biguint.h biguint.c
 
 BUILT_SOURCES = \
  biguint256.h biguint256.c \
@@ -33,4 +34,19 @@ biguint512.c: biguint128.c
 
 biguint512.h: biguint128.h
 	$(SED) 's/128/512/g' < $< > $@
+
+if EXTRA_BITLEN
+ nodist_libbiguint_a_SOURCES += biguint@userdef_bits@.c
+ include_HEADERS += biguint@userdef_bits@.h
+ CLEANFILES += \
+  biguint@userdef_bits@.h biguint@userdef_bits@.c
+ BUILT_SOURCES += \
+  biguint@userdef_bits@.h biguint@userdef_bits@.c
+
+biguint@userdef_bits@.c: biguint128.c
+	$(SED) 's/128/@userdef_bits@/g' < $< > $@
+
+biguint@userdef_bits@.h: biguint128.h
+	$(SED) 's/128/@userdef_bits@/g' < $< > $@
+endif
 
