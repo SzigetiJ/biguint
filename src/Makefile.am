@@ -9,8 +9,7 @@ nodist_libbiguint_a_SOURCES = biguint256.c biguint384.c biguint512.c
 CLEANFILES = \
  biguint256.h biguint256.c \
  biguint384.h biguint384.c \
- biguint512.h biguint512.c \
- biguint.h biguint.c
+ biguint512.h biguint512.c
 
 BUILT_SOURCES = \
  biguint256.h biguint256.c \
