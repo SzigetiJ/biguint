@@ -53,7 +53,10 @@ AM_COND_IF([EXTRA_BITLEN],
  )]
 )
 
-AC_SUBST([userdef_bits],[$enable_extrabitlen])
+AM_COND_IF([EXTRA_BITLEN],
+ AC_SUBST([userdef_bits],[$enable_extrabitlen]),
+ AC_SUBST([userdef_bits],[512])
+)
 dnl ===SECTION EXTRABITLEN END===
 
 AC_CONFIG_FILES([
