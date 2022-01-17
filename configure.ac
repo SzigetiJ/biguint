@@ -18,14 +18,24 @@ AM_CONDITIONAL([EXTRA_BITLEN], [test x$enable_extrabitlen != x])
 
 AM_COND_IF([EXTRA_BITLEN],
  [
+  AS_VAR_ARITH([BITLEN_NUM], [$enable_extrabitlen + 0])
+  AM_CONDITIONAL([NUMERIC_BITLEN], [test $enable_extrabitlen = $BITLEN_NUM])
   AM_CONDITIONAL([VALID_BITLEN], [! expr $enable_extrabitlen % $UINT_BITS])
   AM_CONDITIONAL([FORBIDDEN_BITLEN], [test $enable_extrabitlen -le 0 -o $enable_extrabitlen = 128])
  ],
  [
   AC_MSG_NOTICE([No extra type required])
+  AM_CONDITIONAL([NUMERIC_BITLEN],[false])
   AM_CONDITIONAL([VALID_BITLEN],[false])
   AM_CONDITIONAL([FORBIDDEN_BITLEN],[false])
  ]
+)
+
+dnl Checking whether extrabitlen is numeric.
+AM_COND_IF([EXTRA_BITLEN],
+ [AM_COND_IF([NUMERIC_BITLEN],,
+  [AC_MSG_ERROR(["$enable_extrabitlen" cannot be interpreted as number.])]
+ )]
 )
 
 dnl Checking whether extrabitlen is allowed at all.
