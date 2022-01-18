@@ -45,11 +45,18 @@ $(INFO_FILE): $(TEST_X0_COVS) $(TEST_X1_COVS)
 #biguint128_%_test.o: $(TESTDIR)/biguint128_%_test.c
 #	$(CC) -c $(CFLAGS) -o $@ $<
 #
+biguint128_io_test: test_common.o test_common128.o
+biguint128_eq_test: test_common.o test_common128.o
+biguint128_mul_test: test_common.o test_common128.o
+biguint128_add_test: test_common.o test_common128.o
 
 %_test: %_test.o $(LIB_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
 
 %_test.o: $(TESTDIR)/%_test.c
+	$(CC) -c $(CFLAGS_X) -o $@ $<
+
+test_commo%.o: $(TESTDIR)/test_commo%.c
 	$(CC) -c $(CFLAGS_X) -o $@ $<
 
 l_%.o: $(SRCDIR)/%.c

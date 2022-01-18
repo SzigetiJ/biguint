@@ -22,7 +22,7 @@ bool test_and_or_not0() {
   "3000000000000000000000000"
  };
  const unsigned int samples_b_len = sizeof(samples_b) / sizeof(char*);
- 
+
  const char *intersections[][4]={
   {"0","0","0","0"},
   {"1","0","0","0"},

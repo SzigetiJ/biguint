@@ -11,10 +11,7 @@ CLEANFILES = \
  biguint384.h biguint384.c \
  biguint512.h biguint512.c
 
-BUILT_SOURCES = \
- biguint256.h biguint256.c \
- biguint384.h biguint384.c \
- biguint512.h biguint512.c
+BUILT_SOURCES = $(CLEANFILES)
 
 biguint256.c: biguint128.c
 	$(SED) 's/128/256/g' < $< > $@

@@ -1,9 +1,9 @@
 #include "biguint128.h"
-#include "stdio.h"
-#include "string.h"
-#include "assert.h"
-
-#define BIGUINT_BITS 128
+#include "test_common.h"
+#include "test_common128.h"
+#include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 typedef enum {
  BIGUINT_LT,
@@ -12,26 +12,26 @@ typedef enum {
 } BigUIntSortRelation;
 
 typedef struct {
- char *left;
- char *right;
+ CStr left;
+ CStr right;
  BigUIntSortRelation rel;
 } BigUIntSortRelTestVector;
 
 const BigUIntSortRelTestVector samples[]={
- {"0","0",BIGUINT_EQ},
- {"0","1",BIGUINT_LT},
- {"FFFFFFFF","FFFFFFFF",BIGUINT_EQ},
- {"FFFFFFFF","100000000",BIGUINT_LT},
- {"0","100000000",BIGUINT_LT},
- {"0","10000000000000000",BIGUINT_LT},
- {"0","100000000000000000000000000000000",BIGUINT_LT},
- {"0","10000000000000000000000000000000000000000000000000000000000000000",BIGUINT_LT},
- {"1","100000001",BIGUINT_LT},
- {"100000001","100000001",BIGUINT_EQ},
- {"FFFFFFFFF00000000","FFFFFFFF00000000FFFFFFFF",BIGUINT_LT},
- {"A5A5A5A5A5A5A5A5","5A5A5A5A5A5A5A5A",BIGUINT_GT},
- {"A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5","5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A",BIGUINT_GT},
- {"A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5","5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A",BIGUINT_GT},
+ {STR("0"),STR("0"),BIGUINT_EQ},
+ {STR("0"),STR("1"),BIGUINT_LT},
+ {STR("FFFFFFFF"),STR("FFFFFFFF"),BIGUINT_EQ},
+ {STR("FFFFFFFF"),STR("100000000"),BIGUINT_LT},
+ {STR("0"),STR("100000000"),BIGUINT_LT},
+ {STR("0"),STR("10000000000000000"),BIGUINT_LT},
+ {STR("0"),STR("100000000000000000000000000000000"),BIGUINT_LT},
+ {STR("0"),STR("10000000000000000000000000000000000000000000000000000000000000000"),BIGUINT_LT},
+ {STR("1"),STR("100000001"),BIGUINT_LT},
+ {STR("100000001"),STR("100000001"),BIGUINT_EQ},
+ {STR("FFFFFFFFF00000000"),STR("FFFFFFFF00000000FFFFFFFF"),BIGUINT_LT},
+ {STR("A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A"),BIGUINT_GT},
+ {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A"),BIGUINT_GT},
+ {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A"),BIGUINT_GT},
 };
 int sample_len = sizeof(samples) / sizeof(BigUIntSortRelTestVector);
 
@@ -45,12 +45,12 @@ int test_sortrel0() {
 
  for (int i=0; i<sample_len; ++i) {
   // prepare
-  char *sample_left = samples[i].left;
-  char *sample_right = samples[i].right;
-  if (BIGUINT_BITS / 4 < strlen(sample_left) || BIGUINT_BITS / 4 < strlen(sample_right))
+  const CStr *sample_left = &(samples[i].left);
+  const CStr *sample_right = &(samples[i].right);
+  if (HEX_BIGUINTLEN < sample_left->len || HEX_BIGUINTLEN < sample_right->len)
    continue;
-  BigUInt128 a = biguint128_ctor_hexcstream(sample_left, strlen(sample_left));
-  BigUInt128 b = biguint128_ctor_hexcstream(sample_right, strlen(sample_right));
+  BigUInt128 a = biguint128_ctor_hexcstream(sample_left->str, sample_left->len);
+  BigUInt128 b = biguint128_ctor_hexcstream(sample_right->str, sample_right->len);
 
   // eval
   buint_bool result_lt = biguint128_lt(&a, &b);
@@ -60,19 +60,19 @@ int test_sortrel0() {
 
   // process result
   if (!!result_lt != (samples[i].rel==BIGUINT_LT)) {
-   fprintf(stderr, "[%s < %s] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(samples[i].rel==BIGUINT_LT), bool_to_str(result_lt));
+   fprintf(stderr, "[%s < %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel==BIGUINT_LT), bool_to_str(result_lt));
    fail = 1;
   }
   if (!!result_eq != (samples[i].rel==BIGUINT_EQ)) {
-   fprintf(stderr, "[%s == %s] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(samples[i].rel==BIGUINT_EQ), bool_to_str(result_eq));
+   fprintf(stderr, "[%s == %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel==BIGUINT_EQ), bool_to_str(result_eq));
    fail = 1;
   }
   if (!!result_lt_rev != (samples[i].rel==BIGUINT_GT)) {
-   fprintf(stderr, "[%s < %s] expected: [%s], actual [%s]\n", sample_right, sample_left, bool_to_str(samples[i].rel==BIGUINT_GT), bool_to_str(result_lt));
+   fprintf(stderr, "[%s < %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel==BIGUINT_GT), bool_to_str(result_lt));
    fail = 1;
   }
   if (!!result_eq_rev != (samples[i].rel==BIGUINT_EQ)) {
-   fprintf(stderr, "[%s == %s] expected: [%s], actual [%s]\n", sample_right, sample_left, bool_to_str(samples[i].rel==BIGUINT_EQ), bool_to_str(result_eq));
+   fprintf(stderr, "[%s == %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel==BIGUINT_EQ), bool_to_str(result_eq));
    fail = 1;
   }
   ++run_cnt;
@@ -89,17 +89,17 @@ int test_sortrel1() {
 
  for (int i=0; i<sample_len; ++i) {
   // prepare
-  char *sample_left = samples[i].left;
-  char *sample_right = samples[i].right;
-  if (BIGUINT_BITS / 4 < strlen(sample_left) || BIGUINT_BITS / 4 < strlen(sample_right))
+  const CStr *sample_left = &samples[i].left;
+  const CStr *sample_right = &samples[i].right;
+  if (HEX_BIGUINTLEN < sample_left->len || HEX_BIGUINTLEN < sample_right->len)
    continue;
-  BigUInt128 a = biguint128_ctor_hexcstream(sample_left, strlen(sample_left));
-  BigUInt128 b = biguint128_ctor_hexcstream(sample_right, strlen(sample_right));
+  BigUInt128 a = biguint128_ctor_hexcstream(sample_left->str, sample_left->len);
+  BigUInt128 b = biguint128_ctor_hexcstream(sample_right->str, sample_right->len);
   if (biguint128_gbit(&a, 128 - 1) || biguint128_gbit(&b, 128 - 1))
    continue; // cannot handle signed value
 
-  BigUInt128 a_neg = biguint128_sub(&zero, &a);
-  BigUInt128 b_neg = biguint128_sub(&zero, &b);
+  BigUInt128 a_neg = negate_bigint128(&a);
+  BigUInt128 b_neg = negate_bigint128(&b);
   buint_bool za = biguint128_eq(&a, &zero);
   buint_bool zb = biguint128_eq(&b, &zero);
 
@@ -113,30 +113,30 @@ int test_sortrel1() {
 
   // process result
   if (!result_lt_1 && !(za && zb)) { // a not positive value is less than a not negative value, unless they both are 0
-   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(1), bool_to_str(result_lt_1));
+   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(1), bool_to_str(result_lt_1));
    fail = 1;
   }
   if (result_gt_1) { // a not negative value cannot be less than a not positive value
-   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_right, sample_left, bool_to_str(0), bool_to_str(result_gt_1));
+   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(0), bool_to_str(result_gt_1));
    fail = 1;
   }
 
   if (result_lt_2) { // a not negative value cannot be less than a not positive value
-   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(0), bool_to_str(result_lt_2));
+   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(0), bool_to_str(result_lt_2));
    fail = 1;
   }
   if (!result_gt_2 && !(za && zb)) { // a not positive value is less than a not negative value, unless they both are 0
-   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_right, sample_left, bool_to_str(1), bool_to_str(result_gt_2));
+   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(1), bool_to_str(result_gt_2));
    fail = 1;
   }
 
   // original
   if (!!result_lt_3 != (samples[i].rel==BIGUINT_GT)) { // if a gt b, then neg(a) lt neg(b)
-   fprintf(stderr, "[neg(%s) < neg(%s)] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(samples[i].rel==BIGUINT_LT), bool_to_str(result_lt_3));
+   fprintf(stderr, "[neg(%s) < neg(%s)] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel==BIGUINT_LT), bool_to_str(result_lt_3));
    fail = 1;
   }
   if (!!result_gt_3 != (samples[i].rel==BIGUINT_LT)) { // if a lt b, then neg(a) gt neg(b)
-   fprintf(stderr, "[neg(%s) < neg(%s)] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(samples[i].rel==BIGUINT_GT), bool_to_str(result_gt_3));
+   fprintf(stderr, "[neg(%s) < neg(%s)] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel==BIGUINT_GT), bool_to_str(result_gt_3));
    fail = 1;
   }
   ++run_cnt;

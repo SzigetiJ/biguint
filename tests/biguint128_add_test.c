@@ -1,4 +1,5 @@
 #include "biguint128.h"
+#include "test_common128.h"
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
@@ -6,30 +7,19 @@
 
 #define BIGUINT_BITS 128
 
-#define MAX_STRLEN 255
-
-const char* const hex_samples[][3] = {
- { "0", "1", "1"},
- { "1", "0", "1"},
- { "0", "FFFFFFFF", "FFFFFFFF"},
- { "1", "FFFFFFFF", "100000000"},
- { "FFFFFFFF", "FFFFFFFF", "1FFFFFFFE"},
- { "100000000", "200000001", "300000001"},
- { "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE", "1", "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"},
- { "EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", "1", "F0000000000000000000000000000000"},
- { "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE", "1", "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"},
- { "EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", "1", "F000000000000000000000000000000000000000000000000000000000000000"}
+const CStr hex_samples[][3] = {
+ { STR("0"), STR("1"), STR("1")},
+ { STR("1"), STR("0"), STR("1")},
+ { STR("0"), STR("FFFFFFFF"), STR("FFFFFFFF")},
+ { STR("1"), STR("FFFFFFFF"), STR("100000000")},
+ { STR("FFFFFFFF"), STR("FFFFFFFF"), STR("1FFFFFFFE")},
+ { STR("100000000"), STR("200000001"), STR("300000001")},
+ { STR("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE"), STR("1"), STR("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")},
+ { STR("EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"), STR("1"), STR("F0000000000000000000000000000000")},
+ { STR("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE"), STR("1"), STR("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")},
+ { STR("EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"), STR("1"), STR("F000000000000000000000000000000000000000000000000000000000000000")}
 };
-int hex_sample_len = sizeof(hex_samples) / (sizeof(char*[3]));
-
-bool read_hex_or_fail(const char * const hexstr, BigUInt128 *result) {
-  size_t hexstrlen = strlen(hexstr);
-  if (hexstrlen == 0 || BIGUINT_BITS / 4 < hexstrlen) {
-    return false;
-  }
-  *result = biguint128_ctor_hexcstream(hexstr, hexstrlen);
-  return true;
-}
+int hex_sample_len = sizeof(hex_samples) / (sizeof(hex_samples[0]));
 
 void fprintf_biguint128_binop_testresult(FILE *out, BigUInt128 *op0, BigUInt128 *op1, BigUInt128 *expected, BigUInt128 *actual, const char *op_str) {
    char buffer[4][BIGUINT_BITS / 4 + 1];
@@ -43,30 +33,30 @@ void fprintf_biguint128_binop_testresult(FILE *out, BigUInt128 *op0, BigUInt128 
 int test_addsub0() {
  int fail = 0;
  for (int i=0; i<hex_sample_len; ++i) {
-   BigUInt128 a, b, c;
    BigUInt128 sum, diff;
-   BigUInt128 *value_refs[] = {&a, &b, &c};
-   bool readOk = true;
+   BigUInt128 values[3];
+   BigUInt128 *a=&values[0];
+   BigUInt128 *b=&values[1];
+   BigUInt128 *c=&values[2];
 
-   for (int j = 0; j<3; ++j) {
-     readOk&=read_hex_or_fail(hex_samples[i][j], value_refs[j]);
+   if (!readhex_more_cstr_biguint128(values, hex_samples[i], 3)) {
+    continue;
    }
-   if (!readOk) continue;
 
    // operation
-  sum = biguint128_add(&a, &b);
-  diff = biguint128_sub(&c, &b);
+  sum = biguint128_add(a, b);
+  diff = biguint128_sub(c, b);
 
   // eval sum
-  buint_bool result_sum = biguint128_eq(&c, &sum);
+  buint_bool result_sum = biguint128_eq(c, &sum);
   if (!result_sum) {
-    fprintf_biguint128_binop_testresult(stderr, &a, &b, &c, &sum, "+");
+    fprintf_biguint128_binop_testresult(stderr, a, b, c, &sum, "+");
    fail = 1;
   }
 
-  buint_bool result_diff = biguint128_eq(&a, &diff);
+  buint_bool result_diff = biguint128_eq(a, &diff);
   if (!result_diff) {
-    fprintf_biguint128_binop_testresult(stderr, &a, &b, &c, &sum, "-");
+    fprintf_biguint128_binop_testresult(stderr, a, b, c, &sum, "-");
    fail = 1;
   }
  }
@@ -77,23 +67,24 @@ int test_addsub0() {
 int test_addsub1() {
  int fail = 0;
  for (int i=0; i<hex_sample_len; ++i) {
-   BigUInt128 a_orig, a, b, c;
-   BigUInt128 *value_refs[] = {&a, &b, &c};
-   bool readOk = true;
+   BigUInt128 values[3];
+   BigUInt128 *a=&values[0];
+   BigUInt128 *b=&values[1];
+   BigUInt128 *c=&values[2];
+   BigUInt128 a_orig;
 
-   for (int j = 0; j<3; ++j) {
-     readOk&=read_hex_or_fail(hex_samples[i][j], value_refs[j]);
+   if (!readhex_more_cstr_biguint128(values, hex_samples[i], 3)) {
+    continue;
    }
-   a_orig=a;
-   if (!readOk) continue;
+   a_orig=*a;
 
    // operation
-  biguint128_add_assign(&a, &b);
+  biguint128_add_assign(a, b);
 
   // eval sum
-  buint_bool result_sum = biguint128_eq(&c, &a);
+  buint_bool result_sum = biguint128_eq(c, a);
   if (!result_sum) {
-    fprintf_biguint128_binop_testresult(stderr, &a_orig, &b, &c, &a, "+=");
+    fprintf_biguint128_binop_testresult(stderr, &a_orig, b, c, a, "+=");
    fail = 1;
   }
 
