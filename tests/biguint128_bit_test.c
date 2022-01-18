@@ -130,7 +130,7 @@ bool test_set_get0() {
   bool invert_expected[]={(i==0),false,(i==BIGUINT_BITS-1)};
 
   for (int j = 0; j < 3; ++j) {
-   int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
+   unsigned int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
    if ((pre_expected[j]!=invert_expected[j]) != pre_change[j]) {
     char buffer[BIGUINT_BITS / 4 + 1];
     buffer[biguint128_print_hex(&pre_value, buffer, sizeof(buffer)/sizeof(char)-1)]=0;
@@ -186,7 +186,7 @@ bool test_clr_get0() {
   bool invert_expected[]={(i==0),false,(i==BIGUINT_BITS-1)};
 
   for (int j = 0; j < 3; ++j) {
-   int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
+   unsigned int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
    if ((pre_expected[j]!=invert_expected[j]) != pre_change[j]) {
     char buffer[BIGUINT_BITS / 4 + 1];
     buffer[biguint128_print_hex(&pre_value, buffer, sizeof(buffer)/sizeof(char)-1)]=0;

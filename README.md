@@ -44,7 +44,6 @@ Next, run `autoconf`.
 
 Finally, run `automake --add-missing`.
 
-
 ```sh
 aclocal
 autoconf
@@ -117,7 +116,6 @@ int main() {
  // now res_str contains the sum of a and b in decimal format.
 }
 ```
-
 
 ## Examples
 
