@@ -27,6 +27,7 @@
 #define FOREACHCELL(i) for (buint_size_t i=0u; i<BIGUINT128_CELLS; ++i)
 #define UINT_BYTES sizeof(UInt)
 #define UINT_BITS (8 * UINT_BYTES)
+#define MINUS_SIGN '-'
 
 // Assertions
 // SIZEOF_UINT checked by configure script
@@ -36,6 +37,7 @@
 
 // static function declarations
 static inline buint_size_p bitpos_(buint_size_t a);
+static inline buint_bool is_bigint_negative_(BigUInt128 *a);
 static inline BigUInt128 *clrall_(BigUInt128 *a);
 
 static inline BigUIntPair128 d1024_(const BigUInt128 *a);
@@ -51,6 +53,15 @@ static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *bu
  */
 static inline buint_size_p bitpos_(buint_size_t a) {
  return (buint_size_p){a/UINT_BITS,a%UINT_BITS};
+}
+
+/**
+ * Is the signed value than 0?
+ * @param a Subject of check.
+ * @return a is less than 0 (sign bit set).
+ */
+static inline buint_bool is_bigint_negative_(BigUInt128 *a) {
+ return biguint128_gbit(a, 128u - 1u);
 }
 
 /**
@@ -183,6 +194,15 @@ BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len) 
  return retv;
 }
 
+BigUInt128 bigint128_ctor_deccstream(const char *dec_digits, buint_size_t len) {
+ if (len && dec_digits[0] == MINUS_SIGN) {
+  BigUInt128 zero = biguint128_ctor_default();
+  BigUInt128 val = biguint128_ctor_deccstream(dec_digits+1, len-1);
+  return biguint128_sub(&zero, &val);
+ } else {
+  return biguint128_ctor_deccstream(dec_digits, len);
+ }
+}
 
 BigUInt128 biguint128_value_of_uint(UInt value) {
  BigUInt128 retv = biguint128_ctor_default();
@@ -412,6 +432,14 @@ buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
  return 0;
 }
 
+buint_bool bigint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
+ buint_bool neg_a = is_bigint_negative_(a);
+ buint_bool neg_b = is_bigint_negative_(b);
+ return (neg_a == neg_b) ?
+  biguint128_lt(a,b): // compare them in the usual way
+  neg_a; // if only one of them is negative, a must be negative to be lower than b.
+}
+
 buint_bool biguint128_eq(const BigUInt128 *a, const BigUInt128 *b) {
  FOREACHCELL(i) {
   if (a->dat[i]!=b->dat[i]) return 0;
@@ -515,6 +543,23 @@ buint_size_t biguint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t b
   buf[i] = buf[offset + i];
  }
  return size;
+}
+
+buint_size_t bigint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t buf_len) {
+ buint_size_t retv=0;
+
+ if (is_bigint_negative_(a)) {
+  BigUInt128 zero = biguint128_ctor_default();
+  BigUInt128 val = biguint128_sub(&zero,a);
+
+  if (buf_len) {
+   buf[0] = MINUS_SIGN;
+   retv = 1 + biguint128_print_dec(&val, buf+1, buf_len-1);
+  }
+ } else {
+  retv = biguint128_print_dec(a, buf, buf_len);
+ }
+ return retv;
 }
 
 buint_size_t biguint128_export(const BigUInt128 *a, char *dest) {

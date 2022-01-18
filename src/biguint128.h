@@ -83,6 +83,13 @@ BigUInt128 biguint128_ctor_hexcstream(const char *hex_digits, buint_size_t len);
 BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len);
 
 /**
+ @brief Signed value initialization from char array with decimal digits.
+ @param dec_digits Input character array.
+ @param len Length of the input array.
+*/
+BigUInt128 bigint128_ctor_deccstream(const char *dec_digits, buint_size_t len);
+
+/**
  * @brief Import from byte array.
  * Overwrites the existing BigUInt128 instance.
  * @return Number of read bytes.
@@ -170,6 +177,13 @@ BigUIntPair128 biguint128_div(const BigUInt128 *a, const BigUInt128 *b);
  @return Not zero: a is less than b. Zero: a is not less than b.
 */
 buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b);
+
+/**
+ @brief 'Less than' relation between signed values.
+ @return Not zero: a is less than b. Zero: a is not less than b.
+*/
+buint_bool bigint128_lt(const BigUInt128 *a, const BigUInt128 *b);
+
 /**
  @brief Checks equality.
  @return Not zero: a is equal to b. Zero: a is not equal to b.
@@ -233,6 +247,18 @@ buint_size_t biguint128_print_hex(const BigUInt128 *a, char *buf, buint_size_t b
  @return Length of the written characters. Zero: buf_len is to small to store the value.
 */
 buint_size_t biguint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t buf_len);
+
+/**
+ @brief Export the value treated as signed in character array format, base 10.
+ The method does not write terminating 0 character.
+ However, the method returns where the exported data terminates
+ (where to put terminating 0 if the caller wants to treat to character array as a C-string).
+ @param a Pointer to the value to export.
+ @param buf Target of the export.
+ @param buf_len Length of the target buffer.
+ @return Length of the written characters. Zero: buf_len is to small to store the value.
+*/
+buint_size_t bigint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t buf_len);
 
 /**
  @brief Exports data into byte array.
