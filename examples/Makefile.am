@@ -6,7 +6,7 @@ bin_PROGRAMS = powers10001 powers3 fibratio \
  factorial384 \
  factorial512
 
-AM_CFLAGS = -I${top_srcdir}/src -I../src
+AM_CPPFLAGS = -I${top_srcdir}/src -I../src
 LDADD = ../src/libbiguint.a
 
 CLEANFILES = \
@@ -14,10 +14,7 @@ CLEANFILES = \
 	factorial384.c \
 	factorial512.c
 
-BUILT_SOURCES = \
-	factorial256.c \
-	factorial384.c \
-	factorial512.c
+BUILT_SOURCES = $(CLEANFILES)
 
 factorial256.c: factorial128.c
 	$(SED) 's/128/256/g' < $< > $@
