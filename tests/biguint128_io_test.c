@@ -93,11 +93,62 @@ bool test_io_dec0() {
  return !fail;
 }
 
+// print signed value, check string
+// next, read that string and check value
+// depends on biguint128_sub
+bool test_io_dec1() {
+ bool fail = false;
+ char buffer[(BIGUINT_BITS / 10 + 1) * 3 + 3];
+ char sgnsample[(BIGUINT_BITS / 10 + 1) * 3 + 3];
+ BigUInt128 zero = biguint128_ctor_default();
+
+ for (int i=0; i<dec_sample_len; ++i) {
+  const char* const sample = dec_samples[i];
+  if (((BIGUINT_BITS / 10 + 1) * 3 + 1) < strlen(sample))
+   continue;
+  if (strcmp(sample,"0")==0) { // zero won't get sign if negated
+   strcpy(sgnsample,sample);
+  } else {
+   sgnsample[0]='-';
+   strcpy(sgnsample+1,sample);
+  }
+  BigUInt128 a = biguint128_ctor_deccstream(sample, strlen(sample));
+  if (biguint128_gbit(&a,128 - 1)) { // if MSB is set, value is OOR for bigint
+   continue;
+  }
+  // here we introduce dependency on biguint128_sub
+  BigUInt128 minus_a = biguint128_sub(&zero,&a);
+
+  // note: prefix of print is bigint128_
+  buint_size_t len = bigint128_print_dec(&minus_a, buffer, sizeof(buffer) / sizeof(char)-1);
+  buffer[len]=0;
+
+  // note: prefix of ctor is bigint128_
+  BigUInt128 reminus_a = bigint128_ctor_deccstream(buffer, strlen(buffer));
+
+  int result = strcmp(sgnsample, buffer);
+  buint_bool re_result = biguint128_eq(&minus_a, &reminus_a);
+  if (result!=0) {
+   fprintf(stderr, "Print failed. Expected: [%s], actual [%s]\n", sgnsample, buffer);
+   fail = true;
+  }
+  if (!re_result) {
+   // here we depend on bigint128_print_dec..
+   buint_size_t len = bigint128_print_dec(&reminus_a, buffer, sizeof(buffer) / sizeof(char)-1);
+   buffer[len]=0;
+   fprintf(stderr, "Read failed. Expected: [%s], actual [%s]\n", sgnsample, buffer);
+   fail = true;
+  }
+ }
+ return !fail;
+}
+
 int main(int argc, char **argv) {
 
  assert(test_io_hex0());
  assert(test_io_hex1());
  assert(test_io_dec0());
+ assert(test_io_dec1());
 
  return 0;
 }
