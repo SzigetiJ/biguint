@@ -113,20 +113,20 @@ int test_sortrel1() {
 
   // process result
   if (!result_lt_1 && !(za && zb)) { // a not positive value is less than a not negative value, unless they both are 0
-   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(true), bool_to_str(result_lt_1));
+   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(1), bool_to_str(result_lt_1));
    fail = 1;
   }
   if (result_gt_1) { // a not negative value cannot be less than a not positive value
-   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_right, sample_left, bool_to_str(false), bool_to_str(result_gt_1));
+   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_right, sample_left, bool_to_str(0), bool_to_str(result_gt_1));
    fail = 1;
   }
 
   if (result_lt_2) { // a not negative value cannot be less than a not positive value
-   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(false), bool_to_str(result_lt_2));
+   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_left, sample_right, bool_to_str(0), bool_to_str(result_lt_2));
    fail = 1;
   }
   if (!result_gt_2 && !(za && zb)) { // a not positive value is less than a not negative value, unless they both are 0
-   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_right, sample_left, bool_to_str(true), bool_to_str(result_gt_2));
+   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_right, sample_left, bool_to_str(1), bool_to_str(result_gt_2));
    fail = 1;
   }
 
