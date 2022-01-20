@@ -221,7 +221,7 @@ void biguint128_obit(BigUInt128 *a, buint_size_t bit, buint_bool value);
  @param a (Pointer to) the value to operate on.
  @param bit Index of the bit.
 */
-buint_bool biguint128_gbit(BigUInt128 *a, buint_size_t bit);
+buint_bool biguint128_gbit(const BigUInt128 *a, buint_size_t bit);
 
 // out
 /**
@@ -231,7 +231,7 @@ buint_bool biguint128_gbit(BigUInt128 *a, buint_size_t bit);
  However, the method returns where the exported data terminates
  (where to put terminating 0 if the caller wants to treat to character array as a C-string).
  @param a Pointer to the value to export.
- @param buf Target of the export. 
+ @param buf Target of the export.
  @param buf_len Length of the target buffer.
  @return Length of the written characters. Zero: buf_len is to small to store the value.
 */
@@ -242,7 +242,7 @@ buint_size_t biguint128_print_hex(const BigUInt128 *a, char *buf, buint_size_t b
  However, the method returns where the exported data terminates
  (where to put terminating 0 if the caller wants to treat to character array as a C-string).
  @param a Pointer to the value to export.
- @param buf Target of the export. 
+ @param buf Target of the export.
  @param buf_len Length of the target buffer.
  @return Length of the written characters. Zero: buf_len is to small to store the value.
 */

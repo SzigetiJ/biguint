@@ -37,7 +37,7 @@
 
 // static function declarations
 static inline buint_size_p bitpos_(buint_size_t a);
-static inline buint_bool is_bigint_negative_(BigUInt128 *a);
+static inline buint_bool is_bigint_negative_(const BigUInt128 *a);
 static inline BigUInt128 *clrall_(BigUInt128 *a);
 
 static inline BigUIntPair128 d1024_(const BigUInt128 *a);
@@ -60,7 +60,7 @@ static inline buint_size_p bitpos_(buint_size_t a) {
  * @param a Subject of check.
  * @return a is less than 0 (sign bit set).
  */
-static inline buint_bool is_bigint_negative_(BigUInt128 *a) {
+static inline buint_bool is_bigint_negative_(const BigUInt128 *a) {
  return biguint128_gbit(a, 128u - 1u);
 }
 
@@ -82,7 +82,7 @@ static inline BigUInt128 *clrall_(BigUInt128 *a) {
  * @return Pair of quotient and remainder.
  */
 static inline BigUIntPair128 d1024_(const BigUInt128 *a) {
- static const BigUInt128 x1023={0x3FF};
+ static const BigUInt128 x1023={{0x3FF}};
 
  BigUIntPair128 retv;
  retv.first= biguint128_shr(a, 10);
@@ -113,9 +113,9 @@ static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
  // and reduce retv.second iteratively until it gets small enough.
  // In phase #2 we just subtract 1000 from the remainder if it is still too high.
  // Well, the while loop is an overkill for this limit (2000).
- static const BigUInt128 x1={1};
- static const BigUInt128 x1000={0x3E8};
- static const BigUInt128 x2000={0x7D0};
+ static const BigUInt128 x1={{1}};
+ static const BigUInt128 x1000={{0x3E8}};
+ static const BigUInt128 x2000={{0x7D0}};
 
  BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
  // Phase 1:
@@ -296,7 +296,7 @@ BigUInt128 *biguint128_shl_or(BigUInt128 *dest, const BigUInt128 *a, const buint
   if (i < BIGUINT128_CELLS - shift_p.byte_sel) {
    dest->dat[i + shift_p.byte_sel]|= x.second << shift_p.bit_sel;
    if (i < BIGUINT128_CELLS - shift_p.byte_sel - 1) {
-    dest->dat[i + shift_p.byte_sel + 1]|= x.first >> UINT_BITS - shift_p.bit_sel;
+    dest->dat[i + shift_p.byte_sel + 1]|= x.first >> (UINT_BITS - shift_p.bit_sel);
    }
   }
  }
@@ -312,7 +312,7 @@ BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift) {
   if (shift_p.byte_sel <= i) {
    retv.dat[i - shift_p.byte_sel]|= x.first >> shift_p.bit_sel;
    if (shift_p.byte_sel + 1 <= i) {
-    retv.dat[i - shift_p.byte_sel - 1]|= x.second << UINT_BITS - shift_p.bit_sel;
+    retv.dat[i - shift_p.byte_sel - 1]|= x.second << (UINT_BITS - shift_p.bit_sel);
    }
   }
  }
@@ -476,7 +476,7 @@ void biguint128_obit(BigUInt128 *a, buint_size_t bit, buint_bool value) {
   biguint128_sbit(a,bit):
   biguint128_cbit(a,bit);
 }
-buint_bool biguint128_gbit(BigUInt128 *a, buint_size_t bit) {
+buint_bool biguint128_gbit(const BigUInt128 *a, buint_size_t bit) {
  buint_size_p bit_p = bitpos_(bit);
  return 0 < (a->dat[bit_p.byte_sel] & (1<<bit_p.bit_sel));
 }
