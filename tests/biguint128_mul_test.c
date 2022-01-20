@@ -160,6 +160,43 @@ bool test_div0() {
  return !fail;
 }
 
+// if (a lt b) then div(a,b)=(0,a)
+bool test_div1() {
+ bool fail = false;
+ BigUInt128 zero = biguint128_ctor_default();
+ for (int i=0; i<hex_sample_len; ++i) {
+  BigUInt128 val[3];
+  BigUInt128 *a=&val[0];
+  BigUInt128 *b=&val[2];
+  if (!readhex_more_cstr_biguint128(val, hex_samples[i],3)) {
+   continue;
+  }
+  if (biguint128_eq(a, &zero)) {
+   continue;
+  }
+  if (!biguint128_lt(a, b)) {
+   continue;
+  }
+
+  BigUIntPair128 div_a_b = biguint128_div(a,b);
+  buint_bool res_div = biguint128_eq(&div_a_b.first,&zero);
+  buint_bool res_mod = biguint128_eq(&div_a_b.second,a);
+
+  if (!res_div || !res_mod) {
+   char buffer[6][HEX_BIGUINTLEN + 1];
+   buffer[0][biguint128_print_hex(a, buffer[0], HEX_BIGUINTLEN)]=0;
+   buffer[1][biguint128_print_hex(b, buffer[1], HEX_BIGUINTLEN)]=0;
+   buffer[2][biguint128_print_hex(&zero, buffer[2], HEX_BIGUINTLEN)]=0;
+   buffer[3][biguint128_print_hex(a, buffer[3], HEX_BIGUINTLEN)]=0;
+   buffer[4][biguint128_print_hex(&div_a_b.first, buffer[4], HEX_BIGUINTLEN)]=0;
+   buffer[5][biguint128_print_hex(&div_a_b.second, buffer[5], HEX_BIGUINTLEN)]=0;
+   fprintf(stderr, "[%s / %s] -- expected: [%s,%s], actual [%s,%s]\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
+   fail = true;
+  }
+ }
+
+ return !fail;
+}
 
 int main(int argc, char **argv) {
 
@@ -168,6 +205,7 @@ int main(int argc, char **argv) {
  assert(test_mul2());
 
  assert(test_div0());
+ assert(test_div1());
 
  return 0;
 }
