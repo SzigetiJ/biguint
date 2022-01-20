@@ -274,6 +274,22 @@ void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
 // END SUB   //
 ///////////////
 
+BigUInt128 *biguint128_inc(BigUInt128 *a) {
+ buint_bool carry= 1u;
+ for (buint_size_t i= 0u; carry && i<BIGUINT128_CELLS; ++i) {
+  a->dat[i]= uint_add(a->dat[i], 0u, &carry);
+ }
+ return a;
+}
+
+BigUInt128 *biguint128_dec(BigUInt128 *a) {
+ buint_bool carry= 1u;
+ for (buint_size_t i= 0u; carry && i<BIGUINT128_CELLS; ++i) {
+  a->dat[i]= uint_sub(a->dat[i], 0u, &carry);
+ }
+ return a;
+}
+
 
 BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();
