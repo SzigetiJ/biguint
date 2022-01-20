@@ -128,6 +128,11 @@ BigUInt128 *biguint128_sub_assign(BigUInt128 *a, const BigUInt128 *b);
  */
 void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b);
 
+// inc/dec
+BigUInt128 *biguint128_inc(BigUInt128 *a);
+
+BigUInt128 *biguint128_dec(BigUInt128 *a);
+
 
 // shift operations
 /**
