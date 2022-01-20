@@ -63,7 +63,7 @@ void set_hexdigit(char *a, unsigned char value) {
  *a = value < OFFSET_ALPHA?
   (CHR_NUM_FIRST + value):
   (CHR_ALPHA_FIRST_UC + value - OFFSET_ALPHA);
-};
+}
 
 void set_hexbyte(char *a, unsigned char value) {
  set_hexdigit(a,value>>4);

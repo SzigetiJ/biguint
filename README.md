@@ -2,7 +2,7 @@
 
 ![GitHub](https://img.shields.io/github/license/SzigetiJ/biguint)
 ![C/C++ CI](https://github.com/SzigetiJ/biguint/workflows/C/C++%20CI/badge.svg)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0aed3d8a24aa41f6b622a85a170b1823)](https://app.codacy.com/manual/SzigetiJ/biguint?utm_source=github.com&utm_medium=referral&utm_content=SzigetiJ/biguint&utm_campaign=Badge_Grade_Dashboard)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0aed3d8a24aa41f6b622a85a170b1823)](https://app.codacy.com/gh/SzigetiJ/biguint/dashboard)
 [![codecov](https://codecov.io/gh/SzigetiJ/biguint/branch/master/graph/badge.svg)](https://codecov.io/gh/SzigetiJ/biguint)
 
 C library providing fixed length unsigned integer types longer than 64 bits.
@@ -17,7 +17,7 @@ Currently libbiguint provides the following types:
 * `BigUInt<number>` (1024 or even more bits)
 
 All the provided types are accompanied by the following functions:
-* addition and subtraction (add, sub);
+* addition and subtraction (add, sub, inc, dec);
 * multiplication and division (mul, div/mod);
 * bit shift operations (shl, shr);
 * bitwise operations (and, or, xor, not);
