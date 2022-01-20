@@ -80,7 +80,7 @@ bool test_uint_sub() {
 
 bool test_uint_mul() {
  const UInt MAX = -1;
- const UInt SPEC_0 = (1<<sizeof(UInt)*4+1)-1;
+ const UInt SPEC_0 = (1<<(sizeof(UInt)*4+1))-1;
  const UInt SPEC_1 = MAX;
  UInt samples_a[] = {
   0,1,2,SPEC_0,SPEC_1
@@ -152,7 +152,7 @@ bool test_uint_spsh32() {
 
    if (!(spsh_actual.first==spsh_expect.first
            && spsh_actual.second==spsh_expect.second)) {
-    fprintf(stderr, "%s: uint_split_shift(%08X,%zu) return value expected: [%08X,%08X] actual: [%08X,%08X]\n",
+    fprintf(stderr, "%s: uint_split_shift(%08X,%" PRIbuint_size_t ") return value expected: [%08X,%08X] actual: [%08X,%08X]\n",
      __func__, samples_a[a_i], samples_lsb[lsb_i],
             spsh_expect.first, spsh_expect.second,
             spsh_actual.first, spsh_actual.second);
@@ -164,7 +164,7 @@ bool test_uint_spsh32() {
 
    if (!(splt_actual.first==splt_expect.first
            && splt_actual.second==splt_expect.second)) {
-    fprintf(stderr, "%s: uint_split(%08X,%zu) return value expected: [%08X,%08X] actual: [%08X,%08X]\n",
+    fprintf(stderr, "%s: uint_split(%08X,%" PRIbuint_size_t ") return value expected: [%08X,%08X] actual: [%08X,%08X]\n",
      __func__, samples_a[a_i], samples_lsb[lsb_i],
             splt_expect.first, splt_expect.second,
             splt_actual.first, splt_actual.second);

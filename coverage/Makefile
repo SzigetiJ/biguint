@@ -49,6 +49,7 @@ biguint128_io_test: test_common.o test_common128.o
 biguint128_eq_test: test_common.o test_common128.o
 biguint128_mul_test: test_common.o test_common128.o
 biguint128_add_test: test_common.o test_common128.o
+biguint128_bit_test: test_common.o test_common128.o
 
 %_test: %_test.o $(LIB_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
