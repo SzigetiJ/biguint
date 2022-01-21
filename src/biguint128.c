@@ -238,10 +238,22 @@ BigUInt128 *biguint128_add_assign(BigUInt128 *a, const BigUInt128 *b) {
  */
 void biguint128_add_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b) {
  buint_bool carry = 0;
+ biguint128_adc_replace(dest, a, b, &carry);
+}
+
+/**
+ * Adds *a *b and *carry, and stores the result in *dest and *carry.
+ * @param dest
+ * @param a
+ * @param b
+ * @param carry input/output overflow.
+ */
+void biguint128_adc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *carry) {
  FOREACHCELL(i) {
-  dest->dat[i] = uint_add(a->dat[i], b->dat[i], &carry);
+  dest->dat[i] = uint_add(a->dat[i], b->dat[i], carry);
  }
 }
+
 // END ADD   //
 ///////////////
 
@@ -267,10 +279,22 @@ BigUInt128 *biguint128_sub_assign(BigUInt128 *a, const BigUInt128 *b) {
  */
 void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b) {
  buint_bool carry = 0;
+ biguint128_sbc_replace(dest, a, b, &carry);
+}
+
+/**
+ * Subtracts *b and *carry from *a, and stores the result in *dest and *carry.
+ * @param dest
+ * @param a
+ * @param b
+ * @param carry input/output underflow.
+ */
+void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *carry) {
  FOREACHCELL(i) {
-  dest->dat[i] = uint_sub(a->dat[i], b->dat[i], &carry);
+  dest->dat[i] = uint_sub(a->dat[i], b->dat[i], carry);
  }
 }
+
 // END SUB   //
 ///////////////
 
@@ -413,6 +437,34 @@ BigUInt128 biguint128_mul(const BigUInt128 *a, const BigUInt128 *b) {
  }
  BigUInt128 rx = biguint128_add(&retv, &carry);
  return rx;
+}
+
+BigUIntPair128 biguint128_dmul(const BigUInt128 *a, const BigUInt128 *b) {
+ BigUIntPair128 result= {biguint128_ctor_default(), biguint128_ctor_default()};
+ BigUIntPair128 carry= {biguint128_ctor_default(), biguint128_ctor_default()};
+ UInt *res=result.first.dat;
+ UInt *crr=carry.first.dat;
+
+ FOREACHCELL(i) { // iterate over a
+  FOREACHCELL(j) { // iterate over b
+   buint_size_t k = i + j;
+
+   UIntPair kmul = uint_mul(a->dat[i], b->dat[j]);
+   buint_bool cx0 = 0;
+   buint_bool cx1 = 0;
+   res[k] = uint_add(res[k], kmul.second, &cx0);
+   if (k + 1 < 2 * BIGUINT128_CELLS) {
+    res[k+1]=uint_add(res[k+1],kmul.first, &cx0);
+    if (cx0 && k + 2 < 2 * BIGUINT128_CELLS) { // highest cell will not overflow, still we check for OOR error.
+     ++crr[k + 2];
+    }
+   }
+  }
+ }
+ buint_bool cx=0;
+ biguint128_adc_replace(&result.first, &result.first, &carry.first, &cx);
+ biguint128_adc_replace(&result.second, &result.second, &carry.second, &cx);
+ return result;
 }
 
 BigUIntPair128 biguint128_div(const BigUInt128 *a, const BigUInt128 *b) {

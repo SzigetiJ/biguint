@@ -105,6 +105,56 @@ bool test_mul2() {
  return !fail;
 }
 
+bool test_dmul0() {
+ bool fail = false;
+ BigUInt128 zero = biguint128_ctor_default();
+ BigUInt128 one = biguint128_ctor_unit();
+ BigUInt128 max= biguint128_sub(&zero, &one);
+ BigUInt128 maxbutone= biguint128_sub(&max, &one);
+ BigUInt128 two= biguint128_add(&one, &one);
+
+ BigUIntPair128 result = biguint128_dmul(&two, &max);
+ if (!biguint128_eq(&result.first, &maxbutone)
+         || !biguint128_eq(&result.second, &one)) {
+  char buffer[6][HEX_BIGUINTLEN + 1];
+  buffer[0][biguint128_print_hex(&two, buffer[0], HEX_BIGUINTLEN)] = 0;
+  buffer[1][biguint128_print_hex(&max, buffer[1], HEX_BIGUINTLEN)] = 0;
+  buffer[2][biguint128_print_hex(&one, buffer[2], HEX_BIGUINTLEN)] = 0;
+  buffer[3][biguint128_print_hex(&maxbutone, buffer[3], HEX_BIGUINTLEN)] = 0;
+  buffer[2][biguint128_print_hex(&result.second, buffer[4], HEX_BIGUINTLEN)] = 0;
+  buffer[3][biguint128_print_hex(&result.first, buffer[5], HEX_BIGUINTLEN)] = 0;
+  fprintf(stderr, "[%s * %s] -- expected: [%s%s], actual [%s%s]\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
+  fail = true;
+ }
+
+ return !fail;
+}
+
+bool test_dmul1() {
+ bool fail = false;
+ BigUInt128 zero = biguint128_ctor_default();
+ BigUInt128 one = biguint128_ctor_unit();
+ BigUInt128 max= biguint128_sub(&zero, &one);
+ BigUInt128 maxbutone= biguint128_sub(&max, &one);
+ BigUInt128 two= biguint128_add(&one, &one);
+
+ BigUIntPair128 result = biguint128_dmul(&max, &max); // see: 9 * 9 = 81; 99 * 99 = 9801
+ if (!biguint128_eq(&result.second, &maxbutone)
+         || !biguint128_eq(&result.first, &one)) {
+  char buffer[6][HEX_BIGUINTLEN + 1];
+  buffer[0][biguint128_print_hex(&two, buffer[0], HEX_BIGUINTLEN)] = 0;
+  buffer[1][biguint128_print_hex(&max, buffer[1], HEX_BIGUINTLEN)] = 0;
+  buffer[2][biguint128_print_hex(&one, buffer[2], HEX_BIGUINTLEN)] = 0;
+  buffer[3][biguint128_print_hex(&maxbutone, buffer[3], HEX_BIGUINTLEN)] = 0;
+  buffer[2][biguint128_print_hex(&result.second, buffer[4], HEX_BIGUINTLEN)] = 0;
+  buffer[3][biguint128_print_hex(&result.first, buffer[5], HEX_BIGUINTLEN)] = 0;
+  fprintf(stderr, "[%s * %s] -- expected: [%s%s], actual [%s%s]\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5]);
+  fail = true;
+ }
+
+ return !fail;
+}
+
 bool test_div0() {
  bool fail = false;
  BigUInt128 zero = biguint128_ctor_default();
@@ -203,6 +253,9 @@ int main(int argc, char **argv) {
  assert(test_mul0());
  assert(test_mul1());
  assert(test_mul2());
+
+ assert(test_dmul0());
+ assert(test_dmul1());
 
  assert(test_div0());
  assert(test_div1());
