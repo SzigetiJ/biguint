@@ -451,7 +451,6 @@ BigUIntPair128 biguint128_dmul(const BigUInt128 *a, const BigUInt128 *b) {
 
    UIntPair kmul = uint_mul(a->dat[i], b->dat[j]);
    buint_bool cx0 = 0;
-   buint_bool cx1 = 0;
    res[k] = uint_add(res[k], kmul.second, &cx0);
    if (k + 1 < 2 * BIGUINT128_CELLS) {
     res[k+1]=uint_add(res[k+1],kmul.first, &cx0);

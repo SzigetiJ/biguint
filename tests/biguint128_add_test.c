@@ -119,14 +119,14 @@ bool test_adcsbc0() {
  biguint128_adc_replace(&res_adc, &max, &one, &ca);
  if (!biguint128_eq(&zero, &res_adc) || ca!=1) {
   fprintf_biguint128_binop_testresult(stderr, &max, &one, &zero, &res_adc, "+'");
-  fprintf(stderr,"carry expected: %u, actual: %u\n",1,ca);
+  fprintf(stderr,"carry expected: %u, actual: %u\n",1u,ca);
   fail = 1;
  }
 
  biguint128_sbc_replace(&res_sbc, &zero, &one, &cs);
  if (!biguint128_eq(&max, &res_sbc) || cs!=1) {
   fprintf_biguint128_binop_testresult(stderr, &zero, &one, &max, &res_sbc, "-'");
-  fprintf(stderr,"carry expected: %u, actual: %u\n",1,cs);
+  fprintf(stderr,"carry expected: %u, actual: %u\n",1u,cs);
   fail = 1;
  }
 
@@ -148,14 +148,14 @@ bool test_adcsbc1() {
  biguint128_adc_replace(&res_adc, &max, &zero, &ca);
  if (!biguint128_eq(&zero, &res_adc) || ca!=1) {
   fprintf_biguint128_binop_testresult(stderr, &max, &one, &zero, &res_adc, "+'");
-  fprintf(stderr,"carry expected: %u, actual: %u\n",1,ca);
+  fprintf(stderr,"carry expected: %u, actual: %u\n",1u,ca);
   fail = 1;
  }
 
  biguint128_sbc_replace(&res_sbc, &zero, &zero, &cs);
  if (!biguint128_eq(&max, &res_sbc) || cs!=1) {
   fprintf_biguint128_binop_testresult(stderr, &zero, &one, &max, &res_sbc, "-'");
-  fprintf(stderr,"carry expected: %u, actual: %u\n",1,cs);
+  fprintf(stderr,"carry expected: %u, actual: %u\n",1u,cs);
   fail = 1;
  }
 
