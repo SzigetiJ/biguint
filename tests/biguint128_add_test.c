@@ -103,6 +103,65 @@ int test_addsub1() {
  return fail;
 }
 
+bool test_adcsbc0() {
+ bool fail=false;
+
+ BigUInt128 zero= biguint128_ctor_default();
+ BigUInt128 one= biguint128_ctor_unit();
+ BigUInt128 max= biguint128_sub(&zero, &one);
+
+ buint_bool ca=0;
+ buint_bool cs=0;
+
+ BigUInt128 res_adc;
+ BigUInt128 res_sbc;
+
+ biguint128_adc_replace(&res_adc, &max, &one, &ca);
+ if (!biguint128_eq(&zero, &res_adc) || ca!=1) {
+  fprintf_biguint128_binop_testresult(stderr, &max, &one, &zero, &res_adc, "+'");
+  fprintf(stderr,"carry expected: %u, actual: %u\n",1,ca);
+  fail = 1;
+ }
+
+ biguint128_sbc_replace(&res_sbc, &zero, &one, &cs);
+ if (!biguint128_eq(&max, &res_sbc) || cs!=1) {
+  fprintf_biguint128_binop_testresult(stderr, &zero, &one, &max, &res_sbc, "-'");
+  fprintf(stderr,"carry expected: %u, actual: %u\n",1,cs);
+  fail = 1;
+ }
+
+ return fail;
+}
+
+bool test_adcsbc1() {
+ bool fail=false;
+ BigUInt128 zero= biguint128_ctor_default();
+ BigUInt128 one= biguint128_ctor_unit();
+ BigUInt128 max= biguint128_sub(&zero, &one);
+
+ buint_bool ca=1;
+ buint_bool cs=1;
+
+ BigUInt128 res_adc;
+ BigUInt128 res_sbc;
+
+ biguint128_adc_replace(&res_adc, &max, &zero, &ca);
+ if (!biguint128_eq(&zero, &res_adc) || ca!=1) {
+  fprintf_biguint128_binop_testresult(stderr, &max, &one, &zero, &res_adc, "+'");
+  fprintf(stderr,"carry expected: %u, actual: %u\n",1,ca);
+  fail = 1;
+ }
+
+ biguint128_sbc_replace(&res_sbc, &zero, &zero, &cs);
+ if (!biguint128_eq(&max, &res_sbc) || cs!=1) {
+  fprintf_biguint128_binop_testresult(stderr, &zero, &one, &max, &res_sbc, "-'");
+  fprintf(stderr,"carry expected: %u, actual: %u\n",1,cs);
+  fail = 1;
+ }
+
+ return fail;
+}
+
 bool test_incdec0() {
  bool fail=false;
  // interval borders
@@ -142,6 +201,9 @@ int main(int argc, char **argv) {
 
  assert(test_addsub0() == 0);
  assert(test_addsub1() == 0);
+
+ assert(test_adcsbc0() == 0);
+ assert(test_adcsbc1() == 0);
 
  assert(test_incdec0() == 0);
  return 0;

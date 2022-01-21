@@ -114,6 +114,11 @@ BigUInt128 *biguint128_add_assign(BigUInt128 *a, const BigUInt128 *b);
 void biguint128_add_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b);
 
 /**
+ @brief Add-replacement with in/out carry bit.
+ */
+void biguint128_adc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *carry);
+
+/**
  @brief Subtraction with underflow.
 */
 BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b);
@@ -124,9 +129,14 @@ BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b);
 BigUInt128 *biguint128_sub_assign(BigUInt128 *a, const BigUInt128 *b);
 
 /**
- @brief Sub-replacement with overflow.
+ @brief Sub-replacement with underflow.
  */
 void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b);
+
+/**
+ @brief Sub-replacement with in/out carry.
+ */
+void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *carry);
 
 // inc/dec
 BigUInt128 *biguint128_inc(BigUInt128 *a);
@@ -170,6 +180,13 @@ BigUInt128 biguint128_xor(const BigUInt128 *a, const BigUInt128 *b);
  @return Product of the factors (Least significant 128 bits).
 */
 BigUInt128 biguint128_mul(const BigUInt128 *a, const BigUInt128 *b);
+
+/**
+ @brief Multiplication of two numbers resulting in double long (BigUIntPair128) value.
+ @return Product of the factors (first: low 128 bits, second: high 128 bits).
+*/
+BigUIntPair128 biguint128_dmul(const BigUInt128 *a, const BigUInt128 *b);
+
 /**
  @brief Division of a by b.
  @return First: quotient, second: remainder.
