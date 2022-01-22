@@ -5,7 +5,14 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#define BIGUINT_BITS 128
+typedef struct {
+ BigUInt128 a;
+ BigUInt128 b;
+ buint_bool c;
+ bool sbc;
+ BigUInt128 exp_res;
+ buint_bool exp_c;
+} AdcSbcTestV;
 
 const CStr hex_samples[][3] = {
  { STR("0"), STR("1"), STR("1")},
@@ -103,60 +110,48 @@ int test_addsub1() {
  return fail;
 }
 
-bool test_adcsbc0() {
+bool test_adcsbc_all() {
  bool fail=false;
 
  BigUInt128 zero= biguint128_ctor_default();
  BigUInt128 one= biguint128_ctor_unit();
  BigUInt128 max= biguint128_sub(&zero, &one);
 
- buint_bool ca=0;
- buint_bool cs=0;
+ void (*fun[])(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *c)={
+  biguint128_adc_replace,
+  biguint128_sbc_replace
+ };
+ const char *op[]={"+'","-'"};
 
- BigUInt128 res_adc;
- BigUInt128 res_sbc;
+ AdcSbcTestV tests[]= {
+  {max, zero, 0, 0, max, 0},
+  {max, zero, 1, 0, zero, 1},
+  {max, one, 0, 0, zero, 1},
+  {max, one, 1, 0, one, 1},
+  {zero, zero, 1, 0, one, 0},
+  {max, max, 1, 0, max, 1},
 
- biguint128_adc_replace(&res_adc, &max, &one, &ca);
- if (!biguint128_eq(&zero, &res_adc) || ca!=1) {
-  fprintf_biguint128_binop_testresult(stderr, &max, &one, &zero, &res_adc, "+'");
-  fprintf(stderr,"carry expected: %u, actual: %u\n",1u,ca);
-  fail = 1;
- }
+  {zero, zero, 0, 1, zero, 0},
+  {zero, zero, 1, 1, max, 1},
+  {one, zero, 0, 1, one, 0},
+  {one, zero, 1, 1, zero, 0},
+  {one, one, 0, 1, zero, 0},
+  {one, one, 1, 1, max, 1},
+  {zero, max, 0, 1, one, 1},
+  {zero, max, 1, 1, zero, 1},
+ };
+ int tests_num= sizeof(tests)/sizeof(tests[0]);
 
- biguint128_sbc_replace(&res_sbc, &zero, &one, &cs);
- if (!biguint128_eq(&max, &res_sbc) || cs!=1) {
-  fprintf_biguint128_binop_testresult(stderr, &zero, &one, &max, &res_sbc, "-'");
-  fprintf(stderr,"carry expected: %u, actual: %u\n",1u,cs);
-  fail = 1;
- }
-
- return fail;
-}
-
-bool test_adcsbc1() {
- bool fail=false;
- BigUInt128 zero= biguint128_ctor_default();
- BigUInt128 one= biguint128_ctor_unit();
- BigUInt128 max= biguint128_sub(&zero, &one);
-
- buint_bool ca=1;
- buint_bool cs=1;
-
- BigUInt128 res_adc;
- BigUInt128 res_sbc;
-
- biguint128_adc_replace(&res_adc, &max, &zero, &ca);
- if (!biguint128_eq(&zero, &res_adc) || ca!=1) {
-  fprintf_biguint128_binop_testresult(stderr, &max, &one, &zero, &res_adc, "+'");
-  fprintf(stderr,"carry expected: %u, actual: %u\n",1u,ca);
-  fail = 1;
- }
-
- biguint128_sbc_replace(&res_sbc, &zero, &zero, &cs);
- if (!biguint128_eq(&max, &res_sbc) || cs!=1) {
-  fprintf_biguint128_binop_testresult(stderr, &zero, &one, &max, &res_sbc, "-'");
-  fprintf(stderr,"carry expected: %u, actual: %u\n",1u,cs);
-  fail = 1;
+ for (int i= 0; i < tests_num; ++i) {
+  BigUInt128 act_res;
+  buint_bool act_c=tests[i].c;
+  fun[tests[i].sbc](&act_res, &tests[i].a, &tests[i].b, &act_c);
+  if (!biguint128_eq(&tests[i].exp_res, &act_res) || tests[i].exp_c!=act_c) {
+   fprintf_biguint128_binop_testresult(
+           stderr, &tests[i].a, &tests[i].b, &tests[i].exp_res, &act_res, op[tests[i].sbc]);
+   fprintf(stderr,"carry expected: %u, actual: %u\n", tests[i].exp_c, act_c);
+   fail = 1;
+  }
  }
 
  return fail;
@@ -202,8 +197,7 @@ int main(int argc, char **argv) {
  assert(test_addsub0() == 0);
  assert(test_addsub1() == 0);
 
- assert(test_adcsbc0() == 0);
- assert(test_adcsbc1() == 0);
+ assert(test_adcsbc_all() == 0);
 
  assert(test_incdec0() == 0);
  return 0;
