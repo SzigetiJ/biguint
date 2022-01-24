@@ -1,6 +1,26 @@
 #include "test_common128.h"
 #include "test_common.h"
 
+// Note: these values rely on add/sub functions.
+// They can be used only after basic add/del tests passed.
+BigUInt128 zero;
+BigUInt128 one;
+BigUInt128 two;
+BigUInt128 uintmax;
+BigUInt128 uintoflow;
+BigUInt128 max;
+BigUInt128 maxbutone;
+
+void init_testvalues() {
+ zero= biguint128_ctor_default();
+ one= biguint128_ctor_unit();
+ two= biguint128_add(&one, &one);
+ uintmax= biguint128_ctor_hexcstream("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 2 * sizeof(UInt));
+ uintoflow= biguint128_add(&uintmax, &one);
+ max= biguint128_sub(&zero, &one);
+ maxbutone= biguint128_sub(&max, &one);
+}
+
 BigUInt128 negate_bigint128(const BigUInt128 *src) {
  BigUInt128 zero = biguint128_ctor_default();
  return biguint128_sub(&zero, src);

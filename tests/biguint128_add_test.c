@@ -14,6 +14,12 @@ typedef struct {
  buint_bool exp_c;
 } AdcSbcTestV;
 
+typedef struct {
+ BigUInt128 a;
+ bool is_inc;
+ BigUInt128 exp_res;
+} IncDecTestV;
+
 const CStr hex_samples[][3] = {
  { STR("0"), STR("1"), STR("1")},
  { STR("1"), STR("0"), STR("1")},
@@ -37,7 +43,7 @@ void fprintf_biguint128_binop_testresult(FILE *out, BigUInt128 *op0, BigUInt128 
    fprintf(out, "[%s %s %s] -- expected: [%s], actual [%s]\n", buffer[0], op_str, buffer[1], buffer[2], buffer[3]);
 }
 
-static void fprintf_biguint128_unnop_testresult(FILE *out, const BigUInt128 *op0, const BigUInt128 *expected, const BigUInt128 *actual, const char *op_str) {
+static void fprintf_biguint128_unop_testresult(FILE *out, const BigUInt128 *op0, const BigUInt128 *expected, const BigUInt128 *actual, const char *op_str) {
    char buffer[3][HEX_BIGUINTLEN + 1];
    const BigUInt128 *v_refs[] = {op0, expected, actual};
    for (int j = 0; j < 3; ++j) {
@@ -113,10 +119,6 @@ int test_addsub1() {
 bool test_adcsbc_all() {
  bool fail=false;
 
- BigUInt128 zero= biguint128_ctor_default();
- BigUInt128 one= biguint128_ctor_unit();
- BigUInt128 max= biguint128_sub(&zero, &one);
-
  void (*fun[])(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *c)={
   biguint128_adc_replace,
   biguint128_sbc_replace
@@ -159,36 +161,40 @@ bool test_adcsbc_all() {
 
 bool test_incdec0() {
  bool fail=false;
- // interval borders
- BigUInt128 zero= biguint128_ctor_default();
- BigUInt128 one= biguint128_ctor_unit();
- BigUInt128 two= biguint128_add(&one, &one);
- BigUInt128 max= biguint128_sub(&zero, &one);
- BigUInt128 maxbutone= biguint128_sub(&max, &one);
 
- BigUInt128 arr_orig[]= {maxbutone, max, zero, one, two};    // copy
- BigUInt128 *arr[]= {&maxbutone, &max, &zero, &one, &two};   // ref
- size_t arrlen= sizeof(arr) / sizeof(arr[0]);
+  BigUInt128 * (*fun[])(BigUInt128 *dest)={
+  biguint128_dec,
+  biguint128_inc
+ };
+ const char *op[]={"--","++"};
 
- for (size_t i= 0u; i < arrlen; ++i) {
-  biguint128_inc(arr[i]);
-  if (i != arrlen-1) {
-   if (!biguint128_eq(arr[i], &arr_orig[i + 1])) {
-    fprintf_biguint128_unnop_testresult(stderr, &arr_orig[i], &arr_orig[i + 1], arr[i], "++");
-    fail=true;
-   }
+ IncDecTestV tests[]={
+  {maxbutone,1,max},
+  {max,1,zero},
+  {zero,1,one},
+  {one,1,two},
+  {uintmax,1,uintoflow},
+
+  {max,0,maxbutone},
+  {zero,0,max},
+  {one,0,zero},
+  {two,0,one},
+  {uintoflow,0,uintmax}
+ };
+ int tests_num= sizeof(tests)/sizeof(tests[0]);
+
+ for (int i= 0; i < tests_num; ++i) {
+  BigUInt128 *act_res;
+  BigUInt128 act_param = tests[i].a;
+  act_res=fun[tests[i].is_inc](&act_param);
+  if (!biguint128_eq(&tests[i].exp_res, &act_param) || act_res!=&act_param) {
+   fprintf_biguint128_unop_testresult(
+           stderr, &tests[i].a, &tests[i].exp_res, &act_param, op[tests[i].is_inc]);
+   fprintf(stderr,"returned expected: %p, actual: %p\n", &act_param, act_res);
+   fail = 1;
   }
  }
 
- for (size_t i= 0u; i < arrlen; ++i) {
-  size_t j= arrlen - i - 1;
-  BigUInt128 tmp= *arr[j];
-  biguint128_dec(arr[j]);
-  if (!biguint128_eq(arr[j], &arr_orig[j])) {
-   fprintf_biguint128_unnop_testresult(stderr, &tmp, &arr_orig[j], arr[j], "--");
-    fail= true;
-  }
- }
  return fail;
 }
 
@@ -197,6 +203,7 @@ int main(int argc, char **argv) {
  assert(test_addsub0() == 0);
  assert(test_addsub1() == 0);
 
+ init_testvalues();
  assert(test_adcsbc_all() == 0);
 
  assert(test_incdec0() == 0);

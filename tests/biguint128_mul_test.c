@@ -107,11 +107,6 @@ bool test_mul2() {
 
 bool test_dmul0() {
  bool fail = false;
- BigUInt128 zero = biguint128_ctor_default();
- BigUInt128 one = biguint128_ctor_unit();
- BigUInt128 max= biguint128_sub(&zero, &one);
- BigUInt128 maxbutone= biguint128_sub(&max, &one);
- BigUInt128 two= biguint128_add(&one, &one);
 
  BigUIntPair128 result = biguint128_dmul(&two, &max);
  if (!biguint128_eq(&result.first, &maxbutone)
@@ -132,11 +127,6 @@ bool test_dmul0() {
 
 bool test_dmul1() {
  bool fail = false;
- BigUInt128 zero = biguint128_ctor_default();
- BigUInt128 one = biguint128_ctor_unit();
- BigUInt128 max= biguint128_sub(&zero, &one);
- BigUInt128 maxbutone= biguint128_sub(&max, &one);
- BigUInt128 two= biguint128_add(&one, &one);
 
  BigUIntPair128 result = biguint128_dmul(&max, &max); // see: 9 * 9 = 81; 99 * 99 = 9801
  if (!biguint128_eq(&result.second, &maxbutone)
@@ -157,7 +147,7 @@ bool test_dmul1() {
 
 bool test_div0() {
  bool fail = false;
- BigUInt128 zero = biguint128_ctor_default();
+
  for (int i=0; i<hex_sample_len; ++i) {
   BigUInt128 val[3];
   if (!readhex_more_cstr_biguint128(val, hex_samples[i],3)) {
@@ -213,7 +203,7 @@ bool test_div0() {
 // if (a lt b) then div(a,b)=(0,a)
 bool test_div1() {
  bool fail = false;
- BigUInt128 zero = biguint128_ctor_default();
+
  for (int i=0; i<hex_sample_len; ++i) {
   BigUInt128 val[3];
   BigUInt128 *a=&val[0];
@@ -250,6 +240,7 @@ bool test_div1() {
 
 int main(int argc, char **argv) {
 
+ init_testvalues();
  assert(test_mul0());
  assert(test_mul1());
  assert(test_mul2());
