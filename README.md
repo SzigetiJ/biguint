@@ -17,8 +17,8 @@ Currently libbiguint provides the following types:
 * `BigUInt<number>` (1024 or even more bits)
 
 All the provided types are accompanied by the following functions:
-* addition and subtraction (add, sub, inc, dec);
-* multiplication and division (mul, div/mod);
+* addition and subtraction (add, sub, inc, dec, adc, sbc);
+* multiplication and division (mul, dmul, div/mod);
 * bit shift operations (shl, shr);
 * bitwise operations (and, or, xor, not);
 * bitwise manipulation (get, set, clr, overwrite);
