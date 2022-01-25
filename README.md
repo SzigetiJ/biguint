@@ -19,7 +19,7 @@ Currently libbiguint provides the following types:
 All the provided types are accompanied by the following functions:
 * addition and subtraction (add, sub, inc, dec, adc, sbc);
 * multiplication and division (mul, dmul, div/mod);
-* bit shift operations (shl, shr);
+* bit shift operations (shl, shr, rol, ror);
 * bitwise operations (and, or, xor, not);
 * bitwise manipulation (get, set, clr, overwrite);
 * comparison (lt, eq);

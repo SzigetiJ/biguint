@@ -380,6 +380,23 @@ BigUInt128 *biguint128_shr_assign(BigUInt128 *a, const buint_size_t shift) {
  return a;
 }
 
+BigUInt128 biguint128_ror(const BigUInt128 *a, const buint_size_t shift) {
+ BigUInt128 retv = biguint128_ctor_default();
+ BigUInt128 *dest = &retv;
+ buint_size_p shift_p = bitpos_(shift);
+
+ FOREACHCELL(i) {
+  UIntPair x = uint_split_shift(a->dat[i], shift_p.bit_sel);
+  dest->dat[(i - shift_p.byte_sel) % BIGUINT128_CELLS]|= x.first;
+  dest->dat[(i - shift_p.byte_sel - 1) % BIGUINT128_CELLS]|= x.second;
+ }
+ return retv;
+}
+
+BigUInt128 biguint128_rol(const BigUInt128 *a, const buint_size_t shift) {
+ return biguint128_ror(a, 128u - shift);
+}
+
 BigUInt128 biguint128_and(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
  FOREACHCELL(i) {

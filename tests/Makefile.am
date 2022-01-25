@@ -69,5 +69,7 @@ biguint128_mul_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
 biguint256_mul_test_LDADD = test_common.o test_common256.o ../src/libbiguint.a
 biguint128_add_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
 biguint256_add_test_LDADD = test_common.o test_common256.o ../src/libbiguint.a
+biguint128_bit_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
+biguint256_bit_test_LDADD = test_common.o test_common256.o ../src/libbiguint.a
 
 SUBDIRS=performance
