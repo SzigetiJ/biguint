@@ -31,7 +31,7 @@
   typedef uint32_t UInt;	///< Alias on the basic store unit.
   #define PRIbuint_size_t "zu"
 #else
-  typedef unsigned char buint_size_t;	///< Array length, bit/byte/digit index.
+  typedef unsigned int buint_size_t;	///< Array length, bit/byte/digit index.
   typedef unsigned char buint_bool;	///< Logical value.
   typedef unsigned int UInt;	///< Alias on the basic store unit.
   #define PRIbuint_size_t "u"

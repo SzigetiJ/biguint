@@ -45,3 +45,30 @@ bool readhex_more_cstr_biguint128(BigUInt128 *result_arr, const CStr* const hex_
  }
  return retv;
 }
+
+
+void fprint_funres_buint128_x_bsz_buint128(
+        FILE *out,
+        const char *funname,
+        const BigUInt128 *a, buint_size_t b,
+        const BigUInt128 *expected, const BigUInt128 *actual
+) {
+    char buffer[3][HEX_BIGUINTLEN + 1];
+    buffer[0][biguint128_print_hex(a, buffer[0], HEX_BIGUINTLEN)]=0;
+    buffer[1][biguint128_print_hex(expected, buffer[1], HEX_BIGUINTLEN)]=0;
+    buffer[2][biguint128_print_hex(actual, buffer[2], HEX_BIGUINTLEN)]=0;
+    fprintf(out, "%s(%s,%" PRIbuint_size_t ") -- expected: [%s], actual [%s]\n",
+            funname, buffer[0], b, buffer[1], buffer[2]);
+}
+
+void fprint_funres_buint128_x_bsz_bb(
+        FILE *out,
+        const char *funname,
+        const BigUInt128 *a, buint_size_t b,
+        buint_bool expected, buint_bool actual
+) {
+    char buffer[1][HEX_BIGUINTLEN + 1];
+    buffer[0][biguint128_print_hex(a, buffer[0], HEX_BIGUINTLEN)]=0;
+    fprintf(out, "%s(%s,%" PRIbuint_size_t ") -- expected: [%u], actual [%u]\n",
+            funname, buffer[0], b, expected, actual);
+}

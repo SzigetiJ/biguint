@@ -134,16 +134,18 @@ bool test_set_get0() {
   for (int j = 0; j < 3; ++j) {
    unsigned int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
    if ((pre_expected[j]!=invert_expected[j]) != pre_change[j]) {
-    char buffer[HEX_BIGUINTLEN + 1];
-    buffer[biguint128_print_hex(&pre_value, buffer, HEX_BIGUINTLEN)]=0;
-    fprintf(stderr, "gbit(%s,%u) -- expected: [%u], actual [%u]\n", buffer,pos,(pre_expected[j]!=invert_expected[j]),pre_change[j]);
+    fprint_funres_buint128_x_bsz_bb(
+            stderr, "gbit",
+            &pre_value, pos,
+            (pre_expected[j]!=invert_expected[j]), pre_change[j]);
     fail=true;
    }
 
    if ((post_expected[j]!=invert_expected[j]) != post_change[j]) {
-    char buffer[HEX_BIGUINTLEN + 1];
-    buffer[biguint128_print_hex(&value, buffer, HEX_BIGUINTLEN)]=0;
-    fprintf(stderr, "gbit(%s,%u) -- expected: [%u], actual [%u]\n", buffer,pos,(post_expected[j]!=invert_expected[j]),post_change[j]);
+    fprint_funres_buint128_x_bsz_bb(
+            stderr, "gbit",
+            &value, pos,
+            (post_expected[j]!=invert_expected[j]), post_change[j]);
     fail=true;
    }
   }
@@ -190,16 +192,18 @@ bool test_clr_get0() {
   for (int j = 0; j < 3; ++j) {
    unsigned int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
    if ((pre_expected[j]!=invert_expected[j]) != pre_change[j]) {
-    char buffer[HEX_BIGUINTLEN + 1];
-    buffer[biguint128_print_hex(&pre_value, buffer, HEX_BIGUINTLEN)]=0;
-    fprintf(stderr, "gbit(%s,%u) -- expected: [%u], actual [%u]\n", buffer,pos,(pre_expected[j]!=invert_expected[j]),pre_change[j]);
+    fprint_funres_buint128_x_bsz_bb(
+            stderr, "gbit",
+            &pre_value, pos,
+            (pre_expected[j]!=invert_expected[j]), pre_change[j]);
     fail=true;
    }
 
    if ((post_expected[j]!=invert_expected[j]) != post_change[j]) {
-    char buffer[HEX_BIGUINTLEN + 1];
-    buffer[biguint128_print_hex(&value, buffer, HEX_BIGUINTLEN)]=0;
-    fprintf(stderr, "gbit(%s,%u) -- expected: [%u], actual [%u]\n", buffer,pos,(post_expected[j]!=invert_expected[j]),post_change[j]);
+    fprint_funres_buint128_x_bsz_bb(
+            stderr, "gbit",
+            &value, pos,
+            (post_expected[j]!=invert_expected[j]), post_change[j]);
     fail=true;
    }
   }
@@ -216,6 +220,48 @@ bool test_clr_get0() {
  return !fail;
 }
 
+// checks: rol(x,a) == or(shl(x,a), shr(x,128-a))
+bool test_shiftrot0() {
+ bool fail=false;
+
+ const CStr val_a[]={
+  STR("123456789ABCDEF0"),
+  STR("1223334444555556666667777777"),
+  STR("123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0"),
+  STR("122333444455555666666777777788888888999999999AAAAAAAAAABBBBBBBBB")
+ };
+ size_t val_len=sizeof(val_a)/sizeof(val_a[0]);
+ const buint_size_t sh_a[]={0,1,2,4,7,16,31,127,128,129,255,256};
+ size_t sh_len=sizeof(sh_a)/sizeof(sh_a[0]);
+
+ for (size_t vi= 0; vi < val_len; ++vi) {
+  for (size_t si= 0; si < sh_len; ++si) {
+   BigUInt128 a;
+   if (!readhex_cstr_biguint128(&a, &val_a[vi])) continue;
+   BigUInt128 act_rol= biguint128_rol(&a, sh_a[si]);
+   BigUInt128 act_ror= biguint128_ror(&a, sh_a[si]);
+
+   BigUInt128 res_shl= biguint128_shl(&a, sh_a[si] % BIGUINT_BITS);
+   BigUInt128 res_shl_oflow= biguint128_shr(&a, (BIGUINT_BITS - sh_a[si]) % BIGUINT_BITS);
+   BigUInt128 exp_rol= biguint128_or(&res_shl, &res_shl_oflow);
+
+   BigUInt128 res_shr= biguint128_shr(&a, sh_a[si] % BIGUINT_BITS);
+   BigUInt128 res_shr_uflow= biguint128_shl(&a, (BIGUINT_BITS - sh_a[si]) % BIGUINT_BITS);
+   BigUInt128 exp_ror= biguint128_or(&res_shr, &res_shr_uflow);
+
+   if (!biguint128_eq(&exp_rol, &act_rol)) {
+    fprint_funres_buint128_x_bsz_buint128(stderr, "rol", &a, sh_a[si], & exp_rol, &act_rol);
+    fail=true;
+   }
+   if (!biguint128_eq(&exp_ror, &act_ror)) {
+    fprint_funres_buint128_x_bsz_buint128(stderr, "ror", &a, sh_a[si], & exp_ror, &act_ror);
+    fail=true;
+   }
+  }
+ }
+
+ return !fail;
+}
 
 int main(int argc, char **argv) {
 
@@ -223,6 +269,7 @@ int main(int argc, char **argv) {
  assert(test_set_get0());
  assert(test_clr_get0());
 
+ assert(test_shiftrot0());
  return 0;
 }
 
