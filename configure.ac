@@ -10,6 +10,33 @@ AC_DEFINE(USE_STD_TYPES)
 AC_CHECK_SIZEOF([UInt],,[#include "$srcdir/src/uint_types.h"])
 AS_VAR_ARITH([UINT_BITS], [$ac_cv_sizeof_UInt \* 8])
 
+dnl ===SECTION BITLENSKIP BEGIN===
+AC_ARG_WITH([biguint256], AS_HELP_STRING([--without-biguint256], [Do not generate Biguint256 codes.]))
+AC_ARG_WITH([biguint384], AS_HELP_STRING([--without-biguint384], [Do not generate Biguint384 codes.]))
+AC_ARG_WITH([biguint512], AS_HELP_STRING([--without-biguint512], [Do not generate Biguint512 codes.]))
+
+AM_CONDITIONAL([WITH_BIGUINT256], [test x$with_biguint256 != xno])
+AM_CONDITIONAL([WITH_BIGUINT384], [test x$with_biguint384 != xno])
+AM_CONDITIONAL([WITH_BIGUINT512], [test x$with_biguint512 != xno])
+
+AM_COND_IF([WITH_BIGUINT256],[ AC_MSG_NOTICE([generate BigUInt256]) ])
+AM_COND_IF([WITH_BIGUINT384],[ AC_MSG_NOTICE([generate BigUInt384]) ])
+AM_COND_IF([WITH_BIGUINT512],[ AC_MSG_NOTICE([generate BigUInt512]) ])
+
+AM_COND_IF([WITH_BIGUINT256],
+ AC_SUBST([bits256],[256]),
+ AC_SUBST([bits256],[256])
+)
+AM_COND_IF([WITH_BIGUINT384],
+ AC_SUBST([bits384],[384]),
+ AC_SUBST([bits384],[384])
+)
+AM_COND_IF([WITH_BIGUINT512],
+ AC_SUBST([bits512],[512]),
+ AC_SUBST([bits512],[512])
+)
+dnl ===SECTION BITLENSKIP BEGIN===
+
 dnl ===SECTION EXTRABITLEN BEGIN===
 AC_ARG_ENABLE([extrabitlen],
     AS_HELP_STRING([--enable-extrabitlen=<bits>], [Generate additional type with user-defined bitlength]))
