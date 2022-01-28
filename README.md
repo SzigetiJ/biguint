@@ -9,7 +9,8 @@ C library providing fixed length unsigned integer types longer than 64 bits.
 
 ## Features
 
-Currently libbiguint provides the following types:
+Currently, libbiguint provides the following types:
+
 * `BigUInt128` (128 bits)
 * `BigUInt256` (256 bits)
 * `BigUInt384` (384 bits)
@@ -17,6 +18,7 @@ Currently libbiguint provides the following types:
 * `BigUInt<number>` (1024 or even more bits)
 
 All the provided types are accompanied by the following functions:
+
 * addition and subtraction (add, sub, inc, dec, adc, sbc);
 * multiplication and division (mul, dmul, div/mod);
 * bit shift operations (shl, shr, rol, ror);
@@ -28,6 +30,10 @@ All the provided types are accompanied by the following functions:
 
 The source code of type `BigUInt128` is written in general manner.
 The source of all other biguint types are generated codes derived from `BigUInt128`.
+Types `BigUInt256`, `BigUInt384`, `BigUInt512` and `BigUInt<N>` and
+adherent functions are optionally generated:
+the 256, 384 and 512 bit wide types are enabled by default, the N bit wide type is disabled.
+See `configure --help` for details.
 
 ## Installation
 
@@ -64,7 +70,8 @@ make install
 
 #### Different configurations at the same
 
-The `configure` script supports different build profiles:
+The `configure` script supports different build profiles
+(see [VPATH Builds](https://www.gnu.org/software/automake/manual/html_node/VPATH-Builds.html)):
 it generates the outputs (Makefiles) in the current working directory;
 and executing `make` with the generated Makefiles
 will put their output in the container directory of the given Makefiles.
@@ -73,22 +80,22 @@ Well, except for `make install`, of course.
 You can create, e.g., a **Debug** and a **Release** profile within the base directory of the project:
 
 ```sh
-mkdir Debug
-cd Debug
-../configure CFLAGS="-O0 -g -W -Wall"
+mkdir -p dist/Debug
+cd dist/Debug
+../../configure CFLAGS="-O0 -g -W -Wall"
 make
-cd ..
+cd ../..
 ```
 
 and
 
 ```sh
-mkdir Release
-cd Release
-../configure CFLAGS="-O2"
+mkdir -p dist/Release
+cd dist/Release
+../../configure CFLAGS="-O2"
 make
 make install
-cd ..
+cd ../..
 ```
 
 Cross compilation is also supported. You can create a profile for the target.
@@ -98,6 +105,7 @@ Note, you have to give options `--host` and `--build` to `configure` see the
 ## How to use
 
 Use case: Summing very long values (C strings).
+
 ```c
 #include <string.h>
 #include "biguint128.h"

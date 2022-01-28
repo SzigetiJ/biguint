@@ -5,3 +5,19 @@ Initial version containing:
 * BigUInt128 type and functions
 * Build system generating BigUInt256
 * BigUInt* I/O tests
+
+2020.05.31. version 1.1.0, jszigeti
+-----------------------------------
+* Generated BigUInt384 and BigUInt512 types and functions.
+* BigUInt types are now based on standard types of size_t, bool and uint32_t by default.
+* biguint methods are covered by tests.
+* biguint methods have interface documentation.
+* Various example codes provided.
+* VPATH builds.
+
+2022.01.28. version 1.2.0, jszigeti
+-----------------------------------
+* Improved interface: new functions, e.g., inc, dec, adc, sbc, ror, rol, dmul.
+* Improved interface: multiple, different parameter / return value passing to add method and some other methods.
+* BigIntXXX support (two's complement representation; functions for decimal IO, comparison)
+* Flexible build: the set of generated/build biguint types can be configured (see configure --help)
