@@ -48,7 +48,7 @@ all: $(INFO_FILE)
 html: $(HTML_DIR)/index.html
 
 $(HTML_DIR)/index.html: $(INFO_FILE)
-	$(GENHTML) $< --output-directory $(HTML_DIR)
+	$(GENHTML) $< --branch-coverage --output-directory $(HTML_DIR)
 
 ## not main, still popular target#2
 gcov: $(LIB_GCOV)
@@ -57,7 +57,7 @@ gcov: $(LIB_GCOV)
 	$(GCOV) -abcfu -o $< $(@:.gcov=)
 
 $(INFO_FILE): $(LIB_GCDA)
-	$(LCOV) -c --directory . --output-file $@
+	$(LCOV) --rc lcov_branch_coverage=1 -c --directory . --output-file $@
 
 %.gcda: $(TEST_X0_PROGS) $(TEST_X1_PROGS)
 	$(foreach x,$^,./$(x);)
