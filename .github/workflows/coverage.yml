@@ -18,6 +18,8 @@ jobs:
     - name: generate
       run: make
       working-directory: coverage
-    - name: upload
-      run: bash <(curl -s https://codecov.io/bash)
-      working-directory: coverage
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        directory: coverage
+        verbose: true
