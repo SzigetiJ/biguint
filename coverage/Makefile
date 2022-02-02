@@ -30,14 +30,20 @@ LIB_OBJS = \
  l_uint.o
 
 LIB_SOURCES = $(LIB_OBJS:l_%.o=$(SRCDIR)/%.c)
+LIB_GCOV_OUTPUT = $(LIB_OBJS:l_%.o=%.c.gcov)
 
 all: $(INFO_FILE)
+
+gcov: all $(LIB_GCOV_OUTPUT)
 
 $(INFO_FILE): $(TEST_X0_COVS) $(TEST_X1_COVS)
 	lcov -c --directory . --output-file $@
 
 %.gcda: %
 	./$<
+
+%.c.gcov: l_%.o
+	gcov -abcfu -o $< $(@:.gcov=)
 
 #biguint128_%_test: biguint128_%_test.o $(LIB_OBJS)
 #	$(CC) $(LDFLAGS) -o $@ $^
@@ -80,7 +86,11 @@ clean:
 	rm -f $(TEST_X1_OBJS)
 	rm -f $(TEST_X1_COVS)
 	rm -f $(TEST_X1_GCNO)
+	rm -f test_common.o test_common128.o
+	rm -f $(LIB_GCOV_OUTPUT)
 	rm -rf html
 
-.PHONY: clean html
+.PHONY: clean html gcov
+
+.PRECIOUS: $(TEST_X1_PROGS) $(TEST_X0_PROGS) $(TEST_X1_OBJS) $(TEST_X0_OBJS) test_common.o test_common128.o $(LIB_OBJS)
 

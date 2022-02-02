@@ -16,7 +16,7 @@ jobs:
     - name: Install lcov
       run: sudo apt-get install lcov
     - name: generate
-      run: make
+      run: make gcov
       working-directory: coverage
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
