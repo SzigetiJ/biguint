@@ -74,3 +74,16 @@ Makefile
 ## Generated dox
 /html
 /latex
+
+## Coverage
+/coverage/*.o
+/coverage/*.gcda
+/coverage/*.gcno
+/coverage/l_*
+/coverage/*_test
+/coverage/html
+/coverage/*.c.gcov
+/coverage/biguint.info
+
+## VPATH builds
+/dist
