@@ -27,12 +27,12 @@ bool test_uint_add() {
    UInt sum = uint_add(samples[a_i], samples[b_i], &carry);
 
    if (sum!=sum_expects[a_i][b_i]) {
-    fprintf(stderr, "%s: uint_add(%u,%u,&carry) return value expected: [%u] actual: [%u]\n",
+    fprintf(stderr, "%s: uint_add(%" PRIuint ",%" PRIuint ",&carry) return value expected: [%" PRIuint "] actual: [%" PRIuint "]\n",
      __func__, samples[a_i], samples[b_i], sum_expects[a_i][b_i], sum);
      fail = true;
    }
    if (!!carry!=!!carry_expects[a_i][b_i]) {
-    fprintf(stderr, "%s: uint_add(%u,%u,&carry) carry expected: [%d] actual: [%d]\n",
+    fprintf(stderr, "%s: uint_add(%" PRIuint ",%" PRIuint ",&carry) carry expected: [%d] actual: [%d]\n",
      __func__, samples[a_i], samples[b_i], !!carry_expects[a_i][b_i], !!carry);
      fail = true;
    }
@@ -64,12 +64,12 @@ bool test_uint_sub() {
    UInt diff = uint_sub(samples[a_i], samples[b_i], &carry);
 
    if (diff!=diff_expects[a_i][b_i]) {
-    fprintf(stderr, "%s: uint_sub(%u,%u,&carry) return value expected: [%u] actual: [%u]\n",
+    fprintf(stderr, "%s: uint_sub(%" PRIuint ",%" PRIuint ",&carry) return value expected: [%" PRIuint "] actual: [%" PRIuint "]\n",
      __func__, samples[a_i], samples[b_i], diff_expects[a_i][b_i], diff);
      fail = true;
    }
    if (!!carry!=!!carry_expects[a_i][b_i]) {
-    fprintf(stderr, "%s: uint_sub(%u,%u,&carry) carry expected: [%d] actual: [%d]\n",
+    fprintf(stderr, "%s: uint_sub(%" PRIuint ",%" PRIuint ",&carry) carry expected: [%d] actual: [%d]\n",
      __func__, samples[a_i], samples[b_i], !!carry_expects[a_i][b_i], !!carry);
      fail = true;
    }
@@ -80,7 +80,7 @@ bool test_uint_sub() {
 
 bool test_uint_mul() {
  const UInt MAX = -1;
- const UInt SPEC_0 = (1<<(sizeof(UInt)*4+1))-1;
+ const UInt SPEC_0 = ((UInt)1 << (sizeof(UInt)*4+1))-1;
  const UInt SPEC_1 = MAX;
  UInt samples_a[] = {
   0,1,2,SPEC_0,SPEC_1
@@ -110,7 +110,7 @@ bool test_uint_mul() {
    UIntPair prod = uint_mul(samples_a[a_i], samples_b[b_i]);
 
    if (!(prod.first==prod_expect.first && prod.second==prod_expect.second)) {
-    fprintf(stderr, "%s: uint_mul(%u,%u) return value expected: [%u,%u] actual: [%u,%u]\n",
+    fprintf(stderr, "%s: uint_mul(%" PRIuint ",%" PRIuint ") return value expected: [%" PRIuint ",%" PRIuint "] actual: [%" PRIuint ",%" PRIuint "]\n",
      __func__, samples_a[a_i], samples_b[b_i], prod_expect.first, prod_expect.second, prod.first, prod.second);
      fail = true;
    }
@@ -121,6 +121,10 @@ bool test_uint_mul() {
 
 // This test assumes 32bit wide UInt type
 bool test_uint_spsh32() {
+ if (sizeof(UInt)!=4) {
+  return true;
+ }
+
  bool fail=false;
  UInt samples_a[]= {
   0,
@@ -152,7 +156,7 @@ bool test_uint_spsh32() {
 
    if (!(spsh_actual.first==spsh_expect.first
            && spsh_actual.second==spsh_expect.second)) {
-    fprintf(stderr, "%s: uint_split_shift(%08X,%" PRIbuint_size_t ") return value expected: [%08X,%08X] actual: [%08X,%08X]\n",
+    fprintf(stderr, "%s: uint_split_shift(%08" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%08" PRIuintX ",%08" PRIuintX "] actual: [%08" PRIuintX ",%08" PRIuintX "]\n",
      __func__, samples_a[a_i], samples_lsb[lsb_i],
             spsh_expect.first, spsh_expect.second,
             spsh_actual.first, spsh_actual.second);
@@ -164,7 +168,7 @@ bool test_uint_spsh32() {
 
    if (!(splt_actual.first==splt_expect.first
            && splt_actual.second==splt_expect.second)) {
-    fprintf(stderr, "%s: uint_split(%08X,%" PRIbuint_size_t ") return value expected: [%08X,%08X] actual: [%08X,%08X]\n",
+    fprintf(stderr, "%s: uint_split(%08" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%08" PRIuintX ",%08" PRIuintX "] actual: [%08" PRIuintX ",%08" PRIuintX "]\n",
      __func__, samples_a[a_i], samples_lsb[lsb_i],
             splt_expect.first, splt_expect.second,
             splt_actual.first, splt_actual.second);
@@ -176,11 +180,106 @@ bool test_uint_spsh32() {
  return !fail;
 }
 
+#ifdef USE_UINT64_T
+// This test assumes 64bit wide UInt type
+bool test_uint_spsh64() {
+ if (sizeof(UInt)!=8) {
+  return true;
+ }
+
+ bool fail=false;
+ UInt samples_a[]= {
+  0,
+  0xFFFFFFFFFFFFFFFF,
+  0xAA55555555555555
+ };
+ buint_size_t samples_lsb[]={
+  0,1,16,31,32,63,64
+ };
+ unsigned int samples_len_a=sizeof(samples_a)/sizeof(UInt);
+ unsigned int samples_len_lsb=sizeof(samples_lsb)/sizeof(buint_size_p);
+
+ UIntPair splt_expects[][7]={
+  {{0,0}, {0,0}, {0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
+  {
+   {0xFFFFFFFFFFFFFFFF,0},
+   {0xFFFFFFFFFFFFFFFE,0x00000001},
+   {0xFFFFFFFFFFFF0000,0x0000FFFF},
+   {0xFFFFFFFF80000000,0x7FFFFFFF},
+   {0xFFFFFFFF00000000,0xFFFFFFFF},
+   {0x8000000000000000,0x7FFFFFFFFFFFFFFF},
+   {0,0xFFFFFFFFFFFFFFFF}
+  },{
+   {0xAA55555555555555,0},
+   {0xAA55555555555554,0x00000001},
+   {0xAA55555555550000,0x00005555},
+   {0xAA55555540000000,0x15555555},
+   {0xAA55555500000000,0x55555555},
+   {0x8000000000000000,0x2A55555555555555},
+   {0,0xAA55555555555555}
+  }
+ };
+
+ UIntPair spsh_expects[][7]={
+  {{0,0}, {0,0}, {0,0}, {0,0}, {0,0}, {0,0}, {0,0}},
+  {
+   {0xFFFFFFFFFFFFFFFF,0},
+   {0x7FFFFFFFFFFFFFFF,0x8000000000000000},
+   {0xFFFFFFFFFFFF,0xFFFF000000000000},
+   {0x1FFFFFFFF,0xFFFFFFFE00000000},
+   {0xFFFFFFFF,0xFFFFFFFF00000000},
+   {0x1,0xFFFFFFFFFFFFFE},
+   {0,0xFFFFFFFFFFFFFF}
+  },{
+   {0xAA55555555555555,0},
+   {0x552AAAAAAAAAAAAA,0x8000000000000000},
+   {0xAA5555555555,0x5555000000000000},
+   {0x1AAAAAAAA,0x54AAAA00000000},
+   {0x55555555,0xAA555555},
+   {0x1,0x54AAAAAAAAAAAAAA},
+   {0,0xAA55555555555555}
+  }
+ };
+
+ for (unsigned int a_i=0; a_i<samples_len_a;++a_i) {
+  for (unsigned int lsb_i=0; lsb_i<samples_len_lsb;++lsb_i) {
+   UIntPair spsh_expect = spsh_expects[a_i][lsb_i];
+   UIntPair spsh_actual = uint_split_shift(samples_a[a_i], samples_lsb[lsb_i]);
+
+   if (!(spsh_actual.first==spsh_expect.first
+           && spsh_actual.second==spsh_expect.second)) {
+    fprintf(stderr, "%s: uint_split_shift(%08" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%08" PRIuintX ",%08" PRIuintX "] actual: [%08" PRIuintX ",%08" PRIuintX "]\n",
+     __func__, samples_a[a_i], samples_lsb[lsb_i],
+            spsh_expect.first, spsh_expect.second,
+            spsh_actual.first, spsh_actual.second);
+     fail = true;
+   }
+
+   UIntPair splt_expect = splt_expects[a_i][lsb_i];
+   UIntPair splt_actual = uint_split(samples_a[a_i], samples_lsb[lsb_i]);
+
+   if (!(splt_actual.first==splt_expect.first
+           && splt_actual.second==splt_expect.second)) {
+    fprintf(stderr, "%s: uint_split(%08" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%08" PRIuintX ",%08" PRIuintX "] actual: [%08" PRIuintX ",%08" PRIuintX "]\n",
+     __func__, samples_a[a_i], samples_lsb[lsb_i],
+            splt_expect.first, splt_expect.second,
+            splt_actual.first, splt_actual.second);
+     fail = true;
+   }
+  }
+ }
+
+ return !fail;
+}
+#endif
 
 int main(int argc, char **argv) {
  assert(test_uint_add());
  assert(test_uint_sub());
  assert(test_uint_mul());
  assert(test_uint_spsh32());
+#ifdef USE_UINT64_T
+ assert(test_uint_spsh64());
+#endif
 }
 

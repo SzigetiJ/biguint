@@ -28,16 +28,26 @@
 
   typedef size_t buint_size_t;	///< Array length, bit/byte/digit index.
   typedef bool buint_bool;	///< Logical value.
-  typedef uint32_t UInt;	///< Alias on the basic store unit.
+#ifdef USE_UINT64_T
+    typedef uint64_t UInt;	///< Alias on the basic store unit.
+    #define PRIuint "llu"
+    #define PRIuintX "llX"
+#else
+    typedef uint32_t UInt;	///< Alias on the basic store unit.
+    #define PRIuint "u"
+    #define PRIuintX "X"
+#endif
   #define PRIbuint_size_t "zu"
 #else
   typedef unsigned int buint_size_t;	///< Array length, bit/byte/digit index.
   typedef unsigned char buint_bool;	///< Logical value.
   typedef unsigned int UInt;	///< Alias on the basic store unit.
+  #define PRIuint "u"
+  #define PRIuintX "X"
   #define PRIbuint_size_t "u"
 #endif  // USE_STD_TYPES
 
-  typedef struct {
+typedef struct {
  buint_size_t byte_sel;
  buint_size_t bit_sel;
 } buint_size_p;

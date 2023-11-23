@@ -13,7 +13,7 @@ bool test_ctor_default() {
  for (int i=0; i < BIGUINT_CELLS; ++i) {
   UInt cell = a.dat[i];
   if (cell != 0) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [0], actual: [%u]\n", __func__, i, cell);
+   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [0], actual: [%" PRIuint "]\n", __func__, i, cell);
    pass=false;
   }
  }
@@ -26,7 +26,7 @@ bool test_ctor_unit() {
  for (int i=0; i < BIGUINT_CELLS; ++i) {
   UInt cell = a.dat[i];
   if (cell != (i==0?1:0)) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%d], actual: [%u]\n", __func__, i, (i==0?1:0), cell);
+   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%d], actual: [%" PRIuint "]\n", __func__, i, (i==0?1:0), cell);
    pass=false;
   }
  }
@@ -43,7 +43,7 @@ bool test_ctor_standard() {
  for (int i=0; i < BIGUINT_CELLS; ++i) {
   UInt cell = a.dat[i];
   if (cell != dat[i]) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%d], actual: [%u]\n", __func__, i, dat[i], cell);
+   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n", __func__, i, dat[i], cell);
    pass=false;
   }
  }
@@ -62,7 +62,7 @@ bool test_ctor_copy() {
  for (int i=0; i < BIGUINT_CELLS; ++i) {
   UInt cell = b.dat[i];
   if (cell != dat[i]) {
-   fprintf(stderr, "%s -- variable b cell #%d assertion failed, expected: [%d], actual: [%u]\n", __func__, i, dat[i], cell);
+   fprintf(stderr, "%s -- variable b cell #%d assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n", __func__, i, dat[i], cell);
    pass=false;
   }
  }
@@ -74,7 +74,7 @@ bool test_ctor_copy() {
  for (int i=0; i < BIGUINT_CELLS; ++i) {
   UInt cell = a.dat[i];
   if (cell != dat[i]) {
-   fprintf(stderr, "%s -- variable a cell #%d assertion failed, expected: [%d], actual: [%u]\n", __func__, i, dat[i], cell);
+   fprintf(stderr, "%s -- variable a cell #%d assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n", __func__, i, dat[i], cell);
    pass=false;
   }
  }

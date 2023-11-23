@@ -100,7 +100,7 @@ buint_size_t uint_msb(UInt a) {
  buint_size_t n = 4 * sizeof(UInt);
  buint_size_t inf = 0;
  for (buint_size_t s = n / 2; 0 < s; s/=2) {
-  if (a < (UInt)1 <<n) {
+  if (a < (UInt)1 << n) {
    n-=s;    // same as n=inf+s
   } else {
    inf = n;
