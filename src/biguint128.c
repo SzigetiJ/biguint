@@ -172,7 +172,7 @@ BigUInt128 biguint128_ctor_hexcstream(const char *hex_digits, buint_size_t len) 
     } else {
      get_digit(hex_digits[len - offset - 1], 16, &x);
     }
-    retv.dat[i]|= x << 8*j;
+    retv.dat[i]|= (UInt)x << 8*j;
    } else {
     ready = 1;
    }
@@ -544,16 +544,16 @@ buint_size_t biguint128_msb(const BigUInt128 *a) {
  if (!found) {
   return 0;
  }
- return j * 8 * sizeof(UInt) + uint_msb(a->dat[j]);
+ return j * UINT_BITS + uint_msb(a->dat[j]);
 }
 
 void biguint128_sbit(BigUInt128 *a, buint_size_t bit) {
  buint_size_p bit_p = bitpos_(bit);
- a->dat[bit_p.byte_sel]|= 1<<bit_p.bit_sel;
+ a->dat[bit_p.byte_sel]|= (UInt)1 << bit_p.bit_sel;
 }
 void biguint128_cbit(BigUInt128 *a, buint_size_t bit) {
  buint_size_p bit_p = bitpos_(bit);
- a->dat[bit_p.byte_sel]&= ~(UInt)(1<<bit_p.bit_sel);
+ a->dat[bit_p.byte_sel]&= ~((UInt)1 << bit_p.bit_sel);
 }
 void biguint128_obit(BigUInt128 *a, buint_size_t bit, buint_bool value) {
  value?
@@ -562,7 +562,7 @@ void biguint128_obit(BigUInt128 *a, buint_size_t bit, buint_bool value) {
 }
 buint_bool biguint128_gbit(const BigUInt128 *a, buint_size_t bit) {
  buint_size_p bit_p = bitpos_(bit);
- return 0 < (a->dat[bit_p.byte_sel] & (1<<bit_p.bit_sel));
+ return 0 < (a->dat[bit_p.byte_sel] & ((UInt)1 << bit_p.bit_sel));
 }
 
 buint_size_t biguint128_print_hex(const BigUInt128 *a, char *buf, buint_size_t buf_len) {
