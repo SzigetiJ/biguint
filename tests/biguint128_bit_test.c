@@ -16,6 +16,11 @@ static void print_fun2_error(const char *expr, const char *a, const char *b, con
  fprintf(stderr, pbuffer, a, b, expected, buffer);
 }
 
+static void print_assign_ptr_error(const char *expr, const BigUInt128 *expected, const BigUInt128 *actual) {
+ fprintf(stderr, "%s does not preserve pointer -- input parameter: %p, return value: %p\n", expr, expected, actual);
+}
+
+
 bool test_and_or_not0() {
  const CStr samples_a[]={
   STR("0"),
@@ -76,10 +81,28 @@ bool test_and_or_not0() {
    BigUInt128 result_and2 = biguint128_not(&tmp_or);
    BigUInt128 result_xor = biguint128_xor(&a, &b);
 
+   BigUInt128 obj_and_assign = biguint128_ctor_copy(&a);
+   BigUInt128 *res_and_assign = biguint128_and_assign(&obj_and_assign, &b);
+   BigUInt128 obj_or_assign = biguint128_ctor_copy(&a);
+   BigUInt128 *res_or_assign = biguint128_or_assign(&obj_or_assign, &b);
+   BigUInt128 obj_xor_assign = biguint128_ctor_copy(&a);
+   BigUInt128 *res_xor_assign = biguint128_xor_assign(&obj_xor_assign, &b);
+   BigUInt128 obj_not_assign = biguint128_ctor_copy(&tmp_or);
+   BigUInt128 *res_not_assign = biguint128_not_assign(&obj_not_assign);
+
    buint_bool eq_and = biguint128_eq(&expected_and, &result_and);
    buint_bool eq_and2 = biguint128_eq(&expected_and, &result_and2);
    buint_bool eq_or = biguint128_eq(&expected_or, &result_or);
    buint_bool eq_xor = biguint128_eq(&expected_xor, &result_xor);
+
+   buint_bool eq_and_assign = biguint128_eq(&expected_and, &obj_and_assign);
+   buint_bool eq2_and_assign = (res_and_assign == &obj_and_assign);
+   buint_bool eq_or_assign = biguint128_eq(&expected_or, &obj_or_assign);
+   buint_bool eq2_or_assign = (res_or_assign == &obj_or_assign);
+   buint_bool eq_xor_assign = biguint128_eq(&expected_xor, &obj_xor_assign);
+   buint_bool eq2_xor_assign = (res_xor_assign == &obj_xor_assign);
+   buint_bool eq_not_assign = biguint128_eq(&expected_and, &obj_not_assign);
+   buint_bool eq2_not_assign = (res_not_assign == &obj_not_assign);
 
    if (!eq_and) {
     print_fun2_error("%s & %s", samples_a[a_i].str, samples_b[b_i].str, intersections[a_i][b_i].str, &result_and);
@@ -100,6 +123,43 @@ bool test_and_or_not0() {
     print_fun2_error("%s ^ %s", samples_a[a_i].str, samples_b[b_i].str, sym_diffs[a_i][b_i].str, &result_xor);
     fail = true;
    }
+
+   if (!eq_and_assign) {
+    print_fun2_error("%s &= %s", samples_a[a_i].str, samples_b[b_i].str, intersections[a_i][b_i].str, &obj_and_assign);
+    fail = true;
+   }
+   if (!eq2_and_assign) {
+    print_assign_ptr_error("a &= b", &obj_and_assign, res_and_assign);
+    fail = true;
+   }
+
+   if (!eq_or_assign) {
+    print_fun2_error("%s |= %s", samples_a[a_i].str, samples_b[b_i].str, unions[a_i][b_i].str, &obj_or_assign);
+    fail = true;
+   }
+   if (!eq2_or_assign) {
+    print_assign_ptr_error("a |= b", &obj_or_assign, res_or_assign);
+    fail = true;
+   }
+
+   if (!eq_xor_assign) {
+    print_fun2_error("%s ^= %s", samples_a[a_i].str, samples_b[b_i].str, sym_diffs[a_i][b_i].str, &obj_xor_assign);
+    fail = true;
+   }
+   if (!eq2_xor_assign) {
+    print_assign_ptr_error("a ^= b", &obj_xor_assign, res_xor_assign);
+    fail = true;
+   }
+
+   if (!eq_not_assign) {
+    print_fun2_error("flip(~%s | ~%s)", samples_a[a_i].str, samples_b[b_i].str, intersections[a_i][b_i].str, &obj_not_assign);
+    fail = true;
+   }
+   if (!eq2_not_assign) {
+    print_assign_ptr_error("a = ~a", &obj_not_assign, res_not_assign);
+    fail = true;
+   }
+
   }
  }
 

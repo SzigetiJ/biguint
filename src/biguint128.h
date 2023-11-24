@@ -171,18 +171,22 @@ BigUInt128 biguint128_ror(const BigUInt128 *a, const buint_size_t shift);
  @brief Bitwise AND operation.
 */
 BigUInt128 biguint128_and(const BigUInt128 *a, const BigUInt128 *b);
+BigUInt128 *biguint128_and_assign(BigUInt128 *a, const BigUInt128 *b);
 /**
  @brief Bitwise OR operation.
 */
 BigUInt128 biguint128_or(const BigUInt128 *a, const BigUInt128 *b);
+BigUInt128 *biguint128_or_assign(BigUInt128 *a, const BigUInt128 *b);
 /**
  @brief Bitwise NOT operation.
 */
 BigUInt128 biguint128_not(const BigUInt128 *a);
+BigUInt128 *biguint128_not_assign(BigUInt128 *a);
 /**
  @brief Bitwise XOR operation.
 */
 BigUInt128 biguint128_xor(const BigUInt128 *a, const BigUInt128 *b);
+BigUInt128 *biguint128_xor_assign(BigUInt128 *a, const BigUInt128 *b);
 
 // multiplication / division
 /**
