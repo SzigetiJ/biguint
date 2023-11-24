@@ -397,6 +397,7 @@ BigUInt128 biguint128_rol(const BigUInt128 *a, const buint_size_t shift) {
  return biguint128_ror(a, 128u - shift);
 }
 
+// AND
 BigUInt128 biguint128_and(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
  FOREACHCELL(i) {
@@ -405,6 +406,14 @@ BigUInt128 biguint128_and(const BigUInt128 *a, const BigUInt128 *b) {
  return retv;
 }
 
+BigUInt128 *biguint128_and_assign(BigUInt128 *a, const BigUInt128 *b) {
+ FOREACHCELL(i) {
+  a->dat[i] &= b->dat[i];
+ }
+ return a;
+}
+
+// OR
 BigUInt128 biguint128_or(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
  FOREACHCELL(i) {
@@ -413,6 +422,14 @@ BigUInt128 biguint128_or(const BigUInt128 *a, const BigUInt128 *b) {
  return retv;
 }
 
+BigUInt128 *biguint128_or_assign(BigUInt128 *a, const BigUInt128 *b) {
+ FOREACHCELL(i) {
+  a->dat[i] |= b->dat[i];
+ }
+ return a;
+}
+
+// NOT
 BigUInt128 biguint128_not(const BigUInt128 *a) {
  BigUInt128 retv;
  FOREACHCELL(i) {
@@ -421,12 +438,27 @@ BigUInt128 biguint128_not(const BigUInt128 *a) {
  return retv;
 }
 
+BigUInt128 *biguint128_not_assign(BigUInt128 *a) {
+ FOREACHCELL(i) {
+  a->dat[i] = ~a->dat[i];
+ }
+ return a;
+}
+
+// XOR
 BigUInt128 biguint128_xor(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv;
  FOREACHCELL(i) {
   retv.dat[i] = a->dat[i] ^ b->dat[i];
  }
  return retv;
+}
+
+BigUInt128 *biguint128_xor_assign(BigUInt128 *a, const BigUInt128 *b) {
+ FOREACHCELL(i) {
+  a->dat[i] ^= b->dat[i];
+ }
+ return a;
 }
 
 BigUInt128 biguint128_mul(const BigUInt128 *a, const BigUInt128 *b) {
