@@ -4,6 +4,11 @@
 ![C/C++ CI](https://github.com/SzigetiJ/biguint/workflows/C/C++%20CI/badge.svg)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0aed3d8a24aa41f6b622a85a170b1823)](https://app.codacy.com/gh/SzigetiJ/biguint/dashboard)
 [![codecov](https://codecov.io/gh/SzigetiJ/biguint/branch/master/graph/badge.svg)](https://codecov.io/gh/SzigetiJ/biguint)
+[![GitHub code size](https://img.shields.io/github/languages/code-size/SzigetiJ/biguint)](https://github.com/SzigetiJ/biguint)
+![GitHub repo size](https://img.shields.io/github/repo-size/SzigetiJ/biguint)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/y/SzigetiJ/biguint)
+![GitHub issues](https://img.shields.io/github/issues/SzigetiJ/biguint)
+![GitHub closed issues](https://img.shields.io/github/issues-closed/SzigetiJ/biguint)
 
 C library providing fixed length unsigned integer types longer than 64 bits.
 
@@ -26,7 +31,8 @@ All the provided types are accompanied by the following functions:
 * bitwise manipulation (get, set, clr, overwrite);
 * comparison (lt, eq);
 * parsing and printing (from/to hex and dec strings);
-* default and standard _constructors_ (initializer functions).
+* default and standard _constructors_ (initializer functions);
+* signed integer functions (printing, comparison).
 
 The source code of type `BigUInt128` is written in general manner.
 The source of all other biguint types are generated codes derived from `BigUInt128`.
