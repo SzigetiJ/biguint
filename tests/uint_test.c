@@ -25,6 +25,9 @@ bool test_uint_add() {
   for (unsigned int b_i=0; b_i<samples_len;++b_i) {
    buint_bool carry = false;
    UInt sum = uint_add(samples[a_i], samples[b_i], &carry);
+   UInt a_copy = samples[a_i];
+   buint_bool carry_asg = false;
+   UInt *sum_asg = uint_add_assign(&a_copy, samples[b_i], &carry_asg);
 
    if (sum!=sum_expects[a_i][b_i]) {
     fprintf(stderr, "%s: uint_add(%" PRIuint ",%" PRIuint ",&carry) return value expected: [%" PRIuint "] actual: [%" PRIuint "]\n",
@@ -36,6 +39,18 @@ bool test_uint_add() {
      __func__, samples[a_i], samples[b_i], !!carry_expects[a_i][b_i], !!carry);
      fail = true;
    }
+
+   if (*sum_asg!=sum_expects[a_i][b_i]) {
+    fprintf(stderr, "%s: uint_add_assign(%" PRIuint ",%" PRIuint ",&carry) return value expected: [%" PRIuint "] actual: [%" PRIuint "]\n",
+     __func__, samples[a_i], samples[b_i], sum_expects[a_i][b_i], *sum_asg);
+     fail = true;
+   }
+   if (!!carry_asg!=!!carry_expects[a_i][b_i]) {
+    fprintf(stderr, "%s: uint_add_assign(%" PRIuint ",%" PRIuint ",&carry) carry expected: [%d] actual: [%d]\n",
+     __func__, samples[a_i], samples[b_i], !!carry_expects[a_i][b_i], !!carry_asg);
+     fail = true;
+   }
+
   }
  }
  return !fail;

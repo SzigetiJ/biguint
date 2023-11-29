@@ -42,10 +42,15 @@ static inline BigUInt128 *clrall_(BigUInt128 *a);
 
 static inline BigUIntPair128 d1024_(const BigUInt128 *a);
 static inline BigUIntPair128 d1000_(const BigUInt128 *a);
+static inline BigUInt128 m10_(const BigUInt128 *a);
 
 static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset);
 
 // implementations
+
+/////////////////////
+// internal functions
+
 /**
  * Splits a bit position into pair of byte index [0..UINT_BYTES) and internal bit position [0,8)
  * @param a Bit position in BigUInt.
@@ -135,6 +140,21 @@ static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
  return retv;
 }
 
+/**
+ * Multiplication by 10.
+ */
+static inline BigUInt128 m10_(const BigUInt128 *a) {
+ BigUInt128 a2 = biguint128_shl(a,1);
+ BigUInt128 a8 = biguint128_shl(a,3);
+ biguint128_add_assign(&a8, &a2);
+ return a8;
+}
+
+// END internal functions
+/////////////////////
+
+/////////////////////
+// public functions
 
 BigUInt128 biguint128_ctor_default() {
  BigUInt128 retv;
@@ -183,13 +203,12 @@ BigUInt128 biguint128_ctor_hexcstream(const char *hex_digits, buint_size_t len) 
 
 BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len) {
  BigUInt128 retv=biguint128_ctor_default();
- BigUInt128 base = biguint128_value_of_uint(10);
  for (buint_size_t i = 0; i < len; ++i) {
   unsigned char d;
   get_digit(dec_digits[i], 10, &d);
   BigUInt128 dx = biguint128_value_of_uint(d);
-  retv = biguint128_mul(&retv, &base);
-  retv = biguint128_add(&retv, &dx);
+  retv = m10_(&retv);
+  biguint128_add_assign(&retv, &dx);
  }
  return retv;
 }
