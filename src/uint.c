@@ -23,15 +23,19 @@
 #define UINT_BITS (buint_size_t)(8*sizeof(UInt))
 
 UInt uint_add(UInt a, UInt b, buint_bool *carry) {
- UInt cx = *carry?1:0;
- UInt c = a + b + cx;
+ UInt c = a + b + !!(*carry);
  *carry = *carry ? c <= a : c < a;
  return c;
 }
 
+UInt *uint_add_assign(UInt *a, UInt b, buint_bool *carry) {
+  *a += b + !!(*carry);
+  *carry = (*carry ? *a <= b : *a < b);
+  return a;
+ }
+
 UInt uint_sub(UInt a, UInt b, buint_bool *carry) {
- UInt cx = *carry?1:0;
- UInt c = a - b - cx;
+ UInt c = a - b - !!(*carry);
  *carry = *carry ? a <= c : a < c;
  return c;
 }

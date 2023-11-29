@@ -40,6 +40,16 @@ typedef struct {
 UInt uint_add(UInt a, UInt b, buint_bool *carry);
 
 /**
+ @brief Incrementing an UInt value with other UInt and carry bit.
+ @param a points to the value to increment.
+ @param b value to add to a.
+ @param carry Input carry bit read from, output carry bit written to.
+ @return same as a.
+*/
+UInt *uint_add_assign(UInt *a, UInt b, buint_bool *carry);
+
+
+/**
  @brief Subtraction of UInt value from UInt value with carry bit.
  @param a minuend
  @param b subtrahend
