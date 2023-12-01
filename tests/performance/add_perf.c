@@ -50,5 +50,80 @@ int main() {
  buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
  fprintf(stdout, "(current sum: %s)\n", buf);
 
+ // #3: add-assign uint as biguint
+ {
+  t0 = clock();
+  BigUInt128 b2 = biguint128_ctor_standard(&b1.dat[0]);
+  for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
+   biguint128_add_assign(&b0, &b2);
+  }
+  t1 = clock();
+  print_result(t0, t1, "add-assign uint", LOOPS);
+  buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
+  fprintf(stdout, "(current sum: %s)\n", buf);
+ }
+ // #4: add-tiny
+ t0 = clock();
+ for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
+  biguint128_add_tiny(&b0, b1.dat[0]);
+ }
+ t1 = clock();
+ print_result(t0, t1, "add-tiny", LOOPS);
+ buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
+ fprintf(stdout, "(current sum: %s)\n", buf);
+
+ // #5: sub-tiny
+ t0 = clock();
+ for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
+  biguint128_sub_tiny(&b0, b1.dat[0]);
+ }
+ t1 = clock();
+ print_result(t0, t1, "sub-tiny", LOOPS);
+ buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
+ fprintf(stdout, "(current sum: %s)\n", buf);
+
+ // #6: sub-assign uint as biguint
+ {
+  t0 = clock();
+  BigUInt128 b2 = biguint128_ctor_standard(&b1.dat[0]);
+  for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
+   biguint128_sub_assign(&b0, &b2);
+  }
+  t1 = clock();
+  print_result(t0, t1, "sub-assign uint", LOOPS);
+  buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
+  fprintf(stdout, "(current sum: %s)\n", buf);
+ }
+
+ // #7: sub-replace
+ t0 = clock();
+ for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
+  biguint128_sub_replace(&b0, &b0, &b1);
+ }
+ t1 = clock();
+ print_result(t0, t1, "sub-replace", LOOPS);
+ buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
+ fprintf(stdout, "(current sum: %s)\n", buf);
+
+ // #8: sub-assignment
+ t0 = clock();
+ for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
+  biguint128_sub_assign(&b0, &b1);
+ }
+ t1 = clock();
+ print_result(t0, t1, "sub-assignment", LOOPS);
+ buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
+ fprintf(stdout, "(current sum: %s)\n", buf);
+
+ // #9: conventional sub
+ t0 = clock();
+ for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
+  b0 = biguint128_sub(&b0, &b1);
+ }
+ t1 = clock();
+ print_result(t0, t1, "sub", LOOPS);
+ buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
+ fprintf(stdout, "(current sum: %s)\n", buf);
+
  return 0;
 }

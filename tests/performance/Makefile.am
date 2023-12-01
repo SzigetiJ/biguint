@@ -1,6 +1,7 @@
 noinst_PROGRAMS = \
 	add_perf \
-	uint_perf
+	uint_perf \
+	print_perf
 
 if WITH_BIGUINT512
  noinst_PROGRAMS += parse_perf
