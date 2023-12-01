@@ -40,13 +40,13 @@ static inline buint_size_p bitpos_(buint_size_t a);
 static inline buint_bool is_bigint_negative_(const BigUInt128 *a);
 static inline BigUInt128 *clrall_(BigUInt128 *a);
 
-static inline BigUIntTinyPair128 d1024_(const BigUInt128 *a);
-static inline BigUIntPair128 d1000_(const BigUInt128 *a);
-static inline BigUInt128 m10_(const BigUInt128 *a);
-static inline BigUInt128 m100_(const BigUInt128 *a);
-static inline BigUInt128 m1000_(const BigUInt128 *a);
-
 static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset);
+
+static inline BigUIntTinyPair128 biguint128_div1024(const BigUInt128 *a);
+static inline BigUIntPair128 biguint128_div1000(const BigUInt128 *a);
+static inline BigUInt128 biguint128_mul10(const BigUInt128 *a);
+static inline BigUInt128 biguint128_mul100(const BigUInt128 *a);
+static inline BigUInt128 biguint128_mul1000(const BigUInt128 *a);
 
 // implementations
 
@@ -88,7 +88,7 @@ static inline BigUInt128 *clrall_(BigUInt128 *a) {
  * @param a Divident.
  * @return Pair of quotient and remainder.
  */
-static inline BigUIntTinyPair128 d1024_(const BigUInt128 *a) {
+static inline BigUIntTinyPair128 biguint128_div1024(const BigUInt128 *a) {
  BigUIntTinyPair128 retv;
  retv.first= biguint128_shr(a, 10);
  retv.second= (a->dat[0]) & (UInt)0x3FF;
@@ -105,7 +105,7 @@ static inline BigUIntTinyPair128 d1024_(const BigUInt128 *a) {
  * @param a Divident.
  * @return Pair of quotient and remainder.
  */
-static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
+static inline BigUIntPair128 biguint128_div1000(const BigUInt128 *a) {
  // The procedure goes like this:
  // We have to containers (retv.first, retv.second), and at the end
  // these will store the quotient and the remainder, respectively.
@@ -125,7 +125,7 @@ static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
  BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
  // Phase 1:
  while (biguint128_lt(&x2000, &retv.second)) {
-  BigUIntTinyPair128 x= d1024_(&retv.second);
+  BigUIntTinyPair128 x= biguint128_div1024(&retv.second);
   biguint128_add_assign(&retv.first, &x.first);
   BigUInt128 d_mul8= biguint128_shl(&x.first, 3);
   BigUInt128 d_mul16= biguint128_shl(&x.first, 4);
@@ -143,7 +143,7 @@ static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
 /**
  * Multiplication by 10 (= 8 + 2).
  */
-static inline BigUInt128 m10_(const BigUInt128 *a) {
+static inline BigUInt128 biguint128_mul10(const BigUInt128 *a) {
  BigUInt128 a3 = biguint128_shl(a,3);
  BigUInt128 a1 = biguint128_shl(a,1);
  biguint128_add_assign(&a3, &a1);
@@ -153,7 +153,7 @@ static inline BigUInt128 m10_(const BigUInt128 *a) {
 /**
  * Multiplication by 100 (= 64 + 32 + 4).
  */
-static inline BigUInt128 m100_(const BigUInt128 *a) {
+static inline BigUInt128 biguint128_mul100(const BigUInt128 *a) {
  BigUInt128 a6 = biguint128_shl(a,6);
  BigUInt128 a5 = biguint128_shl(a,5);
  BigUInt128 a2 = biguint128_shl(a,2);
@@ -165,7 +165,7 @@ static inline BigUInt128 m100_(const BigUInt128 *a) {
 /**
  * Multiplication by 1000 (= 1024 - 16 - 8).
  */
-static inline BigUInt128 m1000_(const BigUInt128 *a) {
+static inline BigUInt128 biguint128_mul1000(const BigUInt128 *a) {
  BigUInt128 a10 = biguint128_shl(a,10);
  BigUInt128 a4 = biguint128_shl(a,4);
  BigUInt128 a3 = biguint128_shl(a,3);
@@ -231,7 +231,7 @@ BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len) 
  for (buint_size_t i = 0; i < len; ++i) {
   unsigned char d;
   get_digit(dec_digits[i], 10, &d);
-  retv = m10_(&retv);
+  retv = biguint128_mul10(&retv);
   biguint128_add_tiny(&retv, d);
  }
  return retv;
@@ -684,7 +684,7 @@ static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *bu
  BigUInt128 temp = biguint128_ctor_copy(a);
 
  for (buint_size_t i= 0; !ready && i < buf_len; i+= 3) {
-  BigUIntPair128 res= d1000_(&temp);
+  BigUIntPair128 res= biguint128_div1000(&temp);
 
   buint_size_t buf_idx0= buf_len - i - 1;
   buint_size_t buf_idx1= buf_len - i - 2;
