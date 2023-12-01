@@ -129,13 +129,13 @@ static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
   biguint128_add_assign(&retv.first, &x.first);
   BigUInt128 d_mul8= biguint128_shl(&x.first, 3);
   BigUInt128 d_mul16= biguint128_shl(&x.first, 4);
-  retv.second = biguint128_add(&x.second, &d_mul16);
-  biguint128_add_assign(&retv.second, &d_mul8);
+  retv.second = biguint128_add(&d_mul8, &d_mul16);
+  biguint128_add_tiny(&retv.second, x.second.dat[0]);
  }
  // Phase 2:
- while (!biguint128_lt(&retv.second,&x1000)) {
-  biguint128_add_assign(&retv.first,&x1);
-  biguint128_sub_assign(&retv.second,&x1000);
+ while (!biguint128_lt(&retv.second, &x1000)) {
+  biguint128_add_tiny(&retv.first, 1);
+  biguint128_sub_tiny(&retv.second, x1000.dat[0]);
  }
  return retv;
 }
@@ -206,9 +206,8 @@ BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len) 
  for (buint_size_t i = 0; i < len; ++i) {
   unsigned char d;
   get_digit(dec_digits[i], 10, &d);
-  BigUInt128 dx = biguint128_value_of_uint(d);
   retv = m10_(&retv);
-  biguint128_add_assign(&retv, &dx);
+  biguint128_add_tiny(&retv, d);
  }
  return retv;
 }
@@ -317,19 +316,34 @@ void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
 // END SUB   //
 ///////////////
 
-BigUInt128 *biguint128_inc(BigUInt128 *a) {
- buint_bool carry= 1u;
- for (buint_size_t i= 0u; carry && i<BIGUINT128_CELLS; ++i) {
+// Tiny ADD/SUB
+BigUInt128 *biguint128_add_tiny(BigUInt128 *a, const UInt b) {
+ buint_bool carry= false;
+ a->dat[0]= uint_add(a->dat[0], b, &carry);
+ for (buint_size_t i= 1u; carry && i<BIGUINT128_CELLS; ++i) {
   a->dat[i]= uint_add(a->dat[i], 0u, &carry);
  }
  return a;
 }
 
-BigUInt128 *biguint128_dec(BigUInt128 *a) {
- buint_bool carry= 1u;
- for (buint_size_t i= 0u; carry && i<BIGUINT128_CELLS; ++i) {
+BigUInt128 *biguint128_sub_tiny(BigUInt128 *a, const UInt b) {
+ buint_bool carry= false;
+ a->dat[0]= uint_sub(a->dat[0], b, &carry);
+ for (buint_size_t i= 1u; carry && i<BIGUINT128_CELLS; ++i) {
   a->dat[i]= uint_sub(a->dat[i], 0u, &carry);
  }
+ return a;
+}
+
+
+// INC/DEC
+BigUInt128 *biguint128_inc(BigUInt128 *a) {
+ biguint128_add_tiny(a, 1U);
+ return a;
+}
+
+BigUInt128 *biguint128_dec(BigUInt128 *a) {
+ biguint128_sub_tiny(a, 1U);
  return a;
 }
 
@@ -671,6 +685,7 @@ static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *bu
  }
  return buf_len - *offset;
 }
+
 buint_size_t biguint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t buf_len) {
  buint_size_t offset;
  buint_size_t size = biguint128_print_dec_anywhere_(a, buf, buf_len, &offset);

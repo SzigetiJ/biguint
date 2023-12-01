@@ -119,6 +119,11 @@ void biguint128_add_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
 void biguint128_adc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *carry);
 
 /**
+ @brief Add-assignment of UInt to biguint.
+*/
+BigUInt128 *biguint128_add_tiny(BigUInt128 *a, const UInt b);
+
+/**
  @brief Subtraction with underflow.
 */
 BigUInt128 biguint128_sub(const BigUInt128 *a, const BigUInt128 *b);
@@ -137,6 +142,11 @@ void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
  @brief Sub-replacement with in/out carry.
  */
 void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *carry);
+
+/**
+ @brief Sub-assignment of UInt to biguint.
+*/
+BigUInt128 *biguint128_sub_tiny(BigUInt128 *a, const UInt b);
 
 // inc/dec
 BigUInt128 *biguint128_inc(BigUInt128 *a);
