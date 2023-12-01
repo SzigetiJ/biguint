@@ -40,7 +40,7 @@ static inline buint_size_p bitpos_(buint_size_t a);
 static inline buint_bool is_bigint_negative_(const BigUInt128 *a);
 static inline BigUInt128 *clrall_(BigUInt128 *a);
 
-static inline BigUIntPair128 d1024_(const BigUInt128 *a);
+static inline BigUIntTinyPair128 d1024_(const BigUInt128 *a);
 static inline BigUIntPair128 d1000_(const BigUInt128 *a);
 static inline BigUInt128 m10_(const BigUInt128 *a);
 
@@ -86,12 +86,10 @@ static inline BigUInt128 *clrall_(BigUInt128 *a) {
  * @param a Divident.
  * @return Pair of quotient and remainder.
  */
-static inline BigUIntPair128 d1024_(const BigUInt128 *a) {
- static const BigUInt128 x1023={{0x3FF}};
-
- BigUIntPair128 retv;
+static inline BigUIntTinyPair128 d1024_(const BigUInt128 *a) {
+ BigUIntTinyPair128 retv;
  retv.first= biguint128_shr(a, 10);
- retv.second= biguint128_and(a, &x1023);
+ retv.second= (a->dat[0]) & (UInt)0x3FF;
  return retv;
 }
 
@@ -125,12 +123,12 @@ static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
  BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
  // Phase 1:
  while (biguint128_lt(&x2000, &retv.second)) {
-  BigUIntPair128 x= d1024_(&retv.second);
+  BigUIntTinyPair128 x= d1024_(&retv.second);
   biguint128_add_assign(&retv.first, &x.first);
   BigUInt128 d_mul8= biguint128_shl(&x.first, 3);
   BigUInt128 d_mul16= biguint128_shl(&x.first, 4);
   retv.second = biguint128_add(&d_mul8, &d_mul16);
-  biguint128_add_tiny(&retv.second, x.second.dat[0]);
+  biguint128_add_tiny(&retv.second, x.second);
  }
  // Phase 2:
  while (!biguint128_lt(&retv.second, &x1000)) {
@@ -361,7 +359,7 @@ BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift) {
  * @param shift Amount of shift.
  * @return dest.
  */
-BigUInt128 *biguint128_shl_or(BigUInt128 *dest, const BigUInt128 *a, const buint_size_t shift) {
+BigUInt128 *biguint128_shl_or(BigUInt128 *restrict dest, const BigUInt128 *restrict a, const buint_size_t shift) {
  buint_size_p shift_p = bitpos_(shift);
 
  FOREACHCELL(i) {

@@ -49,7 +49,7 @@ UIntPair uint_split(UInt a, buint_size_t lsb) {
 }
 
 /**
- * Note, this function works only for lsb range 0..UINT_BITS.
+ * Note, this function works only for lsb range [0..UINT_BITS).
  * Value of lsb is not checked.
  */
 UIntPair uint_split_shift(UInt a, buint_size_t lsb) {
