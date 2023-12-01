@@ -15,5 +15,9 @@ typedef struct {
 
 bool negate_strcpy(char *dest, size_t dest_size, const char *src, size_t src_len);
 
+static inline const char *bool_to_str(int a) {
+ return a?"TRUE":"FALSE";
+}
+
 #endif /* TEST_COMMON_H */
 
