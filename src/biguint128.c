@@ -343,7 +343,7 @@ void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
 
 // Tiny ADD/SUB
 BigUInt128 *biguint128_add_tiny(BigUInt128 *a, const UInt b) {
- buint_bool carry= false;
+ buint_bool carry= 0U;
  a->dat[0]= uint_add(a->dat[0], b, &carry);
  for (buint_size_t i= 1u; carry && i<BIGUINT128_CELLS; ++i) {
   a->dat[i]= uint_add(a->dat[i], 0u, &carry);
@@ -352,7 +352,7 @@ BigUInt128 *biguint128_add_tiny(BigUInt128 *a, const UInt b) {
 }
 
 BigUInt128 *biguint128_sub_tiny(BigUInt128 *a, const UInt b) {
- buint_bool carry= false;
+ buint_bool carry= 0U;
  a->dat[0]= uint_sub(a->dat[0], b, &carry);
  for (buint_size_t i= 1u; carry && i<BIGUINT128_CELLS; ++i) {
   a->dat[i]= uint_sub(a->dat[i], 0u, &carry);
