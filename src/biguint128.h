@@ -41,6 +41,16 @@ typedef struct {
  BigUInt128 second;
 } BigUIntPair128;
 
+/**
+ Auxiliary type for the result of tiny division (Storing quotient and remainder).
+*/
+typedef struct {
+ BigUInt128 first;
+ UInt second;
+} BigUIntTinyPair128;
+
+
+
 // constructors
 /**
  @brief Generates BigUInt128 instance initialized to 0.
