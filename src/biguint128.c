@@ -43,6 +43,8 @@ static inline BigUInt128 *clrall_(BigUInt128 *a);
 static inline BigUIntTinyPair128 d1024_(const BigUInt128 *a);
 static inline BigUIntPair128 d1000_(const BigUInt128 *a);
 static inline BigUInt128 m10_(const BigUInt128 *a);
+static inline BigUInt128 m100_(const BigUInt128 *a);
+static inline BigUInt128 m1000_(const BigUInt128 *a);
 
 static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset);
 
@@ -139,14 +141,39 @@ static inline BigUIntPair128 d1000_(const BigUInt128 *a) {
 }
 
 /**
- * Multiplication by 10.
+ * Multiplication by 10 (= 8 + 2).
  */
 static inline BigUInt128 m10_(const BigUInt128 *a) {
- BigUInt128 a2 = biguint128_shl(a,1);
- BigUInt128 a8 = biguint128_shl(a,3);
- biguint128_add_assign(&a8, &a2);
- return a8;
+ BigUInt128 a3 = biguint128_shl(a,3);
+ BigUInt128 a1 = biguint128_shl(a,1);
+ biguint128_add_assign(&a3, &a1);
+ return a3;
 }
+
+/**
+ * Multiplication by 100 (= 64 + 32 + 4).
+ */
+static inline BigUInt128 m100_(const BigUInt128 *a) {
+ BigUInt128 a6 = biguint128_shl(a,6);
+ BigUInt128 a5 = biguint128_shl(a,5);
+ BigUInt128 a2 = biguint128_shl(a,2);
+ biguint128_add_assign(&a6, &a5);
+ biguint128_add_assign(&a6, &a2);
+ return a6;
+}
+
+/**
+ * Multiplication by 1000 (= 1024 - 16 - 8).
+ */
+static inline BigUInt128 m1000_(const BigUInt128 *a) {
+ BigUInt128 a10 = biguint128_shl(a,10);
+ BigUInt128 a4 = biguint128_shl(a,4);
+ BigUInt128 a3 = biguint128_shl(a,3);
+ biguint128_sub_assign(&a10, &a4);
+ biguint128_sub_assign(&a10, &a3);
+ return a10;
+}
+
 
 // END internal functions
 /////////////////////
