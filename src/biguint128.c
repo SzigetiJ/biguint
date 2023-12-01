@@ -38,15 +38,10 @@
 // static function declarations
 static inline buint_size_p bitpos_(buint_size_t a);
 static inline buint_bool is_bigint_negative_(const BigUInt128 *a);
+static inline BigUInt128 *bigint128_negate_(BigUInt128 *a);
 static inline BigUInt128 *clrall_(BigUInt128 *a);
 
 static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset);
-
-static inline BigUIntTinyPair128 biguint128_div1024(const BigUInt128 *a);
-static inline BigUIntPair128 biguint128_div1000(const BigUInt128 *a);
-static inline BigUInt128 biguint128_mul10(const BigUInt128 *a);
-static inline BigUInt128 biguint128_mul100(const BigUInt128 *a);
-static inline BigUInt128 biguint128_mul1000(const BigUInt128 *a);
 
 // implementations
 
@@ -71,6 +66,12 @@ static inline buint_bool is_bigint_negative_(const BigUInt128 *a) {
  return biguint128_gbit(a, 128u - 1u);
 }
 
+static inline BigUInt128 *bigint128_negate_(BigUInt128 *a) {
+ biguint128_dec(a);
+ biguint128_not_assign(a);
+ return a;
+}
+
 /**
  * Clears all data (set to 0).
  * @param a Subject of operation;
@@ -81,97 +82,6 @@ static inline BigUInt128 *clrall_(BigUInt128 *a) {
   a->dat[i]=0;
  }
  return a;
-}
-
-/**
- * Division by 1024. Division by 1000 relies on this function.
- * @param a Divident.
- * @return Pair of quotient and remainder.
- */
-static inline BigUIntTinyPair128 biguint128_div1024(const BigUInt128 *a) {
- BigUIntTinyPair128 retv;
- retv.first= biguint128_shr(a, 10);
- retv.second= (a->dat[0]) & (UInt)0x3FF;
- return retv;
-}
-
-/**
- * Division by 1000. Definitely faster than biguint128_div().
- * The decimal printer function HEX->DEC conversion,
- * and without this function it would take a long time.
- * Maybe this function will be promoted to the interface,
- * since div/mod by 1000 is called frequently
- * (e.g., ms->s, mm->m, etc. conversions).
- * @param a Divident.
- * @return Pair of quotient and remainder.
- */
-static inline BigUIntPair128 biguint128_div1000(const BigUInt128 *a) {
- // The procedure goes like this:
- // We have to containers (retv.first, retv.second), and at the end
- // these will store the quotient and the remainder, respectively.
- // Initially, retv.first is empty and retv.second stores the whole amount of a.
- // Step-by-step retv.first is increased while retv.second is decreased.
- // Note that 1000 * retv.first + retv.second = *a remains invariant
- // during the whole process.
- // In phase #1 we exploit that
- // a = 1024*b + c = (1000*b) + (24*b+c)
- // and reduce retv.second iteratively until it gets small enough.
- // In phase #2 we just subtract 1000 from the remainder if it is still too high.
- // Well, the while loop is an overkill for this limit (2000).
- static const BigUInt128 x1={{1}};
- static const BigUInt128 x1000={{0x3E8}};
- static const BigUInt128 x2000={{0x7D0}};
-
- BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
- // Phase 1:
- while (biguint128_lt(&x2000, &retv.second)) {
-  BigUIntTinyPair128 x= biguint128_div1024(&retv.second);
-  biguint128_add_assign(&retv.first, &x.first);
-  BigUInt128 d_mul8= biguint128_shl(&x.first, 3);
-  BigUInt128 d_mul16= biguint128_shl(&x.first, 4);
-  retv.second = biguint128_add(&d_mul8, &d_mul16);
-  biguint128_add_tiny(&retv.second, x.second);
- }
- // Phase 2:
- while (!biguint128_lt(&retv.second, &x1000)) {
-  biguint128_add_tiny(&retv.first, 1);
-  biguint128_sub_tiny(&retv.second, x1000.dat[0]);
- }
- return retv;
-}
-
-/**
- * Multiplication by 10 (= 8 + 2).
- */
-static inline BigUInt128 biguint128_mul10(const BigUInt128 *a) {
- BigUInt128 a3 = biguint128_shl(a,3);
- BigUInt128 a1 = biguint128_shl(a,1);
- biguint128_add_assign(&a3, &a1);
- return a3;
-}
-
-/**
- * Multiplication by 100 (= 64 + 32 + 4).
- */
-static inline BigUInt128 biguint128_mul100(const BigUInt128 *a) {
- BigUInt128 a6 = biguint128_shl(a,6);
- BigUInt128 a5 = biguint128_shl(a,5);
- BigUInt128 a2 = biguint128_shl(a,2);
- biguint128_add_assign(&a6, &a5);
- biguint128_add_assign(&a6, &a2);
- return a6;
-}
-
-/**
- * Multiplication by 1000 (= 1024 - 16 - 8).
- */
-static inline BigUInt128 biguint128_mul1000(const BigUInt128 *a) {
- BigUInt128 a10 = biguint128_shl(a,10);
- BigUInt128 a4 = biguint128_shl(a,4);
- BigUInt128 a3 = biguint128_shl(a,3);
- biguint128_sub_assign(&a10, &a4);
- biguint128_sub_assign(&a10, &a3);
- return a10;
 }
 
 
@@ -615,15 +525,27 @@ BigUIntPair128 bigint128_div(const BigUInt128 *a, const BigUInt128 *b) {
 
  // afterwork
  if (!neg[0] != !neg[1]) {
-   biguint128_dec(&retv.first);
-   biguint128_not_assign(&retv.first);
+   bigint128_negate_(&retv.first);
  }
  if (neg[0]) {
-   biguint128_dec(&retv.second);
-   biguint128_not_assign(&retv.second);
+   bigint128_negate_(&retv.second);
  }
  return retv;
 }
+
+BigUIntPair128 bigint128_div1000(const BigUInt128 *a) {
+ if (is_bigint_negative_(a)) {
+  BigUInt128 ac = *a;
+  bigint128_negate_(&ac);
+  BigUIntPair128 retv = biguint128_div1000(&ac);
+  bigint128_negate_(&retv.first);
+  bigint128_negate_(&retv.second);
+  return retv;
+ } else {
+  return biguint128_div1000(a);
+ }
+}
+
 
 
 buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b) {

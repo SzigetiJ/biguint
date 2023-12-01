@@ -38,10 +38,6 @@ const BigUIntSortRelTestVector samples[]={
 };
 int sample_len = sizeof(samples) / sizeof(BigUIntSortRelTestVector);
 
-const char *bool_to_str(int a) {
- return a?"TRUE":"FALSE";
-}
-
 int test_sortrel0() {
  int fail = 0;
  int run_cnt = 0;
@@ -88,7 +84,6 @@ int test_sortrel0() {
 int test_sortrel1() {
  int fail = 0;
  int run_cnt = 0;
- BigUInt128 zero = biguint128_ctor_default();
 
  for (int i=0; i<sample_len; ++i) {
   // prepare
@@ -103,8 +98,6 @@ int test_sortrel1() {
 
   BigUInt128 a_neg = negate_bigint128(&a);
   BigUInt128 b_neg = negate_bigint128(&b);
-  buint_bool za = biguint128_eq(&a, &zero);
-  buint_bool zb = biguint128_eq(&b, &zero);
 
   // eval
   buint_bool result_lt_1 = bigint128_lt(&a_neg, &b);

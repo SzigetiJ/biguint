@@ -6,7 +6,12 @@ TESTS = \
 	biguint128_eq_test \
 	biguint128_bit_test \
 	biguint128_add_test \
-	biguint128_mul_test
+	biguint128_mul_test \
+	bigdecimal128_io_test \
+	bigdecimal128_add_test \
+	bigdecimal128_mul_test \
+	bigdecimal128_eq_test \
+	bigdecimal128_prec_test
 
 check_PROGRAMS = $(TESTS)
 
@@ -22,7 +27,8 @@ if WITH_BIGUINT256
 	biguint@bits256@_eq_test \
 	biguint@bits256@_bit_test \
 	biguint@bits256@_add_test \
-	biguint@bits256@_mul_test
+	biguint@bits256@_mul_test \
+	bigdecimal@bits256@_io_test
 
  TESTS += $(ADDITIONAL256)
  check_PROGRAMS += $(ADDITIONAL256)
@@ -32,6 +38,7 @@ if WITH_BIGUINT256
  nodist_biguint@bits256@_bit_test_SOURCES = biguint@bits256@_bit_test.c
  nodist_biguint@bits256@_add_test_SOURCES = biguint@bits256@_add_test.c
  nodist_biguint@bits256@_mul_test_SOURCES = biguint@bits256@_mul_test.c
+ nodist_bigdecimal@bits256@_io_test_SOURCES = bigdecimal@bits256@_io_test.c
 
  CLEANFILES = \
 	biguint@bits256@_ctor_test.c \
@@ -40,6 +47,7 @@ if WITH_BIGUINT256
 	biguint@bits256@_bit_test.c \
 	biguint@bits256@_add_test.c \
 	biguint@bits256@_mul_test.c \
+	bigdecimal@bits256@_io_test.c \
 	test_common@bits256@.c \
 	test_common@bits256@.h
  BUILT_SOURCES = $(CLEANFILES)
@@ -62,6 +70,9 @@ biguint256_add_test.c: biguint128_add_test.c
 biguint256_mul_test.c: biguint128_mul_test.c
 	$(SED) 's/128/256/g' < $< > $@
 
+bigdecimal256_io_test.c: bigdecimal128_io_test.c
+	$(SED) 's/128/256/g' < $< > $@
+
 test_common256.c: test_common128.c
 	$(SED) 's/128/256/g' < $< > $@
 
@@ -73,6 +84,7 @@ test_common256.h: test_common128.h
  biguint@bits256@_mul_test_LDADD = test_common.o test_common256.o ../src/libbiguint.a
  biguint@bits256@_add_test_LDADD = test_common.o test_common256.o ../src/libbiguint.a
  biguint@bits256@_bit_test_LDADD = test_common.o test_common256.o ../src/libbiguint.a
+ bigdecimal@bits256@_io_test_LDADD = test_common.o ../src/libbiguint.a
 
  DISTCLEANFILES += $(DEPDIR)/test_common256.Po
 endif
@@ -87,5 +99,7 @@ biguint128_eq_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
 biguint128_mul_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
 biguint128_add_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
 biguint128_bit_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
+bigdecimal128_io_test_LDADD = test_common.o ../src/libbiguint.a
+bigdecimal128_prec_test_LDADD = test_common.o ../src/libbiguint.a
 
 SUBDIRS=performance
