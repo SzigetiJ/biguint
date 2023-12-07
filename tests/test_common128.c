@@ -34,9 +34,23 @@ bool readhex_biguint128(BigUInt128 *result, const char* const hexstr, size_t hex
  return true;
 }
 
+bool readdec_bigint128(BigUInt128 *result, const char* const decstr, size_t declen) {
+ if (declen == 0 || DEC_BIGINTLEN < declen) {
+  return false;
+ }
+ *result = bigint128_ctor_deccstream(decstr, declen);
+ return true;
+}
+
+
 bool readhex_cstr_biguint128(BigUInt128 *result, const CStr* const hex) {
  return readhex_biguint128(result, hex->str, hex->len);
 }
+
+bool readdec_cstr_bigint128(BigUInt128 *result, const CStr* const dec) {
+ return readdec_bigint128(result, dec->str, dec->len);
+}
+
 
 bool readhex_more_cstr_biguint128(BigUInt128 *result_arr, const CStr* const hex_arr, size_t num) {
  bool retv = true;
@@ -46,6 +60,13 @@ bool readhex_more_cstr_biguint128(BigUInt128 *result_arr, const CStr* const hex_
  return retv;
 }
 
+bool readdec_more_cstr_bigint128(BigUInt128 *result_arr, const CStr * const dec_arr, size_t num) {
+ bool retv = true;
+ for (size_t i = 0; i < num; ++i) {
+  retv &= readdec_cstr_bigint128(result_arr + i, dec_arr + i);
+ }
+ return retv;
+}
 
 void fprint_funres_buint128_x_bsz_buint128(
         FILE *out,

@@ -597,6 +597,35 @@ BigUIntPair128 biguint128_div(const BigUInt128 *a, const BigUInt128 *b) {
  return retv;
 }
 
+BigUIntPair128 bigint128_div(const BigUInt128 *a, const BigUInt128 *b) {
+ // work with copies
+ BigUInt128 ab[] = {biguint128_ctor_copy(a), biguint128_ctor_copy(b)};
+ // check signs
+ buint_bool neg[] = {is_bigint_negative_(a), is_bigint_negative_(b)};
+ // convert
+ for (unsigned int i = 0U; i<2; ++i) {
+  if (neg[i]) {
+   biguint128_dec(&ab[i]);
+   biguint128_not_assign(&ab[i]);
+  }
+ }
+
+ // calling the wrapped function
+ BigUIntPair128 retv = biguint128_div(&ab[0], &ab[1]);
+
+ // afterwork
+ if (!neg[0] != !neg[1]) {
+   biguint128_dec(&retv.first);
+   biguint128_not_assign(&retv.first);
+ }
+ if (neg[0]) {
+   biguint128_dec(&retv.second);
+   biguint128_not_assign(&retv.second);
+ }
+ return retv;
+}
+
+
 buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
  FOREACHCELL(i) {
   buint_size_t j = BIGUINT128_CELLS - i - 1;
@@ -609,7 +638,7 @@ buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
 buint_bool bigint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
  buint_bool neg_a = is_bigint_negative_(a);
  buint_bool neg_b = is_bigint_negative_(b);
- return (neg_a == neg_b) ?
+ return (!!neg_a == !!neg_b) ?
   biguint128_lt(a,b): // compare them in the usual way
   neg_a; // if only one of them is negative, a must be negative to be lower than b.
 }
