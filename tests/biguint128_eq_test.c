@@ -14,24 +14,27 @@ typedef enum {
 typedef struct {
  CStr left;
  CStr right;
- BigUIntSortRelation rel;
+ BigUIntSortRelation rel_pp;
+ BigUIntSortRelation rel_np;
+ BigUIntSortRelation rel_pn;
+ BigUIntSortRelation rel_nn;
 } BigUIntSortRelTestVector;
 
 const BigUIntSortRelTestVector samples[]={
- {STR("0"),STR("0"),BIGUINT_EQ},
- {STR("0"),STR("1"),BIGUINT_LT},
- {STR("FFFFFFFF"),STR("FFFFFFFF"),BIGUINT_EQ},
- {STR("FFFFFFFF"),STR("100000000"),BIGUINT_LT},
- {STR("0"),STR("100000000"),BIGUINT_LT},
- {STR("0"),STR("10000000000000000"),BIGUINT_LT},
- {STR("0"),STR("100000000000000000000000000000000"),BIGUINT_LT},
- {STR("0"),STR("10000000000000000000000000000000000000000000000000000000000000000"),BIGUINT_LT},
- {STR("1"),STR("100000001"),BIGUINT_LT},
- {STR("100000001"),STR("100000001"),BIGUINT_EQ},
- {STR("FFFFFFFFF00000000"),STR("FFFFFFFF00000000FFFFFFFF"),BIGUINT_LT},
- {STR("A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A"),BIGUINT_GT},
- {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A"),BIGUINT_GT},
- {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A"),BIGUINT_GT},
+ {STR("0"),STR("0"),BIGUINT_EQ,BIGUINT_EQ,BIGUINT_EQ,BIGUINT_EQ},
+ {STR("0"),STR("1"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
+ {STR("FFFFFFFF"),STR("FFFFFFFF"),BIGUINT_EQ,BIGUINT_LT,BIGUINT_GT,BIGUINT_EQ},
+ {STR("FFFFFFFF"),STR("100000000"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
+ {STR("0"),STR("100000000"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
+ {STR("0"),STR("10000000000000000"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
+ {STR("0"),STR("100000000000000000000000000000000"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
+ {STR("0"),STR("10000000000000000000000000000000000000000000000000000000000000000"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
+ {STR("1"),STR("100000001"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
+ {STR("100000001"),STR("100000001"),BIGUINT_EQ,BIGUINT_LT,BIGUINT_GT,BIGUINT_EQ},
+ {STR("FFFFFFFFF00000000"),STR("FFFFFFFF00000000FFFFFFFF"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
+ {STR("A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A"),BIGUINT_GT,BIGUINT_LT,BIGUINT_GT,BIGUINT_LT},
+ {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A"),BIGUINT_GT,BIGUINT_LT,BIGUINT_GT,BIGUINT_LT},
+ {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A"),BIGUINT_GT,BIGUINT_LT,BIGUINT_GT,BIGUINT_LT},
 };
 int sample_len = sizeof(samples) / sizeof(BigUIntSortRelTestVector);
 
@@ -59,20 +62,20 @@ int test_sortrel0() {
   buint_bool result_eq_rev = biguint128_eq(&b, &a);
 
   // process result
-  if (!!result_lt != (samples[i].rel==BIGUINT_LT)) {
-   fprintf(stderr, "[%s < %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel==BIGUINT_LT), bool_to_str(result_lt));
+  if (!!result_lt != (samples[i].rel_pp==BIGUINT_LT)) {
+   fprintf(stderr, "[%s < %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel_pp==BIGUINT_LT), bool_to_str(result_lt));
    fail = 1;
   }
-  if (!!result_eq != (samples[i].rel==BIGUINT_EQ)) {
-   fprintf(stderr, "[%s == %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel==BIGUINT_EQ), bool_to_str(result_eq));
+  if (!!result_eq != (samples[i].rel_pp==BIGUINT_EQ)) {
+   fprintf(stderr, "[%s == %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel_pp==BIGUINT_EQ), bool_to_str(result_eq));
    fail = 1;
   }
-  if (!!result_lt_rev != (samples[i].rel==BIGUINT_GT)) {
-   fprintf(stderr, "[%s < %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel==BIGUINT_GT), bool_to_str(result_lt));
+  if (!!result_lt_rev != (samples[i].rel_pp==BIGUINT_GT)) {
+   fprintf(stderr, "[%s < %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel_pp==BIGUINT_GT), bool_to_str(result_lt));
    fail = 1;
   }
-  if (!!result_eq_rev != (samples[i].rel==BIGUINT_EQ)) {
-   fprintf(stderr, "[%s == %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel==BIGUINT_EQ), bool_to_str(result_eq));
+  if (!!result_eq_rev != (samples[i].rel_pp==BIGUINT_EQ)) {
+   fprintf(stderr, "[%s == %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel_pp==BIGUINT_EQ), bool_to_str(result_eq));
    fail = 1;
   }
   ++run_cnt;
@@ -112,31 +115,33 @@ int test_sortrel1() {
   buint_bool result_gt_3 = bigint128_lt(&b_neg, &a_neg);
 
   // process result
-  if (!result_lt_1 && !(za && zb)) { // a not positive value is less than a not negative value, unless they both are 0
-   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(1), bool_to_str(result_lt_1));
+  // neg(a) vs. b
+  if (!!result_lt_1 != (samples[i].rel_np==BIGUINT_LT)) {
+   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel_np==BIGUINT_LT), bool_to_str(result_lt_1));
    fail = 1;
   }
-  if (result_gt_1) { // a not negative value cannot be less than a not positive value
-   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(0), bool_to_str(result_gt_1));
-   fail = 1;
-  }
-
-  if (result_lt_2) { // a not negative value cannot be less than a not positive value
-   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(0), bool_to_str(result_lt_2));
-   fail = 1;
-  }
-  if (!result_gt_2 && !(za && zb)) { // a not positive value is less than a not negative value, unless they both are 0
-   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(1), bool_to_str(result_gt_2));
+  if (!!result_gt_1 != (samples[i].rel_np==BIGUINT_GT)) { // a not negative value cannot be less than a not positive value
+   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel_np==BIGUINT_GT), bool_to_str(result_gt_1));
    fail = 1;
   }
 
-  // original
-  if (!!result_lt_3 != (samples[i].rel==BIGUINT_GT)) { // if a gt b, then neg(a) lt neg(b)
-   fprintf(stderr, "[neg(%s) < neg(%s)] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel==BIGUINT_LT), bool_to_str(result_lt_3));
+  // a vs. neg(b)
+  if (!!result_lt_2 != (samples[i].rel_pn==BIGUINT_LT)) {
+   fprintf(stderr, "[%s < neg(%s)] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel_pn==BIGUINT_LT), bool_to_str(result_lt_2));
    fail = 1;
   }
-  if (!!result_gt_3 != (samples[i].rel==BIGUINT_LT)) { // if a lt b, then neg(a) gt neg(b)
-   fprintf(stderr, "[neg(%s) < neg(%s)] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel==BIGUINT_GT), bool_to_str(result_gt_3));
+  if (!!result_gt_2 != (samples[i].rel_pn==BIGUINT_GT)) {
+   fprintf(stderr, "[neg(%s) < %s] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel_pn==BIGUINT_GT), bool_to_str(result_gt_2));
+   fail = 1;
+  }
+
+  // neg(a) vs. neg(b)
+  if (!!result_lt_3 != (samples[i].rel_nn==BIGUINT_LT)) {
+   fprintf(stderr, "[neg(%s) < neg(%s)] expected: [%s], actual [%s]\n", sample_left->str, sample_right->str, bool_to_str(samples[i].rel_nn==BIGUINT_LT), bool_to_str(result_lt_3));
+   fail = 1;
+  }
+  if (!!result_gt_3 != (samples[i].rel_nn==BIGUINT_GT)) {
+   fprintf(stderr, "[neg(%s) < neg(%s)] expected: [%s], actual [%s]\n", sample_right->str, sample_left->str, bool_to_str(samples[i].rel_nn==BIGUINT_GT), bool_to_str(result_gt_3));
    fail = 1;
   }
   ++run_cnt;

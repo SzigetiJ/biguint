@@ -17,6 +17,13 @@ const CStr hex_samples[][3] = {
 };
 int hex_sample_len = sizeof(hex_samples) / (sizeof(hex_samples[0]));
 
+const CStr bigint_dec_samples[][5] = {
+ { STR("-10"), STR("10"), STR("-100"), STR("-105"), STR("-5")},
+ { STR("10"), STR("-10"), STR("-100"), STR("-103"), STR("-3")},
+ { STR("-10"), STR("-10"), STR("100"), STR("102"), STR("2")},
+};
+int bigint_dec_sample_len = sizeof(bigint_dec_samples) / (sizeof(bigint_dec_samples[0]));
+
 bool test_mul0() {
  bool fail = false;
  for (int i=0; i<hex_sample_len; ++i) {
@@ -208,7 +215,7 @@ bool test_div1() {
   BigUInt128 val[3];
   BigUInt128 *a=&val[0];
   BigUInt128 *b=&val[2];
-  if (!readhex_more_cstr_biguint128(val, hex_samples[i],3)) {
+  if (!readhex_more_cstr_biguint128(val, hex_samples[i], 3)) {
    continue;
   }
   if (biguint128_eq(a, &zero)) {
@@ -238,6 +245,83 @@ bool test_div1() {
  return !fail;
 }
 
+
+bool test_mul_signed0() {
+ bool fail = false;
+ for (int i=0; i<bigint_dec_sample_len; ++i) {
+  BigUInt128 val[3];
+  if (!readdec_more_cstr_bigint128(val, bigint_dec_samples[i], 3)) {
+   continue;
+  }
+
+  BigUInt128 res_mul = biguint128_mul(&val[0], &val[1]);
+  BigUIntPair128 res_div = bigint128_div(&val[2], &val[1]);
+
+  buint_bool result_mul_eq = biguint128_eq(&val[2], &res_mul);
+  buint_bool result_div_eq = biguint128_eq(&val[0], &res_div.first);
+
+  if (!result_mul_eq) {
+   char buffer[4][HEX_BIGUINTLEN + 1];
+   buffer[0][bigint128_print_dec(&val[0], buffer[0], HEX_BIGUINTLEN)]=0;
+   buffer[1][bigint128_print_dec(&val[1], buffer[1], HEX_BIGUINTLEN)]=0;
+   buffer[2][bigint128_print_dec(&val[2], buffer[2], HEX_BIGUINTLEN)]=0;
+   buffer[3][bigint128_print_dec(&res_mul, buffer[3], HEX_BIGUINTLEN)]=0;
+   fprintf(stderr, "[%s * %s] -- expected: [%s], actual [%s]\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+   fail = true;
+  }
+
+  if (!result_div_eq) {
+   char buffer[4][HEX_BIGUINTLEN + 1];
+   buffer[0][bigint128_print_dec(&val[2], buffer[0], HEX_BIGUINTLEN)]=0;
+   buffer[1][bigint128_print_dec(&val[1], buffer[1], HEX_BIGUINTLEN)]=0;
+   buffer[2][bigint128_print_dec(&val[0], buffer[2], HEX_BIGUINTLEN)]=0;
+   buffer[3][bigint128_print_dec(&res_div.first, buffer[3], HEX_BIGUINTLEN)]=0;
+   fprintf(stderr, "[%s / %s] -- expected: [%s], actual [%s]\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+   fail = true;
+  }
+ }
+
+ return !fail;
+}
+
+bool test_div_signed0() {
+ bool fail = false;
+ for (int i=0; i<bigint_dec_sample_len; ++i) {
+  BigUInt128 val[5];
+  if (!readdec_more_cstr_bigint128(val, bigint_dec_samples[i], 5)) {
+   continue;
+  }
+
+  BigUIntPair128 res_div = bigint128_div(&val[3], &val[1]);
+
+  buint_bool result_div_eq = biguint128_eq(&val[0], &res_div.first);
+  buint_bool result_rem_eq = biguint128_eq(&val[4], &res_div.second);
+
+  if (!result_rem_eq) {
+   char buffer[4][HEX_BIGUINTLEN + 1];
+   buffer[0][bigint128_print_dec(&val[3], buffer[0], HEX_BIGUINTLEN)]=0;
+   buffer[1][bigint128_print_dec(&val[2], buffer[1], HEX_BIGUINTLEN)]=0;
+   buffer[2][bigint128_print_dec(&val[4], buffer[2], HEX_BIGUINTLEN)]=0;
+   buffer[3][bigint128_print_dec(&res_div.second, buffer[3], HEX_BIGUINTLEN)]=0;
+   fprintf(stderr, "[%s - %s] (a - b(a/b)) -- expected: [%s], actual [%s]\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+   fail = true;
+  }
+
+  if (!result_div_eq) {
+   char buffer[4][HEX_BIGUINTLEN + 1];
+   buffer[0][bigint128_print_dec(&val[3], buffer[0], HEX_BIGUINTLEN)]=0;
+   buffer[1][bigint128_print_dec(&val[1], buffer[1], HEX_BIGUINTLEN)]=0;
+   buffer[2][bigint128_print_dec(&val[0], buffer[2], HEX_BIGUINTLEN)]=0;
+   buffer[3][bigint128_print_dec(&res_div.first, buffer[3], HEX_BIGUINTLEN)]=0;
+   fprintf(stderr, "[%s / %s] -- expected: [%s], actual [%s]\n", buffer[0], buffer[1], buffer[2], buffer[3]);
+   fail = true;
+  }
+ }
+
+ return !fail;
+}
+
+
 int main(int argc, char **argv) {
 
  init_testvalues();
@@ -250,6 +334,9 @@ int main(int argc, char **argv) {
 
  assert(test_div0());
  assert(test_div1());
+
+ assert(test_mul_signed0());
+ assert(test_div_signed0());
 
  return 0;
 }

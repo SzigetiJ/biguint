@@ -227,6 +227,12 @@ BigUIntPair128 biguint128_dmul(const BigUInt128 *a, const BigUInt128 *b);
 */
 BigUIntPair128 biguint128_div(const BigUInt128 *a, const BigUInt128 *b);
 
+/**
+ @brief Division of signed values.
+ @return First: quotient, second: remainder so that (a == b * quotient + remainder) is true.
+*/
+BigUIntPair128 bigint128_div(const BigUInt128 *a, const BigUInt128 *b);
+
 // comparison
 /**
  @brief 'Less than' relation.
