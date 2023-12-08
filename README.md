@@ -1,4 +1,5 @@
-## Big Unsigned Integers
+## (Not just) Big Unsigned Integers
+_But also Big Signed Integers and Big Decimal numbers._
 
 ![GitHub](https://img.shields.io/github/license/SzigetiJ/biguint)
 ![C/C++ CI](https://github.com/SzigetiJ/biguint/workflows/C/C++%20CI/badge.svg)
@@ -10,11 +11,13 @@
 ![GitHub issues](https://img.shields.io/github/issues/SzigetiJ/biguint)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/SzigetiJ/biguint)
 
-C library providing fixed length unsigned integer types longer than 64 bits.
+C library providing fixed length integer types longer than 64 bits.
 
 ## Features
 
-Currently, libbiguint provides the following types:
+### BigUInt
+
+libbiguint provides the following unsigned integer types:
 
 * `BigUInt128` (128 bits)
 * `BigUInt256` (256 bits)
@@ -31,8 +34,7 @@ All the provided types are accompanied by the following functions:
 * bitwise manipulation (get, set, clr, overwrite);
 * comparison (lt, eq);
 * parsing and printing (from/to hex and dec strings);
-* default and standard _constructors_ (initializer functions);
-* signed integer functions (printing, comparison).
+* default and standard _constructors_ (initializer functions).
 
 The source code of type `BigUInt128` is written in general manner.
 The source of all other biguint types are generated codes derived from `BigUInt128`.
@@ -40,6 +42,38 @@ Types `BigUInt256`, `BigUInt384`, `BigUInt512` and `BigUInt<N>` and
 adherent functions are optionally generated:
 the 256, 384 and 512 bit wide types are enabled by default, the N bit wide type is disabled.
 See `configure --help` for details.
+
+### BigInt
+
+There are no explicit `BigInt<number>` types.
+We can store the signed big integers in BigUInt types.
+And most of the BigUInt functions work perfectly with BigInts.
+However, there are some functions which work differently for signed and unsigned integers,
+therefore they have their BigInt variants:
+
+* parsing and printing (only dec strings);
+* comparison (lt) and
+* division (div).
+
+### BigDecimal
+
+Based on the corresponding BigUInt type, the following BigDecimal types are available:
+
+* `BigDecimal128`
+* `BigDecimal256`
+* `BigDecimal384`
+* `BigDecimal512`
+* `BigDecimal<number>`
+
+The functions accompanying these types are:
+
+* addition and subtraction (add, sub);
+* multiplication and division (mul, div, div_fast);
+* precision adjustment;
+* comparison (lt, eq);
+* parsing and printing (only decimal format is supported).
+
+All BigDecimal numbers are treated as signed values.
 
 ## Installation
 
