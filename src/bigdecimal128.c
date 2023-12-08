@@ -28,6 +28,31 @@
 #define DEC_DOT '.'
 #endif
 
+// INTERNAL TYPES
+/**
+ Auxiliary type for internal functions
+ */
+typedef struct {
+ BigDecimal128 a;
+ BigDecimal128 b;
+ UInt prec;
+} BigDecimalCommon128;
+
+// STATIC FUNCTION DECLARATIONS
+static inline BigDecimalCommon128 gen_common_prec_(const BigDecimal128 *a, const BigDecimal128 *b);
+
+// IMPLEMENTATION
+// internal functions
+static inline BigDecimalCommon128 gen_common_prec_(const BigDecimal128 *a, const BigDecimal128 *b) {
+ UInt prec_hi = a->prec < b->prec ? b->prec : a->prec;
+ return (BigDecimalCommon128) {
+  bigdecimal128_ctor_prec(a, prec_hi),
+  bigdecimal128_ctor_prec(b, prec_hi),
+  prec_hi
+ };
+}
+
+// interface functions
 BigDecimal128 bigdecimal128_ctor_default() {
  return (BigDecimal128){biguint128_ctor_default(), 0};
 }
@@ -59,19 +84,15 @@ BigDecimal128 bigdecimal128_ctor_prec(const BigDecimal128 *a, UInt prec) {
 }
 
 BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b) {
- UInt prec_hi = a->prec < b->prec ? b->prec : a->prec;
- BigDecimal128 ac = bigdecimal128_ctor_prec(a, prec_hi);
- BigDecimal128 bc = bigdecimal128_ctor_prec(b, prec_hi);
+ BigDecimalCommon128 cp = gen_common_prec_(a,b);
 
- return (BigDecimal128){biguint128_add(&ac.val, &bc.val), prec_hi};
+ return (BigDecimal128){biguint128_add(&cp.a.val, &cp.b.val), cp.prec};
 }
 
 BigDecimal128 bigdecimal128_sub(const BigDecimal128 *a, const BigDecimal128 *b) {
- UInt prec_hi = a->prec < b->prec ? b->prec : a->prec;
- BigDecimal128 ac = bigdecimal128_ctor_prec(a, prec_hi);
- BigDecimal128 bc = bigdecimal128_ctor_prec(b, prec_hi);
+ BigDecimalCommon128 cp = gen_common_prec_(a,b);
 
- return (BigDecimal128){biguint128_sub(&ac.val, &bc.val), prec_hi};
+ return (BigDecimal128){biguint128_sub(&cp.a.val, &cp.b.val), cp.prec};
 }
 
 BigDecimal128 bigdecimal128_mul(const BigDecimal128 *a, const BigDecimal128 *b) {
@@ -86,11 +107,10 @@ BigDecimal128 bigdecimal128_div_fast(const BigDecimal128 *a, const BigDecimal128
 }
 
 BigDecimal128 bigdecimal128_div(const BigDecimal128 *a, const BigDecimal128 *b, UInt prec) {
- UInt xprec = a->prec < b->prec? b->prec : a->prec;
- BigDecimal128 ac = bigdecimal128_ctor_prec(a, xprec);
- BigDecimal128 bc = bigdecimal128_ctor_prec(b, xprec);
- BigUInt128 aa = ac.val;
- BigUInt128 bb = bc.val;
+ BigDecimalCommon128 cp = gen_common_prec_(a,b);
+
+ BigUInt128 aa = cp.a.val;
+ BigUInt128 bb = cp.b.val;
  BigDecimal128 retv = {biguint128_ctor_default(), 0};
  UInt curprec = 0;
  while (1) {
@@ -175,18 +195,14 @@ buint_size_t bigdecimal128_print(const BigDecimal128 *a, char *buf, buint_size_t
 }
 
 buint_bool bigdecimal128_lt(const BigDecimal128 *a, const BigDecimal128 *b) {
- UInt prec_hi = a->prec < b->prec ? b->prec : a->prec;
- BigDecimal128 ac = bigdecimal128_ctor_prec(a, prec_hi);
- BigDecimal128 bc = bigdecimal128_ctor_prec(b, prec_hi);
+ BigDecimalCommon128 cp = gen_common_prec_(a,b);
 
- return bigint128_lt(&ac.val, &bc.val);
+ return bigint128_lt(&cp.a.val, &cp.b.val);
 }
 
 buint_bool bigdecimal128_eq(const BigDecimal128 *a, const BigDecimal128 *b) {
- UInt prec_hi = a->prec < b->prec ? b->prec : a->prec;
- BigDecimal128 ac = bigdecimal128_ctor_prec(a, prec_hi);
- BigDecimal128 bc = bigdecimal128_ctor_prec(b, prec_hi);
+ BigDecimalCommon128 cp = gen_common_prec_(a,b);
 
- return biguint128_eq(&ac.val, &bc.val);
+ return biguint128_eq(&cp.a.val, &cp.b.val);
 }
 
