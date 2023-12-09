@@ -30,12 +30,13 @@ int main() {
    buf[biguint128_print_dec(&b0, buf, BUFLEN)] = 0;
    // just do something with the printed string
    for (unsigned int i = 0; i < BUFLEN; ++i) {
-    sum+=buf[i];
+    sum+= buf[i];
    }
   }
   t1 = clock();
   print_result(t0, t1, "print_dec", LOOPS);
  }
+ fprintf(stderr,"sum: %u\n", sum);
 
  // #2: hexadecimal print
  {
@@ -45,12 +46,14 @@ int main() {
    buf[biguint128_print_hex(&b0, buf, BUFLEN)] = 0;
    // just do something with the printed string
    for (unsigned int i = 0; i < BUFLEN; ++i) {
-    sum+=buf[i];
+    sum+= buf[i];
    }
   }
   t1 = clock();
   print_result(t0, t1, "print_hex", LOOPS);
  }
+ // do something with sum
+ fprintf(stderr,"sum: %u\n", sum);
 
  return 0;
 }
