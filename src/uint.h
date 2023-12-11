@@ -23,6 +23,8 @@
 
 #include "uint_types.h"
 
+#define UINT_BITS (buint_size_t)(8*sizeof(UInt))
+
 /**
  Auxiliary type for functions returning
  either double UInt long value (e.g., multiplication)
@@ -37,7 +39,11 @@ typedef struct {
  @brief Addition of two UInt values with carry bit.
  @param carry Input carry bit read from, output carry bit written to.
 */
-UInt uint_add(UInt a, UInt b, buint_bool *carry);
+static inline UInt uint_add(UInt a, UInt b, buint_bool *carry) {
+ UInt c = a + b + !!(*carry);
+ *carry = *carry ? c <= a : c < a;
+ return c;
+}
 
 /**
  @brief Incrementing an UInt value with other UInt and carry bit.
@@ -46,8 +52,11 @@ UInt uint_add(UInt a, UInt b, buint_bool *carry);
  @param carry Input carry bit read from, output carry bit written to.
  @return same as a.
 */
-UInt *uint_add_assign(UInt *a, UInt b, buint_bool *carry);
-
+static inline UInt *uint_add_assign(UInt *a, UInt b, buint_bool *carry) {
+ *a += b + !!(*carry);
+ *carry = (*carry ? *a <= b : *a < b);
+ return a;
+}
 
 /**
  @brief Subtraction of UInt value from UInt value with carry bit.
@@ -55,19 +64,35 @@ UInt *uint_add_assign(UInt *a, UInt b, buint_bool *carry);
  @param b subtrahend
  @param carry Input carry bit read from, output carry bit written to.
 */
-UInt uint_sub(UInt a, UInt b, buint_bool *carry);
+static inline UInt uint_sub(UInt a, UInt b, buint_bool *carry) {
+ UInt c = a - b - !!(*carry);
+ *carry = *carry ? a <= c : a < c;
+ return c;
+}
+
 /**
  @brief Splits a value by means of bit masking into two.
  @return first: high bits greater or equal to lsb; second: low bits.
 */
-UIntPair uint_split(UInt a, buint_size_t lsb);
+static inline UIntPair uint_split(UInt a, buint_size_t lsb) {
+ UIntPair retv;
+ UInt mask = (lsb < UINT_BITS ? ((UInt)1 << lsb):0) - 1;
+ retv.first = a & ~mask;
+ retv.second = a & mask;
+ return retv;
+}
 
 /**
  @brief Splits a value by means if bit shifting into two.
  @return first: high bits of value a (greater or equal to lsb) at the bottom bits;
  second: low bits of a at the top bits.
  */
-UIntPair uint_split_shift(UInt a, buint_size_t lsb);
+static inline UIntPair uint_split_shift(UInt a, buint_size_t lsb) {
+ UIntPair retv;
+ retv.first= a >> lsb;
+ retv.second= (0<lsb) ? (a << (UINT_BITS - lsb)) : 0;
+ return retv;
+}
 
 /**
  @brief Multiplication of two values.
@@ -79,5 +104,6 @@ UIntPair uint_mul(UInt a, UInt b);
 */
 buint_size_t uint_msb(UInt a);
 
+#undef UINT_BITS
 #endif
 
