@@ -24,6 +24,23 @@ const CStr bigint_dec_samples[][5] = {
 };
 int bigint_dec_sample_len = sizeof(bigint_dec_samples) / (sizeof(bigint_dec_samples[0]));
 
+const CStr div10_sample[] = {
+ STR("2"),
+ STR("10"),
+ STR("22"),
+ STR("100"),
+ STR("303"),
+ STR("4205"),
+ STR("46901"),
+ STR("653436"),
+ STR("7884235"),
+ STR("83425465"),
+ STR("1234567890"),
+ STR("12345678901234567890"),
+ STR("123456789012345678901234567890")
+};
+int div10_sample_len = sizeof(div10_sample) / (sizeof(div10_sample[0]));
+
 bool test_mul0() {
  bool fail = false;
  for (int i=0; i<hex_sample_len; ++i) {
@@ -321,6 +338,36 @@ bool test_div_signed0() {
  return !fail;
 }
 
+bool test_div10_a() {
+ BigUInt128 divisor = biguint128_value_of_uint(10);
+ bool fail = false;
+ for (int i=0; i<div10_sample_len; ++i) {
+  BigUInt128 val;
+  if (!readdec_more_cstr_bigint128(&val, &div10_sample[i], 1)) {
+   continue;
+  }
+  BigUInt128 expected = biguint128_div(&val, &divisor).first;
+
+  BigUInt128 tmp1 = biguint128_mul100(&val);
+  BigUInt128 actual1 = biguint128_div1000(&tmp1).first;
+
+  BigUInt128 tmp2 = biguint128_mul3(&val);
+  BigUInt128 actual2 = biguint128_div30(&tmp2).first;
+ 
+  if (!biguint128_eq(&actual1, &expected)) {
+   fprintf(stderr, "failed div1000(mul100(x)) test at test input #%d\n",i);
+   fail = true;
+  }
+
+  if (!biguint128_eq(&actual2, &expected)) {
+   fprintf(stderr, "failed div30(mul3(x)) test at test input #%d\n",i);
+   fail = true;
+  }
+ }
+
+ return !fail;
+}
+
 
 int main(int argc, char **argv) {
 
@@ -338,5 +385,6 @@ int main(int argc, char **argv) {
  assert(test_mul_signed0());
  assert(test_div_signed0());
 
+ assert(test_div10_a());
  return 0;
 }
