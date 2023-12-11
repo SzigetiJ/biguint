@@ -20,46 +20,6 @@
 *****************************************************************************/
 #include "uint.h"
 
-#define UINT_BITS (buint_size_t)(8*sizeof(UInt))
-
-UInt uint_add(UInt a, UInt b, buint_bool *carry) {
- UInt c = a + b + !!(*carry);
- *carry = *carry ? c <= a : c < a;
- return c;
-}
-
-UInt *uint_add_assign(UInt *a, UInt b, buint_bool *carry) {
-  *a += b + !!(*carry);
-  *carry = (*carry ? *a <= b : *a < b);
-  return a;
- }
-
-UInt uint_sub(UInt a, UInt b, buint_bool *carry) {
- UInt c = a - b - !!(*carry);
- *carry = *carry ? a <= c : a < c;
- return c;
-}
-
-UIntPair uint_split(UInt a, buint_size_t lsb) {
- UIntPair retv;
- UInt mask = (lsb < UINT_BITS ? ((UInt)1 << lsb):0) - 1;
- retv.first = a & ~mask;
- retv.second = a & mask;
- return retv;
-}
-
-/**
- * Note, this function works only for lsb range [0..UINT_BITS).
- * Value of lsb is not checked.
- */
-UIntPair uint_split_shift(UInt a, buint_size_t lsb) {
- UIntPair retv;
- retv.first= a >> lsb;
- retv.second= (0<lsb) ? (a << (UINT_BITS - lsb)) : 0;
- return retv;
-}
-
-
 UIntPair uint_mul(UInt a, UInt b) {
  UIntPair retv;
  buint_size_t uint_mbits = 4*sizeof(UInt);
@@ -114,4 +74,3 @@ buint_size_t uint_msb(UInt a) {
  return a < (UInt)1 << n ? inf : n;
 }
 
-#undef UINT_BITS
