@@ -693,6 +693,74 @@ buint_size_t biguint128_export(const BigUInt128 *a, char *dest) {
  return BIGUINT128_CELLS * UINT_BYTES;
 }
 
+// Auxiliary divisions and multiplications by special numbers
+BigUIntTinyPair128 biguint128_div1024(const BigUInt128 *a) {
+ BigUIntTinyPair128 retv;
+ retv.first= biguint128_shr(a, 10);
+ retv.second= (a->dat[0]) & (UInt)0x3FF;
+ return retv;
+}
+
+BigUInt128 biguint128_mul100(const BigUInt128 *a) {
+ BigUInt128 a6 = biguint128_shl(a,6);
+ BigUInt128 a5 = biguint128_shl(a,5);
+ BigUInt128 a2 = biguint128_shl(a,2);
+ biguint128_add_assign(&a6, &a5);
+ biguint128_add_assign(&a6, &a2);
+ return a6;
+}
+
+BigUInt128 biguint128_mul1000(const BigUInt128 *a) {
+ BigUInt128 a10 = biguint128_shl(a,10);
+ BigUInt128 a4 = biguint128_shl(a,4);
+ BigUInt128 a3 = biguint128_shl(a,3);
+ biguint128_sub_assign(&a10, &a4);
+ biguint128_sub_assign(&a10, &a3);
+ return a10;
+}
+
+
+BigUIntPair128 biguint128_div1000(const BigUInt128 *a) {
+ // The procedure goes like this:
+ // We have to containers (retv.first, retv.second), and at the end
+ // these will store the quotient and the remainder, respectively.
+ // Initially, retv.first is empty and retv.second stores the whole amount of a.
+ // Step-by-step retv.first is increased while retv.second is decreased.
+ // Note that 1000 * retv.first + retv.second = *a remains invariant
+ // during the whole process.
+ // In phase #1 we exploit that
+ // a = 1024*b + c = (1000*b) + (24*b+c)
+ // and reduce retv.second iteratively until it gets small enough.
+ // In phase #2 we just subtract 1000 from the remainder if it is still too high.
+ // Well, the while loop is an overkill for this limit (2000).
+ static const BigUInt128 x1000={{0x3E8}};
+ static const BigUInt128 x2000={{0x7D0}};
+
+ BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
+ // Phase 1:
+ while (biguint128_lt(&x2000, &retv.second)) {
+  BigUIntTinyPair128 x= biguint128_div1024(&retv.second);
+  biguint128_add_assign(&retv.first, &x.first);
+  BigUInt128 d_mul8= biguint128_shl(&x.first, 3);
+  BigUInt128 d_mul16= biguint128_shl(&x.first, 4);
+  retv.second = biguint128_add(&d_mul8, &d_mul16);
+  biguint128_add_tiny(&retv.second, x.second);
+ }
+ // Phase 2:
+ while (!biguint128_lt(&retv.second, &x1000)) {
+  biguint128_add_tiny(&retv.first, 1);
+  biguint128_sub_tiny(&retv.second, x1000.dat[0]);
+ }
+ return retv;
+}
+
+BigUInt128 biguint128_mul10(const BigUInt128 *a) {
+ BigUInt128 a3 = biguint128_shl(a,3);
+ BigUInt128 a1 = biguint128_shl(a,1);
+ biguint128_add_assign(&a3, &a1);
+ return a3;
+}
+
 // cleanup
 #undef FOREACHCELL
 #undef UINT_BYTES
