@@ -49,7 +49,6 @@ typedef struct {
  UInt second;
 } BigUIntTinyPair128;
 
-
 // constructors
 /**
  @brief Generates BigUInt128 instance initialized to 0.
@@ -366,6 +365,23 @@ BigUInt128 biguint128_mul100(const BigUInt128 *a);
  * Multiplication by 1000 (= 1024 - 16 - 8).
  */
 BigUInt128 biguint128_mul1000(const BigUInt128 *a);
+
+/**
+ * Division by 32. Division by 30 relies on this function.
+ * @param a Divident.
+ * @return Pair of quotient and remainder.
+ */
+BigUIntTinyPair128 biguint128_div32(const BigUInt128 *a);
+
+/**
+ * Multiplication by 3 (= 2 + 1).
+ */
+BigUInt128 biguint128_mul3(const BigUInt128 *a);
+
+/**
+ * Division by 30. 
+ */
+BigUIntPair128 biguint128_div30(const BigUInt128 *a);
 
 #endif
 
