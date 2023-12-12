@@ -80,10 +80,10 @@ bool test_io_hex1() {
 // Assert print(parse(dec_str))==dec_str.
 bool test_io_dec0() {
  bool fail = false;
- char buffer[DEC_BIGUINTLEN + 1];
+ char buffer[DEC_BIGUINTLEN_HI + 1];
  for (int i = 0; i < dec_sample_len; ++i) {
   const CStr *sample = &dec_samples[i];
-  if (DEC_BIGUINTLEN < sample->len)
+  if (DEC_BIGUINTLEN_LO < sample->len)
    continue;
   BigUInt128 a = biguint128_ctor_deccstream(sample->str, sample->len);
   buint_size_t len = biguint128_print_dec(&a, buffer, sizeof(buffer) / sizeof(char) - 1);
@@ -103,17 +103,17 @@ bool test_io_dec0() {
 bool test_io_dec1() {
  bool fail = false;
 
- char buffer[DEC_BIGINTLEN + 1];
- char sgnsample[DEC_BIGINTLEN + 1];
+ char buffer[DEC_BIGINTLEN_HI + 1];
+ char sgnsample[DEC_BIGINTLEN_HI + 1];
 
  for (int i = 0; i < dec_sample_len; ++i) {
   const CStr *sample = &dec_samples[i];
-  if (DEC_BIGUINTLEN < sample->len)
+  if (DEC_BIGUINTLEN_LO < sample->len)
    continue;
   if (!negate_strcpy(sgnsample,sizeof(sgnsample), sample->str, sample->len))
    continue;
   BigUInt128 a = biguint128_ctor_deccstream(sample->str, sample->len);
-  if (biguint128_gbit(&a, 128 - 1)) { // if MSB is set, value is OOR for bigint
+  if (biguint128_gbit(&a, BIGUINT_BITS - 1)) { // if MSB is set, value is OOR for bigint
    continue;
   }
   // here we introduce dependency on biguint128_sub

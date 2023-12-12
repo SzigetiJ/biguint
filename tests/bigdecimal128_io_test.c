@@ -5,10 +5,7 @@
 
 #include "bigdecimal128.h"
 #include "test_common.h"
-
-#define BIGUINT_BITS 128
-#define BIGDECLEN ((BIGUINT_BITS / 10 + 1) * 3 + 4)
-
+#include "test_common128.h"
 
 const CStr dec_input[] = {
  STR("0"),
@@ -44,11 +41,11 @@ int dec_input_len = sizeof(dec_input) / sizeof(dec_input[0]);
 // Assert print(parse(dec_str))==dec_str.
 bool test_io_dec0() {
  bool fail = false;
- char buffer[BIGDECLEN + 1];
+ char buffer[BIGDECLEN_HI + 1];
  for (int i = 0; i < dec_input_len; ++i) {
   const CStr *input = &dec_input[i];
   const CStr *expected = &dec_printed[i];
-  if (BIGDECLEN < input->len)
+  if (DEC_BIGUINTLEN_LO < input->len)
    continue;
   BigDecimal128 a = bigdecimal128_ctor_cstream(input->str, input->len);
   buint_size_t len = bigdecimal128_print(&a, buffer, sizeof(buffer) / sizeof(char) - 1);

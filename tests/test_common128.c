@@ -35,7 +35,7 @@ bool readhex_biguint128(BigUInt128 *result, const char* const hexstr, size_t hex
 }
 
 bool readdec_bigint128(BigUInt128 *result, const char* const decstr, size_t declen) {
- if (declen == 0 || DEC_BIGINTLEN < declen) {
+ if (declen == 0 || DEC_BIGINTLEN_HI < declen) {
   return false;
  }
  *result = bigint128_ctor_deccstream(decstr, declen);
@@ -92,4 +92,28 @@ void fprint_funres_buint128_x_bsz_bb(
     buffer[0][biguint128_print_hex(a, buffer[0], HEX_BIGUINTLEN)]=0;
     fprintf(out, "%s(%s,%" PRIbuint_size_t ") -- expected: [%u], actual [%u]\n",
             funname, buffer[0], b, expected, actual);
+}
+
+static inline void print_numbers(FILE *out, int size, BigUInt128 *dat, Format fmt) {
+ buint_size_t (*fun)(const BigUInt128 *a, char *buf, buint_size_t buf_len) =
+  fmt == FMT_HEX?biguint128_print_hex :
+  fmt == FMT_DEC?biguint128_print_dec :
+  fmt == FMT_SDEC?bigint128_print_dec :
+  NULL;
+  char buf[DEC_BIGINTLEN_HI + 1];
+ for (int i=0; i<size; ++i) {
+  if (i!=0) fprintf(out, ", ");
+  buf[fun(&dat[i], buf, DEC_BIGINTLEN_HI)]=0;
+  fprintf(out, "%s", buf);
+ }
+}
+
+void fprintf_biguint128_genfun_testresult(FILE *out, const char *funname, int parnum, BigUInt128 *param, int resnum, BigUInt128 *expected, BigUInt128 *actual, Format fmt) {
+   fprintf(out, "%s(", funname);
+   print_numbers(out, parnum, param, fmt);
+   fprintf(out, ") -- expected: [");
+   print_numbers(out, resnum, expected, fmt);
+   fprintf(out, "], actual [");
+   print_numbers(out, resnum, actual, fmt);
+   fprintf(out, "]\n");
 }
