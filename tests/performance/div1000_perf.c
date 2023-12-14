@@ -7,9 +7,14 @@
 #include "perf_common128.h"
 
 #define LOOPS (1<<20) // 1M loops
+#define UINT_BITS (8U * sizeof(UInt))
 
-// conventional div
-void exec_div1000_v1(const BigUInt128 *ainit, const BigUInt128 *astep) {
+typedef enum {
+ VARIANT_DIV_X_1000,
+ VARIANT_DIV1000_X
+} Div1000Variant;
+
+void exec_div1000(const BigUInt128 *ainit, const BigUInt128 *astep, Div1000Variant v) {
  uint32_t loop_cnt;
  clock_t t0, t1;
 
@@ -19,59 +24,38 @@ void exec_div1000_v1(const BigUInt128 *ainit, const BigUInt128 *astep) {
 
  t0 = clock();
  for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
-  BigUIntPair128 res = biguint128_div(&bx, &bdiv);
+  BigUIntPair128 res = (v==VARIANT_DIV1000_X)?
+   biguint128_div1000(&bx):
+   biguint128_div(&bx, &bdiv);
   biguint128_add_assign(&bsum, &res.first);
   biguint128_add_assign(&bx, astep);
  }
  t1 = clock();
 
- print_exec_summary(t0, t1, "div(x,1000)", LOOPS, &bsum, 1);
-}
-
-// div1000(x)
-void exec_div1000_v2(const BigUInt128 *ainit, const BigUInt128 *astep) {
- uint32_t loop_cnt;
- clock_t t0, t1;
-
- BigUInt128 bx = biguint128_ctor_copy(ainit);
- BigUInt128 bsum = biguint128_ctor_default();
-
- t0 = clock();
- for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
-  BigUIntPair128 res = biguint128_div1000(&bx);
-  biguint128_add_assign(&bsum, &res.first);
-  biguint128_add_assign(&bx, astep);
- }
- t1 = clock();
-
- print_exec_summary(t0, t1, "div1000(x)", LOOPS, &bsum, 1);
+ print_exec_summary(t0, t1, v==VARIANT_DIV1000_X?"div1000(x)":"div(x,1000)", loop_cnt, &bsum, 1);
 }
 
 int main() {
- BigUInt128 blow = biguint128_ctor_default();
- BigUInt128 bmed = biguint128_ctor_default();
- BigUInt128 bhigh = biguint128_ctor_default();
- bmed.dat[BIGUINT128_CELLS/2] = 1;
- bhigh.dat[BIGUINT128_CELLS-1] = 1;
+ const char *bstr[]={"low","medium","high"};
+ BigUInt128 binit[3];
+ for (int i = 0; i<3; ++i) {
+  binit[i]=biguint128_ctor_default();
+ }
+ biguint128_sbit(&binit[1], UINT_BITS * (BIGUINT128_CELLS / 2));
+ biguint128_sbit(&binit[2], UINT_BITS * (BIGUINT128_CELLS - 1));
+
  BigUInt128 bstep = biguint128_value_of_uint(29);
+ Div1000Variant variant[] = {
+  VARIANT_DIV_X_1000,
+  VARIANT_DIV1000_X
+ };
 
- fprintf(stdout, "*** Dividing low numbers ***\n");
- // #1.1: conventional div(x,1000) on low numbers
- exec_div1000_v1(&blow, &bstep);
- // #1.2: div1000(x) on low numbers
- exec_div1000_v2(&blow, &bstep);
-
- fprintf(stdout, "*** Dividing medium numbers ***\n");
- // #2.1: conventional div(x,1000) on med numbers
- exec_div1000_v1(&bmed, &bstep);
- // #2.2: div1000(x) on medium numbers
- exec_div1000_v2(&bmed, &bstep);
-
- fprintf(stdout, "*** Dividing high numbers ***\n");
- // #3.1: conventional div(x,1000) on high numbers
- exec_div1000_v1(&bhigh, &bstep);
- // #3.2: div1000(x) on hogh numbers
- exec_div1000_v2(&bhigh, &bstep);
+ for (int i=0; i<3; ++i) {
+  fprintf(stdout, "*** Dividing %s numbers ***\n", bstr[i]);
+  for (int j=0; j<2; ++j) {
+   exec_div1000(&binit[i], &bstep, variant[j]);
+  }
+ }
 
  return 0;
 }
