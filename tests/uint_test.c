@@ -4,6 +4,21 @@
 #include <assert.h>
 #include "uint.h"
 
+#define UINT_DIGITS (sizeof(UInt)*2)
+
+static inline bool check_splt_res_(const UIntPair *actual, const UIntPair *expected, char *fun, UInt param1, buint_size_t param2) {
+ bool retv = true;
+ if (!(actual->first==expected->first
+           && actual->second==expected->second)) {
+  fprintf(stderr, "%s(%0*" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%0*" PRIuintX ",%0*" PRIuintX "] actual: [%0*" PRIuintX ",%0*" PRIuintX "]\n",
+     fun, UINT_DIGITS, param1, param2,
+            UINT_DIGITS, expected->first, UINT_DIGITS, expected->second,
+            UINT_DIGITS, actual->first, UINT_DIGITS, actual->second);
+  retv = false;
+ }
+ return retv;
+}
+
 bool test_uint_add() {
  UInt samples[] = {
   1,0,-1
@@ -169,26 +184,12 @@ bool test_uint_spsh32() {
    UIntPair spsh_expect = spsh_expects[a_i][lsb_i];
    UIntPair spsh_actual = uint_split_shift(samples_a[a_i], samples_lsb[lsb_i]);
 
-   if (!(spsh_actual.first==spsh_expect.first
-           && spsh_actual.second==spsh_expect.second)) {
-    fprintf(stderr, "%s: uint_split_shift(%08" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%08" PRIuintX ",%08" PRIuintX "] actual: [%08" PRIuintX ",%08" PRIuintX "]\n",
-     __func__, samples_a[a_i], samples_lsb[lsb_i],
-            spsh_expect.first, spsh_expect.second,
-            spsh_actual.first, spsh_actual.second);
-     fail = true;
-   }
+   fail |= !check_splt_res_(&spsh_actual, &spsh_expect, "uint_split_shift", samples_a[a_i], samples_lsb[lsb_i]);
 
    UIntPair splt_expect = splt_expects[a_i][lsb_i];
    UIntPair splt_actual = uint_split(samples_a[a_i], samples_lsb[lsb_i]);
 
-   if (!(splt_actual.first==splt_expect.first
-           && splt_actual.second==splt_expect.second)) {
-    fprintf(stderr, "%s: uint_split(%08" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%08" PRIuintX ",%08" PRIuintX "] actual: [%08" PRIuintX ",%08" PRIuintX "]\n",
-     __func__, samples_a[a_i], samples_lsb[lsb_i],
-            splt_expect.first, splt_expect.second,
-            splt_actual.first, splt_actual.second);
-     fail = true;
-   }
+   fail |= !check_splt_res_(&splt_actual, &splt_expect, "uint_split", samples_a[a_i], samples_lsb[lsb_i]);
   }
  }
 
@@ -261,26 +262,12 @@ bool test_uint_spsh64() {
    UIntPair spsh_expect = spsh_expects[a_i][lsb_i];
    UIntPair spsh_actual = uint_split_shift(samples_a[a_i], samples_lsb[lsb_i]);
 
-   if (!(spsh_actual.first==spsh_expect.first
-           && spsh_actual.second==spsh_expect.second)) {
-    fprintf(stderr, "%s: uint_split_shift(%08" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%08" PRIuintX ",%08" PRIuintX "] actual: [%08" PRIuintX ",%08" PRIuintX "]\n",
-     __func__, samples_a[a_i], samples_lsb[lsb_i],
-            spsh_expect.first, spsh_expect.second,
-            spsh_actual.first, spsh_actual.second);
-     fail = true;
-   }
+   fail |= !check_splt_res_(&spsh_actual, &spsh_expect, "uint_split_shift", samples_a[a_i], samples_lsb[lsb_i]);
 
    UIntPair splt_expect = splt_expects[a_i][lsb_i];
    UIntPair splt_actual = uint_split(samples_a[a_i], samples_lsb[lsb_i]);
 
-   if (!(splt_actual.first==splt_expect.first
-           && splt_actual.second==splt_expect.second)) {
-    fprintf(stderr, "%s: uint_split(%08" PRIuintX ",%" PRIbuint_size_t ") return value expected: [%08" PRIuintX ",%08" PRIuintX "] actual: [%08" PRIuintX ",%08" PRIuintX "]\n",
-     __func__, samples_a[a_i], samples_lsb[lsb_i],
-            splt_expect.first, splt_expect.second,
-            splt_actual.first, splt_actual.second);
-     fail = true;
-   }
+   fail |= !check_splt_res_(&splt_actual, &splt_expect, "uint_split", samples_a[a_i], samples_lsb[lsb_i]);
   }
  }
 
