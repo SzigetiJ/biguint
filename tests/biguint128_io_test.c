@@ -28,27 +28,51 @@ const CStr dec_samples[] = {
  STR("9"),
  STR("10"),
  STR("256"),
+ STR("4444"),
  STR("65536"),
+ STR("666666"),
+ STR("7777777"),
+ STR("88888888"),
+ STR("999999999"),
  STR("1234567890"),
+ STR("101"),
+ STR("2002"),
+ STR("30003"),
+ STR("400004"),
+ STR("5000005"),
+ STR("60000006"),
+ STR("700000007"),
+ STR("8000000008"),
  STR("323456789012345678901234567890123456789"),
  STR("113456789012345678901234567890123456789012345678901234567890123456789012345678"),
  STR("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234")
 };
 int dec_sample_len = sizeof(dec_samples) / sizeof(dec_samples[0]);
 
-// Assert print(parse(hex_str))==hex_str.
-bool test_io_hex0() {
- bool fail = false;
- char buffer[HEX_BIGUINTLEN + 1];
+static inline buint_size_t parse_and_print(const CStr *sample, char *buffer, size_t buf_len, bool dec) {
+ BigUInt128 a = dec?
+  biguint128_ctor_deccstream(sample->str, sample->len):
+  biguint128_ctor_hexcstream(sample->str, sample->len);
+ buint_size_t len = dec?
+  biguint128_print_dec(&a, buffer, buf_len):
+  biguint128_print_hex(&a, buffer, buf_len);
+ buffer[len] = 0;
+ return len;
+}
 
- for (int i = 0; i < hex_sample_len; ++i) {
-  const CStr *sample = &hex_samples[i];
-  if (HEX_BIGUINTLEN < sample->len)
+// Assert print(parse(hex_str))==hex_str / print(parse(dec_str))==dec_str.
+bool test_io_gen0(const CStr *samples, size_t nsamples, bool dec) {
+ bool fail = false;
+ char buffer[DEC_BIGUINTLEN_HI + 1];	// DEC is never less than HEX str
+
+ for (int i = 0; i < nsamples; ++i) {
+  const CStr *sample = &samples[i];
+  if ((dec?DEC_BIGUINTLEN_LO:HEX_BIGUINTLEN) < sample->len)
    continue;
-  BigUInt128 a = biguint128_ctor_hexcstream(sample->str, sample->len);
-  buint_size_t len = biguint128_print_hex(&a, buffer, sizeof(buffer) / sizeof(char) - 1);
-  buffer[len] = 0;
+
+  parse_and_print(sample, buffer, sizeof(buffer) / sizeof(char) - 1, dec);
   int result = strcmp(sample->str, buffer);
+
   if (result != 0) {
    fprintf(stderr, "expected: [%s], actual [%s]\n", sample->str, buffer);
    fail = true;
@@ -58,39 +82,19 @@ bool test_io_hex0() {
 }
 
 // Assert (hex) print error, if buffer length is less than required.
-bool test_io_hex1() {
+bool test_io_gen1(const CStr *samples, size_t nsamples, bool dec) {
  bool fail = false;
- char buffer[HEX_BIGUINTLEN + 1];
- for (int i = 0; i < hex_sample_len; ++i) {
-  const CStr *sample = &hex_samples[i];
-  if (HEX_BIGUINTLEN < sample->len)
+ char buffer[DEC_BIGUINTLEN_HI + 1];	// DEC is never less than HEX str
+
+ for (int i = 0; i < nsamples; ++i) {
+  const CStr *sample = &samples[i];
+  if ((dec?DEC_BIGUINTLEN_LO:HEX_BIGUINTLEN) < sample->len)
    continue;
-  BigUInt128 a = biguint128_ctor_hexcstream(sample->str, sample->len);
-  buint_size_t len = biguint128_print_hex(&a, buffer, sample->len - 1);
-  buffer[len] = 0;
+
+  buint_size_t len = parse_and_print(sample, buffer, sample->len - 1, dec);
 
   if (len != 0) {
    fprintf(stderr, "expected: [] (insufficient buffer capacity), actual [%s]\n", buffer);
-   fail = true;
-  }
- }
- return !fail;
-}
-
-// Assert print(parse(dec_str))==dec_str.
-bool test_io_dec0() {
- bool fail = false;
- char buffer[DEC_BIGUINTLEN_HI + 1];
- for (int i = 0; i < dec_sample_len; ++i) {
-  const CStr *sample = &dec_samples[i];
-  if (DEC_BIGUINTLEN_LO < sample->len)
-   continue;
-  BigUInt128 a = biguint128_ctor_deccstream(sample->str, sample->len);
-  buint_size_t len = biguint128_print_dec(&a, buffer, sizeof(buffer) / sizeof(char) - 1);
-  buffer[len] = 0;
-  int result = strcmp(sample->str, buffer);
-  if (result != 0) {
-   fprintf(stderr, "expected: [%s], actual [%s]\n", sample->str, buffer);
    fail = true;
   }
  }
@@ -145,9 +149,10 @@ bool test_io_dec1() {
 
 int main(int argc, char **argv) {
 
- assert(test_io_hex0());
- assert(test_io_hex1());
- assert(test_io_dec0());
+ assert(test_io_gen0(hex_samples, hex_sample_len, false));
+ assert(test_io_gen1(hex_samples, hex_sample_len, false));
+ assert(test_io_gen0(dec_samples, dec_sample_len, true));
+ assert(test_io_gen1(dec_samples, dec_sample_len, true));
  assert(test_io_dec1());
 
  return 0;

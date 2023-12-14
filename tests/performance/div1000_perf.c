@@ -36,14 +36,7 @@ void exec_div1000(const BigUInt128 *ainit, const BigUInt128 *astep, Div1000Varia
 }
 
 int main() {
- const char *bstr[]={"low","medium","high"};
- BigUInt128 binit[3];
- for (int i = 0; i<3; ++i) {
-  binit[i]=biguint128_ctor_default();
- }
- biguint128_sbit(&binit[1], UINT_BITS * (BIGUINT128_CELLS / 2));
- biguint128_sbit(&binit[2], UINT_BITS * (BIGUINT128_CELLS - 1));
-
+ PerfTestInitValues b = get_std_initvalues();
  BigUInt128 bstep = biguint128_value_of_uint(29);
  Div1000Variant variant[] = {
   VARIANT_DIV_X_1000,
@@ -51,9 +44,9 @@ int main() {
  };
 
  for (int i=0; i<3; ++i) {
-  fprintf(stdout, "*** Dividing %s numbers ***\n", bstr[i]);
+  fprintf(stdout, "*** Dividing %s numbers ***\n", b.name[i]);
   for (int j=0; j<2; ++j) {
-   exec_div1000(&binit[i], &bstep, variant[j]);
+   exec_div1000(&b.val[i], &bstep, variant[j]);
   }
  }
 

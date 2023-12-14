@@ -653,19 +653,22 @@ static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *bu
   char d1= (d/10)%10;
   char d2= (d/10)/10;
 
+  if ((d1 && !buf_idx0) || (d2 && !buf_idx1)) break;	// not enough space in buffer
+  ready = biguint128_eq(&zero, &res.first);
+
   set_decdigit(buf + buf_idx0, d0);
   *offset= buf_idx0;
-  if (buf_idx0 != 0) {
+  if (d1 || d2 || !ready) {
    set_decdigit(buf + buf_idx1, d1);
-   if (d1) *offset= buf_idx1;
-   if (buf_idx1 != 0) {
+   *offset= buf_idx1;
+   if (d2 || !ready) {
     set_decdigit(buf + buf_idx2, d2);
-    if (d2) *offset= buf_idx2;
+    *offset= buf_idx2;
    }
   }
-  ready = biguint128_eq(&zero, &res.first);
   temp = res.first;
  }
+ if (!ready) *offset = buf_len;
  return buf_len - *offset;
 }
 

@@ -7,7 +7,6 @@
 #include "perf_common128.h"
 
 #define LOOPS (1<<20) // 1M loops
-#define UINT_BITS (8U * sizeof(UInt))
 
 typedef enum {
  VARIANT_DIV_X_10,
@@ -48,14 +47,7 @@ void exec_div10(const BigUInt128 *ainit, const BigUInt128 *astep, Div10Variant v
 }
 
 int main() {
- const char *bstr[]={"low","medium","high"};
- BigUInt128 binit[3];
- for (int i = 0; i<3; ++i) {
-  binit[i]=biguint128_ctor_default();
- }
- biguint128_sbit(&binit[1], UINT_BITS * (BIGUINT128_CELLS / 2));
- biguint128_sbit(&binit[2], UINT_BITS * (BIGUINT128_CELLS - 1));
-
+ PerfTestInitValues b = get_std_initvalues();
  BigUInt128 bstep = biguint128_value_of_uint(29);
  Div10Variant variant[] = {
   VARIANT_DIV_X_10,
@@ -64,9 +56,9 @@ int main() {
  };
 
  for (int i=0; i<3; ++i) {
-  fprintf(stdout, "*** Dividing %s numbers ***\n", bstr[i]);
+  fprintf(stdout, "*** Dividing %s numbers ***\n", b.name[i]);
   for (int j=0; j<3; ++j) {
-   exec_div10(&binit[i], &bstep, variant[j]);
+   exec_div10(&b.val[i], &bstep, variant[j]);
   }
  }
 

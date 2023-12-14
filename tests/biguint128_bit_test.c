@@ -166,12 +166,17 @@ bool test_and_or_not0() {
  return !fail;
 }
 
-bool test_set_get0() {
+bool test_gen_write_get0(bool clr) {
  bool fail = false;
 
  BigUInt128 value = biguint128_ctor_default();
- buint_bool pre_expected[]={1,0,0};
- buint_bool post_expected[]={1,1,0};
+ if (clr) {
+  BigUInt128 unit = biguint128_ctor_unit();
+  biguint128_sub_assign(&value,&unit);
+ }
+
+ buint_bool pre_expected[]={!clr,clr,clr};
+ buint_bool post_expected[]={!clr,!clr,clr};
 
  for (int i=0; i<BIGUINT_BITS; ++i) {
   BigUInt128 pre_value = biguint128_ctor_copy(&value);
@@ -182,13 +187,22 @@ bool test_set_get0() {
    int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
    pre_change[j] = biguint128_gbit(&value, pos);
   }
-  biguint128_sbit(&value,i);
-  biguint128_obit(&owrite_value,i,true);
+
+  clr?
+   biguint128_cbit(&value,i):
+   biguint128_sbit(&value,i);
+  biguint128_obit(&owrite_value,i,!clr);
+
   for (int j = 0; j < 3; ++j) {
    int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
    post_change[j] = biguint128_gbit(&value, pos);
   }
 
+  // In general, our expectations are valid for each bit,
+  // except for the first and the last bits.
+  // In case i==0, the preceeding bit is taken from the end of the interval,
+  // and in case of the last bit, the succeeding bit is taken from the begin of the interval.
+  // Thus in these cases we have to invert our preceeding / succeeding bit expectations.
   bool invert_expected[]={(i==0),false,(i==BIGUINT_BITS-1)};
 
   for (int j = 0; j < 3; ++j) {
@@ -203,7 +217,7 @@ bool test_set_get0() {
 
    if ((post_expected[j]!=invert_expected[j]) != post_change[j]) {
     fprint_funres_buint128_x_bsz_bb(
-            stderr, "gbit",
+            stderr, clr?"cbit":"sbit",
             &value, pos,
             (post_expected[j]!=invert_expected[j]), post_change[j]);
     fail=true;
@@ -214,7 +228,8 @@ bool test_set_get0() {
    char buffer_ovalue[HEX_BIGUINTLEN + 1];
    buffer_value[biguint128_print_hex(&value, buffer_value, HEX_BIGUINTLEN)]=0;
    buffer_ovalue[biguint128_print_hex(&owrite_value, buffer_ovalue, HEX_BIGUINTLEN)]=0;
-   fprintf(stderr, "sbit(a,b) and obit(a,b,1) results differ: sbit: [%s], obit: [%s]\n", buffer_value,buffer_ovalue);
+   fprintf(stderr, "%cbit(a,b) and obit(a,b,%u) results differ: %cbit: [%s], obit: [%s]\n",
+    clr?'c':'s',clr?0U:1U,clr?'c':'s',buffer_value,buffer_ovalue);
    fail=true;
   }
  }
@@ -222,63 +237,6 @@ bool test_set_get0() {
  return !fail;
 }
 
-bool test_clr_get0() {
- bool fail = false;
- BigUInt128 unit = biguint128_ctor_unit();
-
- BigUInt128 value = biguint128_ctor_default();
- biguint128_sub_assign(&value,&unit);
- buint_bool pre_expected[]={0,1,1};
- buint_bool post_expected[]={0,0,1};
-
- for (int i=0; i<BIGUINT_BITS; ++i) {
-  BigUInt128 pre_value = biguint128_ctor_copy(&value);
-  BigUInt128 owrite_value = biguint128_ctor_copy(&value);
-  buint_bool pre_change[3];
-  buint_bool post_change[3];
-  for (int j = 0; j < 3; ++j) {
-   int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
-   pre_change[j] = biguint128_gbit(&value, pos);
-  }
-  biguint128_cbit(&value,i);
-  biguint128_obit(&owrite_value,i,false);
-  for (int j = 0; j < 3; ++j) {
-   int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
-   post_change[j] = biguint128_gbit(&value, pos);
-  }
-
-  bool invert_expected[]={(i==0),false,(i==BIGUINT_BITS-1)};
-
-  for (int j = 0; j < 3; ++j) {
-   unsigned int pos = (i - 1 + j + BIGUINT_BITS) % BIGUINT_BITS;
-   if ((pre_expected[j]!=invert_expected[j]) != pre_change[j]) {
-    fprint_funres_buint128_x_bsz_bb(
-            stderr, "gbit",
-            &pre_value, pos,
-            (pre_expected[j]!=invert_expected[j]), pre_change[j]);
-    fail=true;
-   }
-
-   if ((post_expected[j]!=invert_expected[j]) != post_change[j]) {
-    fprint_funres_buint128_x_bsz_bb(
-            stderr, "gbit",
-            &value, pos,
-            (post_expected[j]!=invert_expected[j]), post_change[j]);
-    fail=true;
-   }
-  }
-
-  if (!biguint128_eq(&owrite_value, &value)) {
-   char buffer_value[HEX_BIGUINTLEN + 1];
-   char buffer_ovalue[HEX_BIGUINTLEN + 1];
-   buffer_value[biguint128_print_hex(&value, buffer_value, HEX_BIGUINTLEN)]=0;
-   buffer_ovalue[biguint128_print_hex(&owrite_value, buffer_ovalue, HEX_BIGUINTLEN)]=0;
-   fprintf(stderr, "sbit(a,b) and obit(a,b,1) results differ: sbit: [%s], obit: [%s]\n", buffer_value,buffer_ovalue);
-   fail=true;
-  }
- }
- return !fail;
-}
 
 // checks: rol(x,a) == or(shl(x,a), shr(x,128-a))
 bool test_shiftrot0() {
@@ -326,8 +284,8 @@ bool test_shiftrot0() {
 int main(int argc, char **argv) {
 
  assert(test_and_or_not0());
- assert(test_set_get0());
- assert(test_clr_get0());
+ assert(test_gen_write_get0(false));
+ assert(test_gen_write_get0(true));
 
  assert(test_shiftrot0());
  return 0;
