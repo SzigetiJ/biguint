@@ -40,6 +40,7 @@ static inline buint_size_p bitpos_(buint_size_t a);
 static inline buint_bool is_bigint_negative_(const BigUInt128 *a);
 static inline BigUInt128 *bigint128_negate_(BigUInt128 *a);
 static inline BigUInt128 *clrall_(BigUInt128 *a);
+static inline void fast_div_phase2_(BigUIntPair128 *res, UInt divisor);
 
 static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset);
 
@@ -84,6 +85,12 @@ static inline BigUInt128 *clrall_(BigUInt128 *a) {
  return a;
 }
 
+static inline void fast_div_phase2_(BigUIntPair128 *res, UInt divisor) {
+ UInt d = res->second.dat[0] / divisor;
+ UInt m = res->second.dat[0] % divisor;
+ biguint128_add_tiny(&res->first, d);
+ res->second = biguint128_value_of_uint(m);
+}
 
 // END internal functions
 /////////////////////
@@ -719,7 +726,6 @@ BigUInt128 biguint128_mul1000(const BigUInt128 *a) {
  return a10;
 }
 
-
 BigUIntPair128 biguint128_div1000(const BigUInt128 *a) {
  // The procedure goes like this:
  // We have to containers (retv.first, retv.second), and at the end
@@ -731,18 +737,13 @@ BigUIntPair128 biguint128_div1000(const BigUInt128 *a) {
  // In phase #1 we exploit that
  // a = 1024*b + c = (1000*b) + (24*b+c)
  // and reduce retv.second iteratively until it gets small enough.
- // In phase #2 we just subtract X2MUL*DIVISOR from the remainder if it is still too high.
- // In phase #3 we subtract exactly DIVISOR from the reainder if it is still too high.
+ // In phase #2 we just do a simple UInt division.
  static const UInt DIVISOR = 1000U;
- static const UInt X1MUL = 100U;
- static const UInt X2MUL = 10U;
- static const BigUInt128 x1lim={{X1MUL*DIVISOR}};
- static const BigUInt128 x2lim={{X2MUL*DIVISOR}};
- static const BigUInt128 x3lim={{DIVISOR}};
+ static const BigUInt128 PH1LIMIT = {{-1}};
 
  BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
  // Phase 1:
- while (biguint128_lt(&x1lim, &retv.second)) {
+ while (biguint128_lt(&PH1LIMIT, &retv.second)) {
   BigUIntTinyPair128 x= biguint128_div1024(&retv.second);
   biguint128_add_assign(&retv.first, &x.first);
   BigUInt128 d_mul8= biguint128_shl(&x.first, 3);
@@ -751,15 +752,7 @@ BigUIntPair128 biguint128_div1000(const BigUInt128 *a) {
   biguint128_add_tiny(&retv.second, x.second);
  }
  // Phase 2:
- while (!biguint128_lt(&retv.second, &x2lim)) {
-  biguint128_add_tiny(&retv.first, X2MUL);
-  biguint128_sub_tiny(&retv.second, x2lim.dat[0]);
- }
- // Phase 3:
- while (!biguint128_lt(&retv.second, &x3lim)) {
-  biguint128_add_tiny(&retv.first, 1);
-  biguint128_sub_tiny(&retv.second, x3lim.dat[0]);
- }
+ fast_div_phase2_(&retv, DIVISOR);
  return retv;
 }
 
@@ -787,34 +780,20 @@ BigUIntPair128 biguint128_div30(const BigUInt128 *a) {
  // In phase #1 we exploit that
  // a = 32*b + c = (30*b) + (2*b+c)
  // and reduce retv.second iteratively until it gets small enough.
- // In phase #2 we just subtract 30 from the remainder if it is still too high.
- // In phase #2 we just subtract X2MUL*DIVISOR from the remainder if it is still too high.
- // In phase #3 we subtract exactly DIVISOR from the reainder if it is still too high.
+ // In phase #2 we just do a simple UInt division.
  static const UInt DIVISOR = 30U;
- static const UInt X1MUL = 25U;
- static const UInt X2MUL = 5U;
- static const BigUInt128 x1lim={{X1MUL*DIVISOR}};
- static const BigUInt128 x2lim={{X2MUL*DIVISOR}};
- static const BigUInt128 x3lim={{DIVISOR}};
+ static const BigUInt128 PH1LIMIT = {{-1}};
 
  BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
  // Phase 1:
- while (biguint128_lt(&x1lim, &retv.second)) {
+ while (biguint128_lt(&PH1LIMIT, &retv.second)) {
   BigUIntTinyPair128 x= biguint128_div32(&retv.second);
   biguint128_add_assign(&retv.first, &x.first);
   retv.second = biguint128_shl(&x.first, 1);
   biguint128_add_tiny(&retv.second, x.second);
  }
  // Phase 2:
- while (!biguint128_lt(&retv.second, &x2lim)) {
-  biguint128_add_tiny(&retv.first, X2MUL);
-  biguint128_sub_tiny(&retv.second, x2lim.dat[0]);
- }
- // Phase 2:
- while (!biguint128_lt(&retv.second, &x3lim)) {
-  biguint128_add_tiny(&retv.first, 1);
-  biguint128_sub_tiny(&retv.second, x3lim.dat[0]);
- }
+ fast_div_phase2_(&retv, DIVISOR);
  return retv;
 }
 
