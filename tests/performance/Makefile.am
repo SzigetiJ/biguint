@@ -1,67 +1,44 @@
-noinst_PROGRAMS = \
-	add_perf \
-	uint_perf \
-	div10_perf \
-	div1000_perf \
-	print_perf
+UINT_PROGS = add_uperf
+BUINT128_PROGS = \
+    add_perf128 \
+	div10_perf128 \
+	div1000_perf128 \
+	parse_perf128 \
+	print_perf128
+
+noinst_PROGRAMS = $(UINT_PROGS) $(BUINT128_PROGS)
 
 CLEANFILES =
 
+BUINT512_PROGS = \
+    add_perf512 \
+	div10_perf512 \
+	div1000_perf512 \
+	parse_perf512 \
+	print_perf512
+
+
 if WITH_BIGUINT512
- ADDITIONAL512 = \
-	div10_@bits512@_perf \
-	div1000_@bits512@_perf
- noinst_PROGRAMS += parse_perf $(ADDITIONAL512)
+ noinst_PROGRAMS += $(BUINT512_PROGS)
 
- nodist_div10_@bits512@_perf_SOURCES = div10_@bits512@_perf.c perf_common@bits512@.h
- nodist_div1000_@bits512@_perf_SOURCES = div1000_@bits512@_perf.c perf_common@bits512@.h
+ CLEANFILES += perf_common512.h \
+    add_perf512.c \
+	div10_perf512.c \
+	div1000_perf512.c \
+	parse_perf512.c \
+	print_perf512.c
 
- CLEANFILES += \
-	div10_@bits512@_perf.c \
-	div1000_@bits512@_perf.c \
-    perf_common@bits512@.h
+ nodist_add_perf512_SOURCES = add_perf512.c
+ nodist_div10_perf512_SOURCES = div10_perf512.c
+ nodist_div1000_perf512_SOURCES = div1000_perf512.c
+ nodist_parse_perf512_SOURCES = parse_perf512.c
+ nodist_print_perf512_SOURCES = print_perf512.c
 
-div10_512_perf.c: div10_perf.c
+%perf512.c: %perf128.c
 	$(SED) 's/128/512/g' < $< > $@
 
-div1000_512_perf.c: div1000_perf.c
+%common512.h: %common128.h
 	$(SED) 's/128/512/g' < $< > $@
-
-perf_common512.h: perf_common128.h
-	$(SED) 's/128/512/g' < $< > $@
-
-endif
-
-if WITH_BIGUINT256
- ADDITIONAL256 = \
-	div10_@bits256@_perf \
-	div1000_@bits256@_perf \
-	print_@bits256@_perf
-
- noinst_PROGRAMS += $(ADDITIONAL256)
-
- nodist_div10_@bits256@_perf_SOURCES = div10_@bits256@_perf.c perf_common@bits256@.h
- nodist_div1000_@bits256@_perf_SOURCES = div1000_@bits256@_perf.c perf_common@bits256@.h
- nodist_print_@bits256@_perf_SOURCES = print_@bits256@_perf.c perf_common@bits256@.h
-
- CLEANFILES += \
-	div10_@bits256@_perf.c \
-	div1000_@bits256@_perf.c \
-	print_@bits256@_perf.c \
-    perf_common@bits256@.h
-
-
-div10_256_perf.c: div10_perf.c
-	$(SED) 's/128/256/g' < $< > $@
-
-div1000_256_perf.c: div1000_perf.c
-	$(SED) 's/128/256/g' < $< > $@
-
-print_256_perf.c: print_perf.c
-	$(SED) 's/128/256/g' < $< > $@
-
-perf_common256.h: perf_common128.h
-	$(SED) 's/128/256/g' < $< > $@
 
 endif
 

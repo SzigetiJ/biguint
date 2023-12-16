@@ -8,7 +8,7 @@
 
 #define LOOPS 200000
 
-#define BUFLEN (3*512/10)+10	// Approx. max. usage of 512 bits
+#define BUFLEN (3*128/10)+10	// Approx. max. usage of 128 bits
 
 int main() {
  BigUInt128 b0 = biguint128_ctor_default();
