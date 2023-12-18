@@ -10,6 +10,13 @@ noinst_PROGRAMS = $(UINT_PROGS) $(BUINT128_PROGS)
 
 CLEANFILES =
 
+BUINT256_PROGS = \
+    add_perf256 \
+	div10_perf256 \
+	div1000_perf256 \
+	parse_perf256 \
+	print_perf256
+
 BUINT512_PROGS = \
     add_perf512 \
 	div10_perf512 \
@@ -17,6 +24,36 @@ BUINT512_PROGS = \
 	parse_perf512 \
 	print_perf512
 
+BUINTEXTRA_PROGS = \
+    add_perf@userdef_bits@ \
+	div10_perf@userdef_bits@ \
+	div1000_perf@userdef_bits@ \
+	parse_perf@userdef_bits@ \
+	print_perf@userdef_bits@
+
+if WITH_BIGUINT256
+ noinst_PROGRAMS += $(BUINT256_PROGS)
+
+ CLEANFILES += perf_common256.h \
+    add_perf256.c \
+	div10_perf256.c \
+	div1000_perf256.c \
+	parse_perf256.c \
+	print_perf256.c
+
+ nodist_add_perf256_SOURCES = add_perf256.c
+ nodist_div10_perf256_SOURCES = div10_perf256.c
+ nodist_div1000_perf256_SOURCES = div1000_perf256.c
+ nodist_parse_perf256_SOURCES = parse_perf256.c
+ nodist_print_perf256_SOURCES = print_perf256.c
+
+ %perf256.c: %perf128.c
+	$(SED) 's/128/256/g' < $< > $@
+
+ %common256.h: %common128.h
+	$(SED) 's/128/256/g' < $< > $@
+
+endif
 
 if WITH_BIGUINT512
  noinst_PROGRAMS += $(BUINT512_PROGS)
@@ -34,11 +71,35 @@ if WITH_BIGUINT512
  nodist_parse_perf512_SOURCES = parse_perf512.c
  nodist_print_perf512_SOURCES = print_perf512.c
 
-%perf512.c: %perf128.c
+ %perf512.c: %perf128.c
 	$(SED) 's/128/512/g' < $< > $@
 
-%common512.h: %common128.h
+ %common512.h: %common128.h
 	$(SED) 's/128/512/g' < $< > $@
+
+endif
+
+if EXTRA_BITLEN
+ noinst_PROGRAMS += $(BUINTEXTRA_PROGS)
+
+ CLEANFILES += perf_common@userdef_bits@.h \
+    add_perf@userdef_bits@.c \
+	div10_perf@userdef_bits@.c \
+	div1000_perf@userdef_bits@.c \
+	parse_perf@userdef_bits@.c \
+	print_perf@userdef_bits@.c
+
+ nodist_add_perf@userdef_bits@_SOURCES = add_perf@userdef_bits@.c
+ nodist_div10_perf@userdef_bits@_SOURCES = div10_perf@userdef_bits@.c
+ nodist_div1000_perf@userdef_bits@_SOURCES = div1000_perf@userdef_bits@.c
+ nodist_parse_perf@userdef_bits@_SOURCES = parse_perf@userdef_bits@.c
+ nodist_print_perf@userdef_bits@_SOURCES = print_perf@userdef_bits@.c
+
+ %perf@userdef_bits@.c: %perf128.c
+	$(SED) 's/128/@userdef_bits@/g' < $< > $@
+
+ %common@userdef_bits@.h: %common128.h
+	$(SED) 's/128/@userdef_bits@/g' < $< > $@
 
 endif
 
