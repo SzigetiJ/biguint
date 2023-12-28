@@ -77,6 +77,11 @@ BigUInt128 biguint128_ctor_copy(const BigUInt128 *orig);
 BigUInt128 biguint128_value_of_uint(UInt value);
 
 /**
+ @brief Generates BigUInt128 instance initialized to a signed value.
+*/
+BigUInt128 bigint128_value_of_uint(UInt value);
+
+/**
  @brief Value initialization from char array with hexadecimal digits.
  @param hex_digits Input character array.
  @param len Length of the input array.
@@ -150,6 +155,11 @@ void biguint128_sub_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
  @brief Sub-replacement with in/out carry.
  */
 void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool *carry);
+
+/**
+ @brief Invert (negate) a signed value.
+ */
+BigUInt128 bigint128_negate(const BigUInt128 *a);
 
 /**
  @brief Sub-assignment of UInt to biguint.
@@ -245,10 +255,23 @@ buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b);
 buint_bool bigint128_lt(const BigUInt128 *a, const BigUInt128 *b);
 
 /**
+ @brief 'Less than zero' for signed values.
+ @return Not zero: a is less than 0. Zero: a is not less than 0.
+*/
+buint_bool bigint128_ltz(const BigUInt128 *a);
+
+
+/**
  @brief Checks equality.
  @return Not zero: a is equal to b. Zero: a is not equal to b.
 */
 buint_bool biguint128_eq(const BigUInt128 *a, const BigUInt128 *b);
+
+/**
+ @brief Checks equality with zero.
+ @return Not zero: a is equal to 0. Zero: a is not equal to 0.
+*/
+buint_bool biguint128_eqz(const BigUInt128 *a);
 
 // misc.
 /**

@@ -5,32 +5,42 @@
 #include "assert.h"
 
 #define BIGUINT_BITS 128
-#define BIGUINT_CELLS BIGUINT_BITS / (8*sizeof(UInt))
+#define UINT_BITS (8*sizeof(UInt))
+#define BIGUINT_CELLS BIGUINT_BITS / UINT_BITS
 
-bool test_ctor_default() {
- BigUInt128 a = biguint128_ctor_default();
+static inline bool check_dat_array(const char *fun, const UInt *actual, const UInt *expected) {
  bool pass = true;
  for (int i=0; i < BIGUINT_CELLS; ++i) {
-  UInt cell = a.dat[i];
-  if (cell != 0) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [0], actual: [%" PRIuint "]\n", __func__, i, cell);
+  if (actual[i] != expected[i]) {
+   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n",
+    fun, i, expected[i], actual[i]);
    pass=false;
   }
  }
  return pass;
 }
 
-bool test_ctor_unit() {
- BigUInt128 a = biguint128_ctor_unit();
- bool pass = true;
+bool test_ctor_default() {
+ UInt expected[BIGUINT_CELLS];
  for (int i=0; i < BIGUINT_CELLS; ++i) {
-  UInt cell = a.dat[i];
-  if (cell != (i==0?1:0)) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%d], actual: [%" PRIuint "]\n", __func__, i, (i==0?1:0), cell);
-   pass=false;
-  }
+  expected[i]=0;
  }
- return pass;
+
+ BigUInt128 a = biguint128_ctor_default();
+
+ return check_dat_array("ctor_default",a.dat, expected);
+}
+
+bool test_ctor_unit() {
+ UInt expected[BIGUINT_CELLS];
+ expected[0]=1;
+ for (int i=1; i < BIGUINT_CELLS; ++i) {
+  expected[i]=0;
+ }
+
+ BigUInt128 a = biguint128_ctor_unit();
+
+ return check_dat_array("ctor_unit",a.dat, expected);
 }
 
 bool test_ctor_standard() {
@@ -38,14 +48,43 @@ bool test_ctor_standard() {
  for (int i=0; i < BIGUINT_CELLS; ++i) {
   dat[i]=i;
  }
+
  BigUInt128 a = biguint128_ctor_standard(dat);
+
+ return check_dat_array("ctor_standard",a.dat, dat);
+}
+
+bool test_ctor_uint() {
+ UInt init_dat[] = {0x01, 0xFF, 0xFFFFFFFF, (UInt)(-1)};
+ UInt expected[BIGUINT_CELLS];
  bool pass = true;
- for (int i=0; i < BIGUINT_CELLS; ++i) {
-  UInt cell = a.dat[i];
-  if (cell != dat[i]) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n", __func__, i, dat[i], cell);
-   pass=false;
+ for (int j = 0; j<sizeof(init_dat)/sizeof(UInt); ++j) {
+  expected[0]=init_dat[j];
+  for (int i=1; i < BIGUINT_CELLS; ++i) {
+   expected[i]=0;
   }
+
+  BigUInt128 a = biguint128_value_of_uint(init_dat[j]);
+
+  pass&=check_dat_array("value_of_uint",a.dat, expected);
+ }
+ return pass;
+}
+
+bool test_ctor_uint_signed() {
+ UInt init_dat[] = {0, ((UInt)1<<(UINT_BITS-1))-1, ((UInt)1<<(UINT_BITS-1)), (UInt)(-1)};
+ UInt exp_fill[] = {0,0,(UInt)-1, (UInt)-1};
+ UInt expected[BIGUINT_CELLS];
+ bool pass = true;
+ for (int j = 0; j<sizeof(init_dat)/sizeof(UInt); ++j) {
+  expected[0]=init_dat[j];
+  for (int i=1; i < BIGUINT_CELLS; ++i) {
+   expected[i]=exp_fill[j];
+  }
+
+  BigUInt128 a = bigint128_value_of_uint(init_dat[j]);
+
+  pass&=check_dat_array("value_of_uint",a.dat, expected);
  }
  return pass;
 }
@@ -59,25 +98,14 @@ bool test_ctor_copy() {
  BigUInt128 b = biguint128_ctor_copy(&a);
  bool pass = true;
  // check that `b' is written
- for (int i=0; i < BIGUINT_CELLS; ++i) {
-  UInt cell = b.dat[i];
-  if (cell != dat[i]) {
-   fprintf(stderr, "%s -- variable b cell #%d assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n", __func__, i, dat[i], cell);
-   pass=false;
-  }
- }
+ pass&=check_dat_array("ctor_copy#1",b.dat, dat);
  // overwrite `b'
  for (int i=0; i < BIGUINT_CELLS; ++i) {
   b.dat[i]=0;
  }
  // then check that `a' is not overwritten
- for (int i=0; i < BIGUINT_CELLS; ++i) {
-  UInt cell = a.dat[i];
-  if (cell != dat[i]) {
-   fprintf(stderr, "%s -- variable a cell #%d assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n", __func__, i, dat[i], cell);
-   pass=false;
-  }
- }
+ pass&=check_dat_array("ctor_copy#2",a.dat, dat);
+
  return pass;
 }
 
@@ -88,14 +116,10 @@ bool test_import() {
  }
  BigUInt128 a = biguint128_ctor_default();
  buint_size_t result = biguint128_import(&a,dat);
+
  bool pass = result == BIGUINT_BITS / 8;
- for (int i=0; i < BIGUINT_CELLS; ++i) {
-  char a_byte = ((char*)a.dat)[i];
-  if (a_byte != dat[i]) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%02X], actual: [%02X]\n", __func__, i, dat[i], a_byte);
-   pass=false;
-  }
- }
+ pass&=check_dat_array("import", a.dat, (UInt*)dat);
+
  return pass;
 }
 
@@ -114,13 +138,7 @@ bool test_export() {
 
  // check phase
  bool pass = result == BIGUINT_BITS / 8;
- for (int i=0; i < BIGUINT_CELLS; ++i) {
-  char a_byte = ((char*)a.dat)[i];
-  if (a_byte != dump[i]) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%02X], actual: [%02X]\n", __func__, i, a_byte, dump[i]);
-   pass=false;
-  }
- }
+ pass&=check_dat_array("export", (UInt*)dump, a.dat);
  return pass;
 }
 
@@ -131,6 +149,8 @@ int main(int argc, char **argv) {
  assert(test_ctor_unit());
  assert(test_ctor_standard());
  assert(test_ctor_copy());
+ assert(test_ctor_uint());
+ assert(test_ctor_uint_signed());
  assert(test_import());
  assert(test_export());
 

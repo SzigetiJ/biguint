@@ -20,6 +20,13 @@ typedef struct {
  BigUIntSortRelation rel_nn;
 } BigUIntSortRelTestVector;
 
+typedef struct {
+ CStr obj;
+ bool ltz;
+ bool eqz;
+} BigUIntRelZTestVector;
+
+
 const BigUIntSortRelTestVector samples[]={
  {STR("0"),STR("0"),BIGUINT_EQ,BIGUINT_EQ,BIGUINT_EQ,BIGUINT_EQ},
  {STR("0"),STR("1"),BIGUINT_LT,BIGUINT_LT,BIGUINT_GT,BIGUINT_GT},
@@ -37,6 +44,20 @@ const BigUIntSortRelTestVector samples[]={
  {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"),STR("5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A"),BIGUINT_GT,BIGUINT_LT,BIGUINT_GT,BIGUINT_LT},
 };
 int sample_len = sizeof(samples) / sizeof(BigUIntSortRelTestVector);
+
+BigUIntRelZTestVector samplez[]={
+ {STR("4294967296"), false, false},
+ {STR("1234567890"), false, false},
+ {STR("12345678901234567890"), false, false},
+ {STR("123456789012345678901234567890"), false, false},
+ {STR("0"), false, true},
+ {STR("-0"), false, true},
+ {STR("-4294967296"), true, false},
+ {STR("-1234567890"), true, false},
+ {STR("-12345678901234567890"), true, false},
+ {STR("-123456789012345678901234567890"), true, false}
+};
+int samplez_len = sizeof(samplez) / sizeof(BigUIntRelZTestVector);
 
 int test_sortrel0() {
  int fail = 0;
@@ -96,8 +117,8 @@ int test_sortrel1() {
   if (biguint128_gbit(&a, 128 - 1) || biguint128_gbit(&b, 128 - 1))
    continue; // cannot handle signed value
 
-  BigUInt128 a_neg = negate_bigint128(&a);
-  BigUInt128 b_neg = negate_bigint128(&b);
+  BigUInt128 a_neg = bigint128_negate(&a);
+  BigUInt128 b_neg = bigint128_negate(&b);
 
   // eval
   buint_bool result_lt_1 = bigint128_lt(&a_neg, &b);
@@ -143,10 +164,38 @@ int test_sortrel1() {
  return fail;
 }
 
+int test_relz0(bool check_ltz) {
+ int fail = 0;
+ int run_cnt = 0;
+
+ for (int i=0; i<samplez_len; ++i) {
+  // prepare
+  const CStr *sample_obj = &samplez[i].obj;
+  bool expected = (check_ltz?samplez[i].ltz:samplez[i].eqz);
+  if (DEC_BIGUINTLEN_LO < sample_obj->len)
+   continue;
+  BigUInt128 a = bigint128_ctor_deccstream(sample_obj->str, sample_obj->len);
+
+  buint_bool result_relz = (check_ltz?bigint128_ltz(&a):biguint128_eqz(&a));
+
+  // process result
+  if (!!result_relz != !!expected) {
+   fprintf(stderr, "[%s(%s)] expected: [%s], actual [%s]\n", check_ltz?"ltz":"eqz", sample_obj->str,
+    bool_to_str(expected), bool_to_str(result_relz));
+   fail = 1;
+  }
+  ++run_cnt;
+ }
+ fprintf(stdout, "Run %d tests.\n", run_cnt);
+ return fail;
+}
+
 int main(int argc, char **argv) {
 
  assert(test_sortrel0() == 0);
  assert(test_sortrel1() == 0);
+ assert(test_relz0(true) == 0);
+ assert(test_relz0(false) == 0);
 
  return 0;
 }

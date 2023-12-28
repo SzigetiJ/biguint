@@ -170,6 +170,17 @@ BigUInt128 biguint128_value_of_uint(UInt value) {
  return retv;
 }
 
+BigUInt128 bigint128_value_of_uint(UInt value) {
+ BigUInt128 retv = biguint128_ctor_default();
+ if (value & (((UInt)1)<<(UINT_BITS-1))) {
+  FOREACHCELL(i) {
+   retv.dat[i]=(UInt)-1;
+  }
+ }
+ retv.dat[0] = value;
+ return retv;
+}
+
 buint_size_t biguint128_import(BigUInt128 *dest, const char *src) {
  memcpy(&dest->dat, src, BIGUINT128_CELLS * UINT_BYTES);
  return BIGUINT128_CELLS * UINT_BYTES;
@@ -253,6 +264,12 @@ void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
  FOREACHCELL(i) {
   dest->dat[i] = uint_sub(a->dat[i], b->dat[i], carry);
  }
+}
+
+BigUInt128 bigint128_negate(const BigUInt128 *a) {
+ BigUInt128 retv = biguint128_ctor_copy(a);
+ bigint128_negate_(&retv);
+ return retv;
 }
 
 // END SUB   //
@@ -564,6 +581,10 @@ buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
  return 0;
 }
 
+buint_bool bigint128_ltz(const BigUInt128 *a) {
+ return is_bigint_negative_(a);
+}
+
 buint_bool bigint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
  buint_bool neg_a = is_bigint_negative_(a);
  buint_bool neg_b = is_bigint_negative_(b);
@@ -575,6 +596,13 @@ buint_bool bigint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
 buint_bool biguint128_eq(const BigUInt128 *a, const BigUInt128 *b) {
  FOREACHCELL(i) {
   if (a->dat[i]!=b->dat[i]) return 0;
+ }
+ return 1;
+}
+
+buint_bool biguint128_eqz(const BigUInt128 *a) {
+ FOREACHCELL(i) {
+  if (a->dat[i]!=0) return 0;
  }
  return 1;
 }

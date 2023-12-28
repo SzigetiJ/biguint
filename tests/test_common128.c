@@ -21,11 +21,6 @@ void init_testvalues() {
  maxbutone= biguint128_sub(&max, &one);
 }
 
-BigUInt128 negate_bigint128(const BigUInt128 *src) {
- BigUInt128 zero = biguint128_ctor_default();
- return biguint128_sub(&zero, src);
-}
-
 bool readhex_biguint128(BigUInt128 *result, const char* const hexstr, size_t hexlen) {
  if (hexlen == 0 || HEX_BIGUINTLEN < hexlen) {
   return false;

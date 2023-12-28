@@ -121,7 +121,7 @@ bool test_io_dec1() {
    continue;
   }
   // here we introduce dependency on biguint128_sub
-  BigUInt128 minus_a = negate_bigint128(&a);
+  BigUInt128 minus_a = bigint128_negate(&a);
 
   // note: prefix of print is bigint128_
   buint_size_t buflen = bigint128_print_dec(&minus_a, buffer, sizeof(buffer) / sizeof(char) - 1);

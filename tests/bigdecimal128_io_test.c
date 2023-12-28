@@ -8,6 +8,8 @@
 #include "test_common128.h"
 
 const CStr dec_input[] = {
+ STR(""),
+ STR("-"),
  STR("0"),
  STR("0.0"),
  STR("-0"),
@@ -23,6 +25,8 @@ const CStr dec_input[] = {
 };
 
 const CStr dec_printed[] = {
+ STR("0"),
+ STR("0"),
  STR("0"),
  STR("0.0"),
  STR("0"),

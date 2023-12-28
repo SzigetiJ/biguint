@@ -27,7 +27,6 @@ extern BigUInt128 max;
 extern BigUInt128 maxbutone;
 
 void init_testvalues();
-BigUInt128 negate_bigint128(const BigUInt128 *src);
 bool readhex_biguint128(BigUInt128 *result, const char * const hexstr, size_t hexlen);
 bool readhex_cstr_biguint128(BigUInt128 *result, const CStr * const hexstr);
 bool readhex_more_cstr_biguint128(BigUInt128 *result_arr, const CStr * const hex_arr, size_t num);
