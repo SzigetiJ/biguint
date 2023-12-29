@@ -32,7 +32,7 @@ All the provided types are accompanied by the following functions:
 * bit shift operations (shl, shr, rol, ror);
 * bitwise operations (and, or, xor, not);
 * bitwise manipulation (get, set, clr, overwrite);
-* comparison (lt, eq);
+* comparison (lt, eq, eqz);
 * parsing and printing (from/to hex and dec strings);
 * default and standard _constructors_ (initializer functions).
 
@@ -52,8 +52,8 @@ However, there are some functions which work differently for signed and unsigned
 therefore they have their BigInt variants:
 
 * parsing and printing (only dec strings);
-* comparison (lt) and
-* division (div).
+* comparison (lt, ltz);
+* division (div) and inversion (negate).
 
 ### BigDecimal
 
