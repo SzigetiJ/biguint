@@ -335,6 +335,17 @@ BigUInt128 *biguint128_shl_or(BigUInt128 *restrict dest, const BigUInt128 *restr
  return dest;
 }
 
+BigUInt128 *biguint128_shl_tiny(BigUInt128 *a, const buint_size_t shift) {
+ buint_size_t bitshift = UINT_BITS - bitpos_(shift).bit_sel;
+
+ FOREACHCELL(i) {
+  UIntPair x = uint_split_shift(a->dat[BIGUINT128_CELLS - 1 - i], bitshift);
+  if (0 < i) a->dat[BIGUINT128_CELLS - i] |= x.first;
+  a->dat[BIGUINT128_CELLS - 1 - i] = x.second;
+ }
+ return a;
+}
+
 BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();
  buint_size_p shift_p = bitpos_(shift);
@@ -371,6 +382,18 @@ BigUInt128 *biguint128_shr_assign(BigUInt128 *a, const buint_size_t shift) {
  }
  return a;
 }
+
+BigUInt128 *biguint128_shr_tiny(BigUInt128 *a, const buint_size_t shift) {
+ buint_size_p shift_p = bitpos_(shift);
+ FOREACHCELL(i) {
+  UIntPair x = uint_split_shift(a->dat[i], shift_p.bit_sel);
+  if (0 < i) a->dat[i - 1] |= x.second;
+  a->dat[i] = x.first;
+ }
+ return a;
+}
+
+
 
 BigUInt128 biguint128_ror(const BigUInt128 *a, const buint_size_t shift) {
  BigUInt128 retv = biguint128_ctor_default();
@@ -524,7 +547,7 @@ BigUIntPair128 biguint128_div(const BigUInt128 *a, const BigUInt128 *b) {
     biguint128_sbit(&retv.first, xbit - i);
     xobj = biguint128_sub(&xobj, &xdiv);
    }
-   biguint128_shr_assign(&xdiv, 1);
+   biguint128_shr_tiny(&xdiv, 1);
   }
   retv.second = xobj;
  }
@@ -741,19 +764,19 @@ BigUIntTinyPair128 biguint128_div1024(const BigUInt128 *a) {
 
 BigUInt128 biguint128_mul100(const BigUInt128 *a) {
  BigUInt128 a6 = biguint128_shl(a,6);
- BigUInt128 a5 = biguint128_shl(a,5);
- BigUInt128 a2 = biguint128_shl(a,2);
- biguint128_add_assign(&a6, &a5);
- biguint128_add_assign(&a6, &a2);
+ BigUInt128 ax = biguint128_shl(a,2);
+ biguint128_add_assign(&a6, &ax);
+ biguint128_shl_tiny(&ax,3);
+ biguint128_add_assign(&a6, &ax);
  return a6;
 }
 
 BigUInt128 biguint128_mul1000(const BigUInt128 *a) {
  BigUInt128 a10 = biguint128_shl(a,10);
- BigUInt128 a4 = biguint128_shl(a,4);
- BigUInt128 a3 = biguint128_shl(a,3);
- biguint128_sub_assign(&a10, &a4);
- biguint128_sub_assign(&a10, &a3);
+ BigUInt128 ax = biguint128_shl(a,3);
+ biguint128_sub_assign(&a10, &ax);
+ biguint128_shl_tiny(&ax,1);
+ biguint128_sub_assign(&a10, &ax);
  return a10;
 }
 
@@ -777,9 +800,9 @@ BigUIntPair128 biguint128_div1000(const BigUInt128 *a) {
  while (biguint128_lt(&PH1LIMIT, &retv.second)) {
   BigUIntTinyPair128 x= biguint128_div1024(&retv.second);
   biguint128_add_assign(&retv.first, &x.first);
-  BigUInt128 d_mul8= biguint128_shl(&x.first, 3);
-  BigUInt128 d_mul16= biguint128_shl(&x.first, 4);
-  retv.second = biguint128_add(&d_mul8, &d_mul16);
+  biguint128_shl_tiny(&x.first, 3);
+  BigUInt128 d_mul16= biguint128_shl(&x.first, 1);
+  retv.second = biguint128_add(&x.first, &d_mul16);
   biguint128_add_tiny(&retv.second, x.second);
  }
  // Phase 2:
@@ -815,17 +838,19 @@ BigUIntPair128 biguint128_div30(const BigUInt128 *a) {
  static const UInt DIVISOR = 30U;
  static const BigUInt128 PH1LIMIT = {{-1}};
 
- BigUIntPair128 retv= {biguint128_ctor_default(), biguint128_ctor_copy(a)};
- // Phase 1:
- while (biguint128_lt(&PH1LIMIT, &retv.second)) {
-  BigUIntTinyPair128 x= biguint128_div32(&retv.second);
-  biguint128_add_assign(&retv.first, &x.first);
-  retv.second = biguint128_shl(&x.first, 1);
-  biguint128_add_tiny(&retv.second, x.second);
+ BigUIntTinyPair128 x={biguint128_ctor_copy(a),0U};
+ BigUIntPair128 div = {biguint128_ctor_default(),biguint128_ctor_default()};
+ while (biguint128_lt(&PH1LIMIT, &x.first)) {
+  x= biguint128_div32(&x.first);
+  biguint128_add_assign(&div.first, &x.first);
+  biguint128_shl_tiny(&x.first, 1);
+  biguint128_add_tiny(&x.first, x.second);
  }
+ div.second = x.first;
  // Phase 2:
- fast_div_phase2_(&retv, DIVISOR);
- return retv;
+// fast_div_phase2_(&retv, DIVISOR);
+ fast_div_phase2_(&div, DIVISOR);
+ return div;
 }
 
 

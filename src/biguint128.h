@@ -178,11 +178,13 @@ BigUInt128 *biguint128_dec(BigUInt128 *a);
 */
 BigUInt128 biguint128_shl(const BigUInt128 *a, const buint_size_t shift);
 BigUInt128 *biguint128_shl_or(BigUInt128 *dest, const BigUInt128 *a, const buint_size_t shift);
+BigUInt128 *biguint128_shl_tiny(BigUInt128 *a, const buint_size_t shift);
 /**
  @brief Shift right operation.
 */
 BigUInt128 biguint128_shr(const BigUInt128 *a, const buint_size_t shift);
 BigUInt128 *biguint128_shr_assign(BigUInt128 *a, const buint_size_t shift);
+BigUInt128 *biguint128_shr_tiny(BigUInt128 *a, const buint_size_t shift);
 
 /**
  @brief Rotate left operation.

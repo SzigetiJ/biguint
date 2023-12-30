@@ -89,7 +89,7 @@ static inline UIntPair uint_split(UInt a, buint_size_t lsb) {
  */
 static inline UIntPair uint_split_shift(UInt a, buint_size_t lsb) {
  UIntPair retv;
- retv.first= a >> lsb;
+ retv.first= (lsb < UINT_BITS)?a >> lsb : 0;
  retv.second= (0<lsb) ? (a << (UINT_BITS - lsb)) : 0;
  return retv;
 }

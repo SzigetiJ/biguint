@@ -6,7 +6,9 @@
 #include <assert.h>
 
 #define BIGUINT_BITS 128
+#define UINT_BITS (8*sizeof(UInt))
 #define PRINTBUFFER_LEN 80
+
 
 static void print_fun2_error(const char *expr, const char *a, const char *b, const char *expected, const BigUInt128 *actual) {
  char pbuffer[PRINTBUFFER_LEN];
@@ -243,13 +245,14 @@ bool test_shiftrot0() {
  bool fail=false;
 
  const CStr val_a[]={
+  STR("12345678"),
   STR("123456789ABCDEF0"),
   STR("1223334444555556666667777777"),
   STR("123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0"),
   STR("122333444455555666666777777788888888999999999AAAAAAAAAABBBBBBBBB")
  };
  size_t val_len=sizeof(val_a)/sizeof(val_a[0]);
- const buint_size_t sh_a[]={0,1,2,4,7,16,31,127,128,129,255,256};
+ const buint_size_t sh_a[]={0,1,2,4,7,16,31,63,64,127,128,129,255,256};
  size_t sh_len=sizeof(sh_a)/sizeof(sh_a[0]);
 
  for (size_t vi= 0; vi < val_len; ++vi) {
@@ -266,6 +269,26 @@ bool test_shiftrot0() {
    BigUInt128 res_shr= biguint128_shr(&a, sh_a[si] % BIGUINT_BITS);
    BigUInt128 res_shr_uflow= biguint128_shl(&a, (BIGUINT_BITS - sh_a[si]) % BIGUINT_BITS);
    BigUInt128 exp_ror= biguint128_or(&res_shr, &res_shr_uflow);
+   BigUInt128 res_shra= biguint128_ctor_copy(&a);
+   BigUInt128 *res2_shra= biguint128_shr_assign(&res_shra, sh_a[si] % BIGUINT_BITS);
+
+   if (sh_a[si]<UINT_BITS) {
+    BigUInt128 res_shlt = biguint128_ctor_copy(&a);
+    biguint128_shl_tiny(&res_shlt, sh_a[si]);
+
+    BigUInt128 res_shrt = biguint128_ctor_copy(&a);
+    biguint128_shr_tiny(&res_shrt, sh_a[si]);
+
+    if (!biguint128_eq(&res_shl, &res_shlt)) {
+     fprint_funres_buint128_x_bsz_buint128(stderr, "shlt", &a, sh_a[si], &res_shl, &res_shlt);
+     fail=true;
+    }
+
+    if (!biguint128_eq(&res_shr, &res_shrt)) {
+     fprint_funres_buint128_x_bsz_buint128(stderr, "shrt", &a, sh_a[si], &res_shr, &res_shrt);
+     fail=true;
+    }
+   }
 
    if (!biguint128_eq(&exp_rol, &act_rol)) {
     fprint_funres_buint128_x_bsz_buint128(stderr, "rol", &a, sh_a[si], & exp_rol, &act_rol);
@@ -275,6 +298,17 @@ bool test_shiftrot0() {
     fprint_funres_buint128_x_bsz_buint128(stderr, "ror", &a, sh_a[si], & exp_ror, &act_ror);
     fail=true;
    }
+
+   if (!biguint128_eq(&res_shra, &res_shr)) {
+    fprint_funres_buint128_x_bsz_buint128(stderr, "shra (param)", &a, sh_a[si], &res_shr, &res_shra);
+    fail=true;
+   }
+
+   if (&res_shra != res2_shra) {
+    print_assign_ptr_error("shr_a", &res_shra, res2_shra);
+    fail=true;
+   }
+
   }
  }
 

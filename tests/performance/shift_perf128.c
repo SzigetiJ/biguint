@@ -12,12 +12,14 @@
 typedef enum {
  VARIANT_SHL,
  VARIANT_SHL_OR_NEW,
+ VARIANT_SHL_TINY,
  VARIANT_SHR,
  VARIANT_SHR_ASSIGN_CP,
  VARIANT_ROL,
  VARIANT_ROR,
  VARIANT_SHL_OR,
- VARIANT_SHR_ASSIGN
+ VARIANT_SHR_ASSIGN,
+ VARIANT_SHR_TINY
 } ShiftVariant;
 void exec_shift(const BigUInt128 *ainit, const BigUInt128 *astep, ShiftVariant v) {
  uint32_t loop_cnt;
@@ -41,6 +43,13 @@ void exec_shift(const BigUInt128 *ainit, const BigUInt128 *astep, ShiftVariant v
     biguint128_add_tiny(&bsum, res.dat[BIGUINT128_CELLS-1]>>(UINT_BITS-1));
     ++loop_cnt;
    }
+  } else if (v == VARIANT_SHL_TINY) {
+   for (buint_size_t i = 0; i < 128U; ++i) {
+    BigUInt128 res = biguint128_ctor_copy(&bx);
+    biguint128_shl_tiny(&res, i);
+    biguint128_add_tiny(&bsum, res.dat[BIGUINT128_CELLS-1]>>(UINT_BITS-1));
+    ++loop_cnt;
+   }
   } else if (v == VARIANT_SHR) {
    for (buint_size_t i = 0; i < 128U; ++i) {
     BigUInt128 res = biguint128_shr(&bx, i);
@@ -51,6 +60,13 @@ void exec_shift(const BigUInt128 *ainit, const BigUInt128 *astep, ShiftVariant v
    for (buint_size_t i = 0; i < 128U; ++i) {
     BigUInt128 res = biguint128_ctor_copy(&bx);
     biguint128_shr_assign(&res, i);
+    biguint128_add_tiny(&bsum, res.dat[0]&1);
+    ++loop_cnt;
+   }
+  } else if (v == VARIANT_SHR_TINY) {
+   for (buint_size_t i = 0; i < 128U; ++i) {
+    BigUInt128 res = biguint128_ctor_copy(&bx);
+    biguint128_shr_tiny(&res, i);
     biguint128_add_tiny(&bsum, res.dat[0]&1);
     ++loop_cnt;
    }
@@ -88,8 +104,10 @@ void exec_shift(const BigUInt128 *ainit, const BigUInt128 *astep, ShiftVariant v
  print_exec_summary(t0, t1,
   v==VARIANT_SHL?"shl(x,i)":
   v==VARIANT_SHL_OR_NEW?"shl_or(new(),x,i)":
+  v==VARIANT_SHL_TINY?"shl_tiny(copy(x),i)":
   v==VARIANT_SHR?"shr(x,i)":
   v==VARIANT_SHR_ASSIGN_CP?"shr_assign(copy(x),i)":
+  v==VARIANT_SHR_TINY?"shr_tiny(copy(x),i)":
   v==VARIANT_ROL?"rol(x,i)":
   v==VARIANT_ROR?"ror(x,i)":
   v==VARIANT_SHL_OR?"shl_or(x,i)":
@@ -103,8 +121,10 @@ int main() {
  ShiftVariant variant[] = {
   VARIANT_SHL,
   VARIANT_SHL_OR_NEW,
+  VARIANT_SHL_TINY,
   VARIANT_SHR,
   VARIANT_SHR_ASSIGN_CP,
+  VARIANT_SHR_TINY,
   VARIANT_ROL,
   VARIANT_ROR,
   VARIANT_SHL_OR,
