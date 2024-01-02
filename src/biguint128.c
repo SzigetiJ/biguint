@@ -736,12 +736,14 @@ buint_size_t bigint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t bu
  buint_size_t retv=0;
 
  if (is_bigint_negative_(a)) {
-  BigUInt128 zero = biguint128_ctor_default();
-  BigUInt128 val = biguint128_sub(&zero,a);
+  BigUInt128 val = bigint128_negate(a);
 
   if (buf_len) {
    buf[0] = MINUS_SIGN;
-   retv = 1 + biguint128_print_dec(&val, buf+1, buf_len-1);
+   buint_size_t len = biguint128_print_dec(&val, buf+1, buf_len-1);
+   if (len) {
+    retv = len + 1U;
+   }
   }
  } else {
   retv = biguint128_print_dec(a, buf, buf_len);

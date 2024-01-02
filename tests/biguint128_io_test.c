@@ -49,28 +49,30 @@ const CStr dec_samples[] = {
 };
 int dec_sample_len = sizeof(dec_samples) / sizeof(dec_samples[0]);
 
-static inline buint_size_t parse_and_print(const CStr *sample, char *buffer, size_t buf_len, bool dec) {
- BigUInt128 a = dec?
-  biguint128_ctor_deccstream(sample->str, sample->len):
+static inline buint_size_t parse_and_print(const CStr *sample, char *buffer, size_t buf_len, Format fmt) {
+ BigUInt128 a =
+  fmt == FMT_DEC? biguint128_ctor_deccstream(sample->str, sample->len):
+  fmt == FMT_SDEC? bigint128_ctor_deccstream(sample->str, sample->len):
   biguint128_ctor_hexcstream(sample->str, sample->len);
- buint_size_t len = dec?
-  biguint128_print_dec(&a, buffer, buf_len):
+ buint_size_t len =
+  fmt == FMT_DEC?biguint128_print_dec(&a, buffer, buf_len):
+  fmt == FMT_SDEC?bigint128_print_dec(&a, buffer, buf_len):
   biguint128_print_hex(&a, buffer, buf_len);
  buffer[len] = 0;
  return len;
 }
 
 // Assert print(parse(hex_str))==hex_str / print(parse(dec_str))==dec_str.
-bool test_io_gen0(const CStr *samples, size_t nsamples, bool dec) {
+bool test_io_gen0(const CStr *samples, size_t nsamples, Format fmt) {
  bool fail = false;
  char buffer[DEC_BIGUINTLEN_HI + 1];	// DEC is never less than HEX str
 
  for (int i = 0; i < nsamples; ++i) {
   const CStr *sample = &samples[i];
-  if ((dec?DEC_BIGUINTLEN_LO:HEX_BIGUINTLEN) < sample->len)
+  if ((fmt!=FMT_HEX? DEC_BIGUINTLEN_LO:HEX_BIGUINTLEN) < sample->len)
    continue;
 
-  parse_and_print(sample, buffer, sizeof(buffer) / sizeof(char) - 1, dec);
+  parse_and_print(sample, buffer, sizeof(buffer) / sizeof(char) - 1, fmt);
   int result = strcmp(sample->str, buffer);
 
   if (result != 0) {
@@ -81,17 +83,17 @@ bool test_io_gen0(const CStr *samples, size_t nsamples, bool dec) {
  return !fail;
 }
 
-// Assert (hex) print error, if buffer length is less than required.
-bool test_io_gen1(const CStr *samples, size_t nsamples, bool dec) {
+// Assert print error, if buffer length is less than required.
+bool test_io_gen1(const CStr *samples, size_t nsamples, Format fmt) {
  bool fail = false;
  char buffer[DEC_BIGUINTLEN_HI + 1];	// DEC is never less than HEX str
 
  for (int i = 0; i < nsamples; ++i) {
   const CStr *sample = &samples[i];
-  if ((dec?DEC_BIGUINTLEN_LO:HEX_BIGUINTLEN) < sample->len)
+  if ((fmt!=FMT_HEX? DEC_BIGUINTLEN_LO:HEX_BIGUINTLEN) < sample->len)
    continue;
 
-  buint_size_t len = parse_and_print(sample, buffer, sample->len - 1, dec);
+  buint_size_t len = parse_and_print(sample, buffer, sample->len - 1, fmt);
 
   if (len != 0) {
    fprintf(stderr, "expected: [] (insufficient buffer capacity), actual [%s]\n", buffer);
@@ -147,13 +149,61 @@ bool test_io_dec1() {
  return !fail;
 }
 
+bool test_io_parse_zbuf(Format fmt) {
+ bool pass = true;
+ char buf[DEC_BIGINTLEN_HI + 1];
+
+ bool only_sdec[]={
+  false,
+  false,
+  true,
+  true
+ };
+ const CStr tin[]={
+  {NULL,0},
+  STR("12"),
+  STR("-12"),
+  STR("-12")
+ };
+ size_t buflen[]={
+  sizeof(buf)-1,
+  0,	// this input is redundant (see test_io_gen1)
+  0,	// this test is designed for SDEC print
+  1	// this test is designed for SDEC print as well
+ };
+ const CStr exp[]= {
+  {"0",1},
+  {"",0},
+  {"",0},
+  {"",0}
+ };
+ const char *fun[]={
+  "print(parse({NULL},0),buf,buflen)",
+  "print(parse(\"12\",2),buf,0)",
+  "print(parse(\"-12\",2),buf,0)",
+  "print(parse(\"-12\",2),buf,1)"
+ };
+
+ for (size_t i= 0; i<sizeof(tin)/sizeof(tin[0]);++i) {
+  if (only_sdec[i] && fmt !=FMT_SDEC) continue;
+  buint_size_t len = parse_and_print(&tin[i], buf, buflen[i], fmt);
+  pass &= check_cstr(fun[i], &exp[i], len, buf);
+ }
+
+ return pass;
+}
+
 int main(int argc, char **argv) {
 
- assert(test_io_gen0(hex_samples, hex_sample_len, false));
- assert(test_io_gen1(hex_samples, hex_sample_len, false));
- assert(test_io_gen0(dec_samples, dec_sample_len, true));
- assert(test_io_gen1(dec_samples, dec_sample_len, true));
+ assert(test_io_gen0(hex_samples, hex_sample_len, FMT_HEX));
+ assert(test_io_gen1(hex_samples, hex_sample_len, FMT_HEX));
+ assert(test_io_gen0(dec_samples, dec_sample_len, FMT_DEC));
+ assert(test_io_gen1(dec_samples, dec_sample_len, FMT_DEC));
+ assert(test_io_gen1(dec_samples, dec_sample_len, FMT_SDEC));
  assert(test_io_dec1());
+ assert(test_io_parse_zbuf(FMT_DEC));
+ assert(test_io_parse_zbuf(FMT_HEX));
+ assert(test_io_parse_zbuf(FMT_SDEC));
 
  return 0;
 }

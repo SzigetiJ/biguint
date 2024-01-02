@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <string.h>
+#include "uint_types.h"
 #include "test_common.h"
 
 bool negate_strcpy(char *dest, size_t dest_size, const char *src, size_t src_len) {
@@ -22,4 +24,18 @@ bool negate_strcpy(char *dest, size_t dest_size, const char *src, size_t src_len
   }
  }
  return false;
+}
+
+bool check_cstr(const char *fun, const CStr *expected, size_t actual_n, const char *actual) {
+ bool pass = true;
+ if (expected->len != actual_n) {
+  fprintf(stderr, "%s length mismatch. Expected: [%" PRIbuint_size_t "], actual: [%" PRIbuint_size_t "]\n",
+   fun, expected->len, actual_n);
+  pass = false;
+ } else if (0 != strcmp(expected->str, actual)) {
+  fprintf(stderr, "%s data mismatch. Expected: [%.*s], actual: [%.*s]\n",
+   fun, expected->len, expected->str, actual_n, actual);
+  pass = false;
+ }
+ return pass;
 }

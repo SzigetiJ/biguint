@@ -16,8 +16,6 @@
 #define DEC_BIGINTLEN_HI (DEC_BIGUINTLEN_HI + 1)
 #define BIGDECLEN_HI (DEC_BIGINTLEN_HI + 2)
 
-typedef enum {FMT_HEX=0, FMT_DEC, FMT_SDEC} Format;
-
 extern BigUInt128 zero;
 extern BigUInt128 one;
 extern BigUInt128 two;
