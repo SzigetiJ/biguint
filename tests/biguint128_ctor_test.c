@@ -4,9 +4,24 @@
 #include "string.h"
 #include "assert.h"
 
-#define BIGUINT_BITS 128
-#define UINT_BITS (8*sizeof(UInt))
-#define BIGUINT_CELLS BIGUINT_BITS / UINT_BITS
+#define BIGUINT_BITS 128U
+#define UINT_BITS (8U * sizeof(UInt))
+#define BIGUINT_CELLS (BIGUINT_BITS / UINT_BITS)
+#define BIGUINT_SIZE (BIGUINT_BITS / 8)
+#define UINT_NEG_UNIT ((UInt)-1)
+
+static UInt val_uint[] = {
+ 0,	// no bit set
+ 0xA5A5,	// some bits set
+ ((UInt)1<<(UINT_BITS-1))-1, // only MSB is not set
+ ((UInt)1<<(UINT_BITS-1)),	// only MSB is set
+ ((UInt)1<<(UINT_BITS-1)) | 0xA5A5,	// MSB and other bits are set
+ UINT_NEG_UNIT	// all bits set
+};
+static size_t val_uint_n = sizeof(val_uint)/sizeof(val_uint[0]);
+
+static UInt exp_fill_unsigned[] = {0, 0, 0, 0, 0, 0};
+static UInt exp_fill_signed[] = {0, 0, 0, UINT_NEG_UNIT, UINT_NEG_UNIT, UINT_NEG_UNIT};
 
 static inline bool check_dat_array(const char *fun, const UInt *actual, const UInt *expected) {
  bool pass = true;
@@ -19,6 +34,7 @@ static inline bool check_dat_array(const char *fun, const UInt *actual, const UI
  }
  return pass;
 }
+
 
 bool test_ctor_default() {
  UInt expected[BIGUINT_CELLS];
@@ -54,45 +70,30 @@ bool test_ctor_standard() {
  return check_dat_array("ctor_standard",a.dat, dat);
 }
 
-bool test_ctor_uint() {
- UInt init_dat[] = {0x01, 0xFF, 0xFFFFFFFF, (UInt)(-1)};
+bool test_ctor_uint(bool fun_signed, size_t len, UInt *tin, UInt *fillexp) {
  UInt expected[BIGUINT_CELLS];
  bool pass = true;
- for (int j = 0; j<sizeof(init_dat)/sizeof(UInt); ++j) {
-  expected[0]=init_dat[j];
+ for (int j = 0; j < len; ++j) {
+  expected[0] = tin[j];
   for (int i=1; i < BIGUINT_CELLS; ++i) {
-   expected[i]=0;
+   expected[i]=fillexp[j];
   }
 
-  BigUInt128 a = biguint128_value_of_uint(init_dat[j]);
+  BigUInt128 a = fun_signed?
+   bigint128_value_of_uint(tin[j]):
+   biguint128_value_of_uint(tin[j]);
 
-  pass&=check_dat_array("value_of_uint",a.dat, expected);
- }
- return pass;
-}
-
-bool test_ctor_uint_signed() {
- UInt init_dat[] = {0, ((UInt)1<<(UINT_BITS-1))-1, ((UInt)1<<(UINT_BITS-1)), (UInt)(-1)};
- UInt exp_fill[] = {0,0,(UInt)-1, (UInt)-1};
- UInt expected[BIGUINT_CELLS];
- bool pass = true;
- for (int j = 0; j<sizeof(init_dat)/sizeof(UInt); ++j) {
-  expected[0]=init_dat[j];
-  for (int i=1; i < BIGUINT_CELLS; ++i) {
-   expected[i]=exp_fill[j];
-  }
-
-  BigUInt128 a = bigint128_value_of_uint(init_dat[j]);
-
-  pass&=check_dat_array("value_of_uint",a.dat, expected);
+  pass&=check_dat_array(fun_signed?"value_of_uint (signed)":"value_of_uint", a.dat, expected);
  }
  return pass;
 }
 
 bool test_ctor_copy() {
  UInt dat[BIGUINT_CELLS];
+ UInt zdat[BIGUINT_CELLS];
  for (int i=0; i < BIGUINT_CELLS; ++i) {
   dat[i]=i;
+  zdat[i]=0U;
  }
  BigUInt128 a = biguint128_ctor_standard(dat);
  BigUInt128 b = biguint128_ctor_copy(&a);
@@ -106,38 +107,37 @@ bool test_ctor_copy() {
  // then check that `a' is not overwritten
  pass&=check_dat_array("ctor_copy#2",a.dat, dat);
 
+ // check that `b' is all 0
+ pass&=check_dat_array("ctor_copy#3",b.dat, zdat);
  return pass;
 }
 
 bool test_import() {
- char dat[BIGUINT_BITS / 8];
- for (int i=0; i < sizeof(dat); ++i) {
+ char dat[BIGUINT_SIZE];
+ for (int i=0; i < BIGUINT_SIZE; ++i) {
   dat[i]=(char)(i&0xFF);
  }
  BigUInt128 a = biguint128_ctor_default();
  buint_size_t result = biguint128_import(&a,dat);
 
- bool pass = result == BIGUINT_BITS / 8;
+ bool pass = (result == BIGUINT_SIZE);
  pass&=check_dat_array("import", a.dat, (UInt*)dat);
 
  return pass;
 }
 
 bool test_export() {
- // init phase: import
- char dat[BIGUINT_BITS / 8];
- for (int i=0; i < sizeof(dat); ++i) {
-  dat[i]=(char)(i&0xFF);
- }
  BigUInt128 a = biguint128_ctor_default();
- biguint128_import(&a,dat);
+ for (int i=0; i < BIGUINT_SIZE; ++i) {
+  ((char*)a.dat)[i]=(char)(i&0xFF);
+ }
 
  // test action phase
- char dump[BIGUINT_BITS / 8];
+ char dump[BIGUINT_SIZE];
  buint_size_t result = biguint128_export(&a,dump);
 
  // check phase
- bool pass = result == BIGUINT_BITS / 8;
+ bool pass = result == BIGUINT_SIZE;
  pass&=check_dat_array("export", (UInt*)dump, a.dat);
  return pass;
 }
@@ -149,8 +149,8 @@ int main(int argc, char **argv) {
  assert(test_ctor_unit());
  assert(test_ctor_standard());
  assert(test_ctor_copy());
- assert(test_ctor_uint());
- assert(test_ctor_uint_signed());
+ assert(test_ctor_uint(false, val_uint_n, val_uint, exp_fill_unsigned));
+ assert(test_ctor_uint(true, val_uint_n, val_uint, exp_fill_signed));
  assert(test_import());
  assert(test_export());
 
