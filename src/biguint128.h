@@ -408,5 +408,27 @@ BigUInt128 biguint128_mul3(const BigUInt128 *a);
  */
 BigUIntPair128 biguint128_div30(const BigUInt128 *a);
 
+/**
+ * Division by 3 based on multiplication with -(1/3) (multiplicative inverse of 3).
+ * @param a Divident.
+ * @return Pair of quotient and remainder.
+ */
+BigUIntTinyPair128 biguint128_div3(const BigUInt128 *a);
+
+/**
+ * Division by 5 based on multiplication with -(1/5) (multiplicative inverse of 5).
+ * Division by 10 relies on this function.
+ * @param a Divident.
+ * @return Pair of quotient and remainder.
+ */
+BigUIntTinyPair128 biguint128_div5(const BigUInt128 *a);
+
+/**
+ * Division by 10 based on division by 5.
+ * @param a Divident.
+ * @return Pair of quotient and remainder.
+ */
+BigUIntTinyPair128 biguint128_div10(const BigUInt128 *a);
+
 #endif
 

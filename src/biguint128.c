@@ -35,14 +35,25 @@
 #error Current implementation requires UInt basic storage type being at least 2 bytes wide.
 #endif
 
+typedef struct {
+ buint_bool ready;
+ BigUInt128 val;
+ BigUInt128 invpre;
+ BigUInt128 inv;
+} BigUInt128DivAsMul;
+
 // static function declarations
 static inline buint_size_p bitpos_(buint_size_t a);
 static inline buint_bool is_bigint_negative_(const BigUInt128 *a);
 static inline BigUInt128 *bigint128_negate_(BigUInt128 *a);
 static inline BigUInt128 *clrall_(BigUInt128 *a);
 static inline void fast_div_phase2_(BigUIntPair128 *res, UInt divisor);
+static inline BigUInt128 divmax_tiny_(UInt divisor);
+static inline void init_divasmul_(UInt divisor, BigUInt128DivAsMul *a);
+static inline void tune_remainder_(BigUIntTinyPair128 *res, const BigUInt128DivAsMul *a);
 
 static buint_size_t biguint128_print_dec_anywhere_(const BigUInt128 *a, char *buf, buint_size_t buf_len, buint_size_t *offset);
+static BigUIntTinyPair128 biguint128_div_special_tiny_(const BigUInt128 *a, UInt b);
 
 // implementations
 
@@ -90,6 +101,27 @@ static inline void fast_div_phase2_(BigUIntPair128 *res, UInt divisor) {
  UInt m = res->second.dat[0] % divisor;
  biguint128_add_tiny(&res->first, d);
  res->second = biguint128_value_of_uint(m);
+}
+
+static inline BigUInt128 divmax_tiny_(UInt divisor) {
+ BigUInt128 max = biguint128_ctor_default();
+ biguint128_dec(&max);
+ BigUInt128 d = biguint128_value_of_uint(divisor);
+ return biguint128_div(&max, &d).first;
+}
+
+static inline void init_divasmul_(UInt divisor, BigUInt128DivAsMul *a) {
+ a->val = biguint128_value_of_uint(divisor);
+ a->invpre = divmax_tiny_(divisor);
+ a->inv = bigint128_negate(&a->invpre);
+ a->ready = 1;
+}
+
+static inline void tune_remainder_(BigUIntTinyPair128 *res, const BigUInt128DivAsMul *a) {
+ while (biguint128_lt(&a->invpre, &res->first)) {
+  ++res->second;
+  biguint128_sub_assign(&res->first, &a->inv);
+ }
 }
 
 // END internal functions
@@ -853,6 +885,35 @@ BigUIntPair128 biguint128_div30(const BigUInt128 *a) {
 // fast_div_phase2_(&retv, DIVISOR);
  fast_div_phase2_(&div, DIVISOR);
  return div;
+}
+
+static BigUIntTinyPair128 biguint128_div_special_tiny_(const BigUInt128 *a, UInt b) {
+ static BigUInt128DivAsMul v[]={{0},{0}};	// not ready
+ if (!v[0].ready) {
+  init_divasmul_(3, &v[0]);
+  init_divasmul_(5, &v[1]);
+ }
+ size_t idx = (b==3?0:1);
+ BigUIntTinyPair128 retv = {biguint128_mul(a, &v[idx].inv), 0};
+ tune_remainder_(&retv, &v[idx]);
+ return retv;
+}
+
+BigUIntTinyPair128 biguint128_div3(const BigUInt128 *a) {
+ return biguint128_div_special_tiny_(a, 3);
+}
+
+BigUIntTinyPair128 biguint128_div5(const BigUInt128 *a) {
+ return biguint128_div_special_tiny_(a, 5);
+}
+
+BigUIntTinyPair128 biguint128_div10(const BigUInt128 *a) {
+ BigUIntTinyPair128 retv = biguint128_div5(a);
+ if (retv.first.dat[0]&1) {
+  retv.second+=5;
+ }
+ biguint128_shr_tiny(&retv.first, 1);
+ return retv;
 }
 
 

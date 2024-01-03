@@ -292,30 +292,68 @@ bool test_div_signed0() {
 }
 
 bool test_div10_a() {
- BigUInt128 divisor = biguint128_value_of_uint(10);
+ BigUInt128 divisor = biguint128_value_of_uint(10U);
  bool fail = false;
  for (int i=0; i<div10_sample_len; ++i) {
   BigUInt128 val;
   if (!readdec_more_cstr_bigint128(&val, &div10_sample[i], 1)) {
    continue;
   }
-  BigUInt128 expected = biguint128_div(&val, &divisor).first;
+  BigUIntPair128 expected = biguint128_div(&val, &divisor);
 
   BigUInt128 tmp1 = biguint128_mul100(&val);
   BigUInt128 actual1 = biguint128_div1000(&tmp1).first;
 
   BigUInt128 tmp2 = biguint128_mul3(&val);
   BigUInt128 actual2 = biguint128_div30(&tmp2).first;
- 
-  if (!biguint128_eq(&actual1, &expected)) {
+
+  BigUIntTinyPair128 actual3 = biguint128_div10(&val);
+
+  if (!biguint128_eq(&actual1, &expected.first)) {
    fprintf(stderr, "failed div1000(mul100(x)) test at test input #%d\n",i);
    fail = true;
   }
 
-  if (!biguint128_eq(&actual2, &expected)) {
+  if (!biguint128_eq(&actual2, &expected.first)) {
    fprintf(stderr, "failed div30(mul3(x)) test at test input #%d\n",i);
    fail = true;
   }
+
+  if (!biguint128_eq(&actual3.first, &expected.first)) {
+   fprintf(stderr, "failed div10(x) test at test input #%d\n",i);
+   fail = true;
+  }
+  if (actual3.second != expected.second.dat[0]) {
+   fprintf(stderr, "failed div10(x) remainder test at test input #%d\n",i);
+   fail = true;
+  }
+
+ }
+
+ return !fail;
+}
+
+bool test_div3_a() {
+ BigUInt128 divisor = biguint128_value_of_uint(3U);
+ bool fail = false;
+ for (int i=0; i<div10_sample_len; ++i) {
+  BigUInt128 val;
+  if (!readdec_more_cstr_bigint128(&val, &div10_sample[i], 1)) {
+   continue;
+  }
+  BigUIntPair128 expected = biguint128_div(&val, &divisor);
+
+  BigUIntTinyPair128 actual = biguint128_div3(&val);
+
+  if (!biguint128_eq(&actual.first, &expected.first)) {
+   fprintf(stderr, "failed div3(x) test at test input #%d\n",i);
+   fail = true;
+  }
+  if (actual.second != expected.second.dat[0]) {
+   fprintf(stderr, "failed div3(x) remainder test at test input #%d\n",i);
+   fail = true;
+  }
+
  }
 
  return !fail;
@@ -339,5 +377,6 @@ int main(int argc, char **argv) {
  assert(test_div_signed0());
 
  assert(test_div10_a());
+ assert(test_div3_a());
  return 0;
 }
