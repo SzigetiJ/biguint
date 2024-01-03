@@ -63,9 +63,34 @@ bool test_io_dec0() {
  return !fail;
 }
 
+bool test_io_lowbuf() {
+ bool pass = true;
+ char buffer[BIGDECLEN_HI + 1];
+
+ for (int i = 0; i < dec_input_len; ++i) {
+  const CStr *input = &dec_input[i];
+  size_t exp_len = dec_printed[i].len;
+  if (DEC_BIGUINTLEN_LO < input->len)
+   continue;
+  BigDecimal128 a = bigdecimal128_ctor_cstream(input->str, input->len);
+  for (int len_dec = 1; len_dec <= 2; ++len_dec) {
+   if (exp_len < len_dec) continue;
+   buint_size_t len = bigdecimal128_print(&a, buffer, exp_len - len_dec);
+   if (len != 0) {
+    fprintf(stderr, "bigdecimal128_print() error on low buffer size. Params: (%s,buf,%"PRIbuint_size_t") expected: [0], actual: [%"PRIbuint_size_t"] (len_dec: %d)\n", input->str, exp_len - len_dec, len, len_dec);
+    pass = false;
+   }
+  }
+ }
+
+
+ return pass;
+}
+
 int main(int argc, char **argv) {
 
  assert(test_io_dec0());
+ assert(test_io_lowbuf());
 
  return 0;
 }

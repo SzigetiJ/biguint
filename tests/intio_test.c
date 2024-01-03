@@ -13,7 +13,10 @@ bool test_get_digit() {
   'A','B','C','D','E','F',
   'g','n','o','v','w',
   'G','N','O','v','W',
-  '.','?','!','/','\0'
+  '.','!','/','\0',	// below numbers
+  ':','<','=','>','?','@',	// between numbers and UC
+  '[','\\',']','^','_','`',	// between UC and LC
+  '{','|','}','~'	// over LC
   };
  const unsigned int samples_len = sizeof(samples)/sizeof(char);
  const unsigned char sample_values[] = {
@@ -22,7 +25,10 @@ bool test_get_digit() {
   10,11,12,13,14,15,
   16,23,24,31,32,
   16,23,24,31,32,
-  255,255,255,255,255
+  255,255,255,255,
+  255,255,255,255,255,255,
+  255,255,255,255,255,255,
+  255,255,255,255
   };
 
  bool fail = false;

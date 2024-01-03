@@ -173,8 +173,9 @@ BigDecimal128 bigdecimal128_ctor_cstream(const char *dec_digits, buint_size_t le
 
 buint_size_t bigdecimal128_print(const BigDecimal128 *a, char *buf, buint_size_t buf_len) {
  buint_size_t aepos = bigint128_print_dec(&a->val, buf, buf_len);
- buint_size_t abpos = (buf_len && buf[0] == MINUS_SIGN) ? 1 : 0;
+ buint_size_t abpos = (aepos && buf[0] == MINUS_SIGN) ? 1 : 0;
  buint_size_t alen = aepos - abpos;
+ if (alen == 0) return 0;
  if (a->prec != 0) { // decimal dot must be inserted
   if (alen <= a->prec) { // leading 0s must be inserted
    buint_size_t ashift = a->prec - alen + 1;
