@@ -73,11 +73,11 @@ bool test_io_lowbuf() {
   if (DEC_BIGUINTLEN_LO < input->len)
    continue;
   BigDecimal128 a = bigdecimal128_ctor_cstream(input->str, input->len);
-  for (int len_dec = 1; len_dec <= 2; ++len_dec) {
+  for (unsigned int len_dec = 1; len_dec <= 2; ++len_dec) {
    if (exp_len < len_dec) continue;
    buint_size_t len = bigdecimal128_print(&a, buffer, exp_len - len_dec);
    if (len != 0) {
-    fprintf(stderr, "bigdecimal128_print() error on low buffer size. Params: (%s,buf,%"PRIbuint_size_t") expected: [0], actual: [%"PRIbuint_size_t"] (len_dec: %d)\n", input->str, exp_len - len_dec, len, len_dec);
+    fprintf(stderr, "bigdecimal128_print() error on low buffer size. Params: (%s,buf,%"PRIbuint_size_t") expected: [0], actual: [%"PRIbuint_size_t"] (len_dec: %u)\n", input->str, exp_len - len_dec, len, len_dec);
     pass = false;
    }
   }

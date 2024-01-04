@@ -9,9 +9,9 @@ LCOV=lcov
 
 ## we employ two versions of CFLAGS:
 ## 1st -- here we want to measure coverage
-CFLAGS=-Wall -Wpedantic -O0 -std=c99 -fprofile-arcs -ftest-coverage -I$(SRCDIR) -DSIZEOF_UINT=4
+CFLAGS=-W -Wall -Wpedantic -O0 -std=c99 -fprofile-arcs -ftest-coverage -I$(SRCDIR) -DSIZEOF_UINT=4
 ## 2nd -- we do not measure coverage
-CFLAGS_X=-Wall -Wpedantic -O0 -std=c99 -I$(SRCDIR) -DSIZEOF_UINT=4
+CFLAGS_X=-W -Wall -Wpedantic -O0 -std=c99 -I$(SRCDIR) -DSIZEOF_UINT=4
 
 LDFLAGS=-fprofile-arcs -ftest-coverage
 

@@ -70,6 +70,14 @@ static inline UInt uint_sub(UInt a, UInt b, buint_bool *carry) {
  return c;
 }
 
+static inline UInt *uint_sub_assign(UInt *a, UInt b, buint_bool *carry) {
+ UInt orig = *a;
+ *a -= b;
+ if (*carry) --(*a);
+ *carry = (*carry ? orig <= *a : orig < *a);
+ return a;
+}
+
 /**
  @brief Splits a value by means of bit masking into two.
  @return first: high bits greater or equal to lsb; second: low bits.

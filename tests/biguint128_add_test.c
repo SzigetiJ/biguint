@@ -190,7 +190,7 @@ bool test_incdec0() {
   if (!biguint128_eq(&tests[i].exp_res, &act_param) || act_res!=&act_param) {
    fprintf_biguint128_unop_testresult(
            stderr, &tests[i].a, &tests[i].exp_res, &act_param, op[tests[i].is_inc]);
-   fprintf(stderr,"returned expected: %p, actual: %p\n", &act_param, act_res);
+   fprintf(stderr,"returned expected: %p, actual: %p\n", (void*)&act_param, (void*)act_res);
    fail = 1;
   }
  }

@@ -20,7 +20,7 @@ const CStr hex_samples[] = {
  STR("F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF"),
  STR("F0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFFF0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFF")
 };
-int hex_sample_len = sizeof(hex_samples) / sizeof(hex_samples[0]);
+unsigned int hex_sample_len = sizeof(hex_samples) / sizeof(hex_samples[0]);
 
 const CStr dec_samples[] = {
  STR("0"),
@@ -42,12 +42,20 @@ const CStr dec_samples[] = {
  STR("5000005"),
  STR("60000006"),
  STR("700000007"),
+ STR("1000000000"),
+ STR("2000000000"),
+ STR("3000000000"),
+ STR("4000000000"),
+ STR("4294967295"),
+ STR("4294967296"),
+ STR("4294967297"),
  STR("8000000008"),
+ STR("90000000009"),
  STR("323456789012345678901234567890123456789"),
  STR("113456789012345678901234567890123456789012345678901234567890123456789012345678"),
  STR("1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234")
 };
-int dec_sample_len = sizeof(dec_samples) / sizeof(dec_samples[0]);
+unsigned int dec_sample_len = sizeof(dec_samples) / sizeof(dec_samples[0]);
 
 static inline buint_size_t parse_and_print(const CStr *sample, char *buffer, size_t buf_len, Format fmt) {
  BigUInt128 a =
@@ -67,7 +75,7 @@ bool test_io_gen0(const CStr *samples, size_t nsamples, Format fmt) {
  bool fail = false;
  char buffer[DEC_BIGUINTLEN_HI + 1];	// DEC is never less than HEX str
 
- for (int i = 0; i < nsamples; ++i) {
+ for (unsigned int i = 0; i < nsamples; ++i) {
   const CStr *sample = &samples[i];
   if ((fmt!=FMT_HEX? DEC_BIGUINTLEN_LO:HEX_BIGUINTLEN) < sample->len)
    continue;
@@ -88,7 +96,7 @@ bool test_io_gen1(const CStr *samples, size_t nsamples, Format fmt) {
  bool fail = false;
  char buffer[DEC_BIGUINTLEN_HI + 1];	// DEC is never less than HEX str
 
- for (int i = 0; i < nsamples; ++i) {
+ for (unsigned int i = 0; i < nsamples; ++i) {
   const CStr *sample = &samples[i];
   if ((fmt!=FMT_HEX? DEC_BIGUINTLEN_LO:HEX_BIGUINTLEN) < sample->len)
    continue;
@@ -112,7 +120,7 @@ bool test_io_dec1() {
  char buffer[DEC_BIGINTLEN_HI + 1];
  char sgnsample[DEC_BIGINTLEN_HI + 1];
 
- for (int i = 0; i < dec_sample_len; ++i) {
+ for (unsigned int i = 0; i < dec_sample_len; ++i) {
   const CStr *sample = &dec_samples[i];
   if (DEC_BIGUINTLEN_LO < sample->len)
    continue;

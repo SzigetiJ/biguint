@@ -19,7 +19,7 @@ static void print_fun2_error(const char *expr, const char *a, const char *b, con
 }
 
 static void print_assign_ptr_error(const char *expr, const BigUInt128 *expected, const BigUInt128 *actual) {
- fprintf(stderr, "%s does not preserve pointer -- input parameter: %p, return value: %p\n", expr, expected, actual);
+ fprintf(stderr, "%s does not preserve pointer -- input parameter: %p, return value: %p\n", expr, (void*)expected, (void*)actual);
 }
 
 

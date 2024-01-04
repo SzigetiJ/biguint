@@ -192,7 +192,6 @@ bool test_div0() {
    BigUInt128 acts[]={div_c_b.first, div_c_b.second};
    fprintf_biguint128_genfun_testresult(stderr, "div", 2, params, 2, exps, acts, FMT_HEX);
    fail = true;
-   fail = true;
   }
 
  }

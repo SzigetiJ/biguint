@@ -33,8 +33,8 @@ bool test_get_digit() {
 
  bool fail = false;
 
- for (int base_i=0; base_i<bases_len; ++base_i) {
-  for (int sample_i=0; sample_i<samples_len; ++sample_i) {
+ for (unsigned int base_i=0; base_i<bases_len; ++base_i) {
+  for (unsigned int sample_i=0; sample_i<samples_len; ++sample_i) {
    const char sample = samples[sample_i];
    const unsigned char base = bases[base_i];
    const IntIoError expected_result = sample_values[sample_i] < base ? INTIO_NO_ERROR:INTIO_ERROR_OUTOFRANGE;
@@ -67,7 +67,7 @@ bool test_get_hexbyte_valid() {
 
  bool fail = false;
 
- for (int sample_i = 0; sample_i<samples_len; ++sample_i) {
+ for (unsigned int sample_i = 0; sample_i<samples_len; ++sample_i) {
   unsigned char digit;
   IntIoError result = get_hexbyte(samples+(2*sample_i), &digit);
 
@@ -88,7 +88,7 @@ bool test_set_hexdigit() {
 
  bool fail = false;
 
- for (int i = 0; i < 16; ++i) {
+ for (unsigned int i = 0; i < 16; ++i) {
   char result;
   set_hexdigit(&result, i);
   if (result !=expects[i]) {
@@ -104,7 +104,7 @@ bool test_set_decdigit() {
 
  bool fail = false;
 
- for (int i = 0; i < 10; ++i) {
+ for (unsigned int i = 0; i < 10; ++i) {
   char result;
   set_hexdigit(&result, i);
   if (result !=expects[i]) {
@@ -125,7 +125,7 @@ bool test_set_hexbyte() {
 
  bool fail = false;
 
- for (int sample_i = 0; sample_i < samples_len; ++sample_i) {
+ for (unsigned int sample_i = 0; sample_i < samples_len; ++sample_i) {
   char result[2];
   set_hexbyte(result, samples[sample_i]);
   if (!(result[0] == expects[2*sample_i]) && (result[1] == expects[2*sample_i + 1])) {

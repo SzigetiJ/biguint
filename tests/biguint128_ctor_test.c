@@ -25,9 +25,9 @@ static UInt exp_fill_signed[] = {0, 0, 0, UINT_NEG_UNIT, UINT_NEG_UNIT, UINT_NEG
 
 static inline bool check_dat_array(const char *fun, const UInt *actual, const UInt *expected) {
  bool pass = true;
- for (int i=0; i < BIGUINT_CELLS; ++i) {
+ for (unsigned int i=0; i < BIGUINT_CELLS; ++i) {
   if (actual[i] != expected[i]) {
-   fprintf(stderr, "%s -- cell #%d assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n",
+   fprintf(stderr, "%s -- cell #%u assertion failed, expected: [%" PRIuint "], actual: [%" PRIuint "]\n",
     fun, i, expected[i], actual[i]);
    pass=false;
   }
@@ -38,7 +38,7 @@ static inline bool check_dat_array(const char *fun, const UInt *actual, const UI
 
 bool test_ctor_default() {
  UInt expected[BIGUINT_CELLS];
- for (int i=0; i < BIGUINT_CELLS; ++i) {
+ for (unsigned int i=0; i < BIGUINT_CELLS; ++i) {
   expected[i]=0;
  }
 
@@ -50,7 +50,7 @@ bool test_ctor_default() {
 bool test_ctor_unit() {
  UInt expected[BIGUINT_CELLS];
  expected[0]=1;
- for (int i=1; i < BIGUINT_CELLS; ++i) {
+ for (unsigned int i=1; i < BIGUINT_CELLS; ++i) {
   expected[i]=0;
  }
 
@@ -61,7 +61,7 @@ bool test_ctor_unit() {
 
 bool test_ctor_standard() {
  UInt dat[BIGUINT_CELLS];
- for (int i=0; i < BIGUINT_CELLS; ++i) {
+ for (unsigned int i=0; i < BIGUINT_CELLS; ++i) {
   dat[i]=i;
  }
 
@@ -91,7 +91,7 @@ bool test_ctor_uint(bool fun_signed, size_t len, UInt *tin, UInt *fillexp) {
 bool test_ctor_copy() {
  UInt dat[BIGUINT_CELLS];
  UInt zdat[BIGUINT_CELLS];
- for (int i=0; i < BIGUINT_CELLS; ++i) {
+ for (unsigned int i=0; i < BIGUINT_CELLS; ++i) {
   dat[i]=i;
   zdat[i]=0U;
  }
@@ -101,7 +101,7 @@ bool test_ctor_copy() {
  // check that `b' is written
  pass&=check_dat_array("ctor_copy#1",b.dat, dat);
  // overwrite `b'
- for (int i=0; i < BIGUINT_CELLS; ++i) {
+ for (unsigned int i=0; i < BIGUINT_CELLS; ++i) {
   b.dat[i]=0;
  }
  // then check that `a' is not overwritten
@@ -114,7 +114,7 @@ bool test_ctor_copy() {
 
 bool test_import() {
  char dat[BIGUINT_SIZE];
- for (int i=0; i < BIGUINT_SIZE; ++i) {
+ for (unsigned int i=0; i < BIGUINT_SIZE; ++i) {
   dat[i]=(char)(i&0xFF);
  }
  BigUInt128 a = biguint128_ctor_default();
@@ -128,7 +128,7 @@ bool test_import() {
 
 bool test_export() {
  BigUInt128 a = biguint128_ctor_default();
- for (int i=0; i < BIGUINT_SIZE; ++i) {
+ for (unsigned int i=0; i < BIGUINT_SIZE; ++i) {
   ((char*)a.dat)[i]=(char)(i&0xFF);
  }
 
