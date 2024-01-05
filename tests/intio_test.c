@@ -92,7 +92,7 @@ bool test_set_hexdigit() {
   char result;
   set_hexdigit(&result, i);
   if (result !=expects[i]) {
-   fprintf(stderr, "%s: set_hexdigit(&digit, %d) digit expected: '%c' actual: '%c'\n", __func__, i, expects[i], result);
+   fprintf(stderr, "%s: set_hexdigit(&digit, %u) digit expected: '%c' actual: '%c'\n", __func__, i, expects[i], result);
    fail = true;
   }
  }
@@ -108,7 +108,7 @@ bool test_set_decdigit() {
   char result;
   set_hexdigit(&result, i);
   if (result !=expects[i]) {
-   fprintf(stderr, "%s: set_decdigit(&digit, %d) digit expected: '%c' actual: '%c'\n", __func__, i, expects[i], result);
+   fprintf(stderr, "%s: set_decdigit(&digit, %u) digit expected: '%c' actual: '%c'\n", __func__, i, expects[i], result);
    fail = true;
   }
  }
