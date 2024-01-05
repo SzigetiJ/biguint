@@ -49,14 +49,6 @@ static inline UInt *_uint_add_assign2(UInt *a, UInt b, buint_bool *carry) {
  return a;
 }
 
-static inline UInt *_uint_sub_assign(UInt *a, UInt b, buint_bool *carry) {
- UInt orig = *a;
- *a -= b;
- if (*carry) --(*a);
- *carry = (*carry ? orig <= *a : orig < *a);
- return a;
-}
-
 static void print_result(clock_t t_begin, clock_t t_end, const char *op, int cnt) {
  clock_t dt = t_end - t_begin;
  fprintf(stdout, "=== %d %s() operations ===\n", cnt, op);
@@ -106,7 +98,7 @@ static inline void exec_uint_test_(UintFunction fun, UInt buf_init, UInt buf_ste
   sum*=-1;
  } else if (fun == SUB_ASSIGN){
   for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
-   _uint_sub_assign(&sum, num[loop_cnt % BUFSIZE], &carry);
+   uint_sub_assign(&sum, num[loop_cnt % BUFSIZE], &carry);
   }
   ++sum;	// give back the (-1) init.value
   sum*=-1;
