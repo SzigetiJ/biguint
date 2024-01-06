@@ -11,7 +11,17 @@ _But also Big Signed Integers and Big Decimal numbers._
 ![GitHub issues](https://img.shields.io/github/issues/SzigetiJ/biguint)
 ![GitHub closed issues](https://img.shields.io/github/issues-closed/SzigetiJ/biguint)
 
-C library providing fixed length integer types longer than 64 bits.
+C library providing fixed length integer types longer than 32/64 bits.
+The key design concepts of libbiguint are:
+
+* Fast operations.
+* Versatile function set.
+* Supporting different hardware platforms.
+* No dynamic memory handling.
+* Only essential dependencies.
+* Configurability and modularity.
+
+All these make libbiguint suitable for embedded systems.
 
 ## Features
 
