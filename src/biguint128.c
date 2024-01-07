@@ -26,6 +26,7 @@
 // Local definitions
 #define FORRANGE(i, LO, HI) for (buint_size_t i=(LO); i<(HI); ++i)
 #define FORRANGEREV(i, X) for (buint_size_t i=(X)-1; i!=(buint_size_t)-1; --i)
+#define FORRANGECOND(i, LO, HI, COND) for (buint_size_t i=(LO); i<(HI) && (COND); ++i)
 
 #define FOREACHCELL(i) FORRANGE(i, 0U, BIGUINT128_CELLS)
 #define FOREACHCELLREV(i) FORRANGEREV(i,BIGUINT128_CELLS)
@@ -112,9 +113,6 @@ static inline BigUInt128 *negate_(BigUInt128 *a) {
  * @return a.
  */
 static inline BigUInt128 *clrall_(BigUInt128 *a) {
- FOREACHCELL(i) {
-  a->dat[i] = 0;
- }
  memset(&a->dat, 0, BIGUINT128_CELLS * UINT_BYTES);
  return a;
 }
@@ -249,7 +247,7 @@ static inline BigUInt128 *sbc_crng_(BigUInt128 *a, const BigUInt128 *b, buint_si
  * @return a.
  */
 static inline BigUInt128 *sub_carry_crng_(BigUInt128 *a, buint_size_t clo, buint_bool *carry) {
- for (buint_size_t i=clo; *carry && i<BIGUINT128_CELLS; ++i) {
+ FORRANGECOND(i, clo, BIGUINT128_CELLS, *carry) {
   a->dat[i]= uint_sub(a->dat[i], 0u, carry);
  }
  return a;
@@ -573,7 +571,7 @@ BigUInt128 bigint128_negate(const BigUInt128 *a) {
 BigUInt128 *biguint128_add_tiny(BigUInt128 *a, const UInt b) {
  buint_bool carry= 0U;
  a->dat[0]= uint_add(a->dat[0], b, &carry);
- for (buint_size_t i= 1u; carry && i<BIGUINT128_CELLS; ++i) {
+ FORRANGECOND(i,1,BIGUINT128_CELLS, carry) {
   a->dat[i]= uint_add(a->dat[i], 0u, &carry);
  }
  return a;
@@ -764,8 +762,10 @@ BigUInt128 *biguint128_xor_assign(BigUInt128 *a, const BigUInt128 *b) {
 BigUInt128 biguint128_mul(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 retv = biguint128_ctor_default();
  BigUInt128 carry = biguint128_ctor_default();
- FOREACHCELL(i) {
-  FOREACHCELL(j) {
+ buint_size_t lzca = biguint128_lzc(a);
+ buint_size_t lzcb = biguint128_lzc(b);
+ FORRANGE(i, 0, lzca) {
+  FORRANGE(j, 0, lzcb) {
    buint_size_t k = i + j;
    if (k < BIGUINT128_CELLS) {
     UIntPair kmul = uint_mul(a->dat[i], b->dat[j]);
@@ -791,11 +791,13 @@ BigUInt128 biguint128_mul(const BigUInt128 *a, const BigUInt128 *b) {
 BigUIntPair128 biguint128_dmul(const BigUInt128 *a, const BigUInt128 *b) {
  BigUIntPair128 result= {biguint128_ctor_default(), biguint128_ctor_default()};
  BigUIntPair128 carry= {biguint128_ctor_default(), biguint128_ctor_default()};
+ buint_size_t lzca = biguint128_lzc(a);
+ buint_size_t lzcb = biguint128_lzc(b);
  UInt *res=result.first.dat;
  UInt *crr=carry.first.dat;
 
- FOREACHCELL(i) { // iterate over a
-  FOREACHCELL(j) { // iterate over b
+ FORRANGE(i, 0, lzca) { // iterate over a
+  FORRANGE(j, 0, lzcb) { // iterate over b
    buint_size_t k = i + j;
 
    UIntPair kmul = uint_mul(a->dat[i], b->dat[j]);
@@ -918,6 +920,22 @@ buint_size_t biguint128_msb(const BigUInt128 *a) {
   return 0;
  }
  return j * UINT_BITS + uint_msb(a->dat[j]);
+}
+
+buint_size_t biguint128_lzc(const BigUInt128 *a) {
+ FOREACHCELLREV(i) {
+  if (a->dat[i] != 0) {
+   return i + 1;
+  }
+ }
+ return 0;
+}
+
+buint_size_t biguint128_lzb(const BigUInt128 *a) {
+ buint_size_t lzc = biguint128_lzc(a);
+ return lzc?
+  (lzc-1)*UINT_BITS + uint_msb(a->dat[lzc-1]) + 1:
+  0U;
 }
 
 void biguint128_sbit(BigUInt128 *a, buint_size_t bit) {

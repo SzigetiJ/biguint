@@ -10,6 +10,12 @@
 #define PRINTBUFFER_LEN 80
 
 
+static void print_fun1_error(const char *expr, const BigUInt128 *a, buint_size_t expected, buint_size_t actual) {
+ char abuf[BIGUINT_BITS/4 + 1];
+ abuf[biguint128_print_hex(a, abuf, BIGUINT_BITS/4)]=0;
+ fprintf(stderr, "%s(%s) -- expected: %"PRIbuint_size_t", actual: %"PRIbuint_size_t"\n", expr, abuf, expected, actual);
+}
+
 static void print_fun2_error(const char *expr, const char *a, const char *b, const char *expected, const BigUInt128 *actual) {
  char pbuffer[PRINTBUFFER_LEN];
  char buffer[HEX_BIGUINTLEN + 1];
@@ -315,6 +321,48 @@ bool test_shiftrot0() {
  return !fail;
 }
 
+static bool check_lzx(const BigUInt128 *a, buint_size_t exp_cell, buint_size_t res_cell, buint_size_t exp_bit, buint_size_t res_bit) {
+ bool pass = true;
+ if (exp_cell != res_cell) {
+  print_fun1_error("lzc", a, exp_cell, res_cell);
+  pass = false;
+ }
+
+ if (exp_bit != res_bit) {
+  print_fun1_error("lzb", a, exp_bit, res_bit);
+  pass = false;
+ }
+ return pass;
+}
+
+bool test_lzx_single_bit() {
+ bool pass = true;
+
+ for (unsigned int i=0; i< BIGUINT128_CELLS; ++i) {
+  for (unsigned int j = 0; j<UINT_BITS; ++j) {
+   BigUInt128 a = biguint128_ctor_default();
+   a.dat[i] = (UInt)1<<(j);
+   buint_size_t exp_cell = i+1;
+   buint_size_t exp_bit = i*UINT_BITS + j + 1;
+
+   buint_size_t res_cell = biguint128_lzc(&a);
+   buint_size_t res_bit = biguint128_lzb(&a);
+
+   pass &= check_lzx(&a, exp_cell, res_cell, exp_bit, res_bit);
+  }
+ }
+ return pass;
+}
+
+bool test_lzx_single_bit0() {
+ BigUInt128 a = biguint128_ctor_default();
+
+ buint_size_t res_cell = biguint128_lzc(&a);
+ buint_size_t res_bit = biguint128_lzb(&a);
+
+ return check_lzx(&a, 0, res_cell, 0, res_bit);
+}
+
 int main(int argc, char **argv) {
 
  assert(test_and_or_not0());
@@ -322,6 +370,9 @@ int main(int argc, char **argv) {
  assert(test_gen_write_get0(true));
 
  assert(test_shiftrot0());
+
+ assert(test_lzx_single_bit());
+ assert(test_lzx_single_bit0());
  return 0;
 }
 

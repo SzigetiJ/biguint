@@ -282,6 +282,21 @@ buint_bool biguint128_eqz(const BigUInt128 *a);
  @return Index of the most significant bit set to 1.
 */
 buint_size_t biguint128_msb(const BigUInt128 *a);
+
+/**
+ * @brief Lowest zero cell.
+ * @param a (Pointing to the) input value to examine.
+ * @return Index of the lowest cell that equals 0. All the cell above are also 0.
+ */
+buint_size_t biguint128_lzc(const BigUInt128 *a);
+
+/**
+ * @brief Lowest (bound of continuously) zero bit(s).
+ * @param a (Pointing to the) input value to examine.
+ * @return Index of the lowest bit that equals 0. All the bits above are also 0.
+ */
+buint_size_t biguint128_lzb(const BigUInt128 *a);
+
 /**
  @brief Set a bit (to 1) of the value.
  @param a (Pointer to) the value to operate on.
