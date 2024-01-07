@@ -1,6 +1,7 @@
 UINT_PROGS = add_uperf
 BUINT128_PROGS = \
     add_perf128 \
+    mul_perf128 \
 	div10_perf128 \
 	div1000_perf128 \
 	parse_perf128 \
@@ -13,6 +14,7 @@ CLEANFILES =
 
 BUINT256_PROGS = \
     add_perf256 \
+    mul_perf256 \
 	div10_perf256 \
 	div1000_perf256 \
 	parse_perf256 \
@@ -21,6 +23,7 @@ BUINT256_PROGS = \
 
 BUINT512_PROGS = \
     add_perf512 \
+    mul_perf512 \
 	div10_perf512 \
 	div1000_perf512 \
 	parse_perf512 \
@@ -29,6 +32,7 @@ BUINT512_PROGS = \
 
 BUINTEXTRA_PROGS = \
     add_perf@userdef_bits@ \
+    mul_perf@userdef_bits@ \
 	div10_perf@userdef_bits@ \
 	div1000_perf@userdef_bits@ \
 	parse_perf@userdef_bits@ \
@@ -40,6 +44,7 @@ if WITH_BIGUINT256
 
  CLEANFILES += perf_common256.h \
     add_perf256.c \
+    mul_perf256.c \
 	div10_perf256.c \
 	div1000_perf256.c \
 	parse_perf256.c \
@@ -47,6 +52,7 @@ if WITH_BIGUINT256
 	shift_perf256.c
 
  nodist_add_perf256_SOURCES = add_perf256.c
+ nodist_mul_perf256_SOURCES = mul_perf256.c
  nodist_div10_perf256_SOURCES = div10_perf256.c
  nodist_div1000_perf256_SOURCES = div1000_perf256.c
  nodist_parse_perf256_SOURCES = parse_perf256.c
@@ -66,6 +72,7 @@ if WITH_BIGUINT512
 
  CLEANFILES += perf_common512.h \
     add_perf512.c \
+    mul_perf512.c \
 	div10_perf512.c \
 	div1000_perf512.c \
 	parse_perf512.c \
@@ -73,6 +80,7 @@ if WITH_BIGUINT512
 	shift_perf512.c
 
  nodist_add_perf512_SOURCES = add_perf512.c
+ nodist_mul_perf512_SOURCES = mul_perf512.c
  nodist_div10_perf512_SOURCES = div10_perf512.c
  nodist_div1000_perf512_SOURCES = div1000_perf512.c
  nodist_parse_perf512_SOURCES = parse_perf512.c
@@ -92,6 +100,7 @@ if EXTRA_BITLEN
 
  CLEANFILES += perf_common@userdef_bits@.h \
     add_perf@userdef_bits@.c \
+    mul_perf@userdef_bits@.c \
 	div10_perf@userdef_bits@.c \
 	div1000_perf@userdef_bits@.c \
 	parse_perf@userdef_bits@.c \
@@ -99,6 +108,7 @@ if EXTRA_BITLEN
 	shift_perf@userdef_bits@.c
 
  nodist_add_perf@userdef_bits@_SOURCES = add_perf@userdef_bits@.c
+ nodist_mul_perf@userdef_bits@_SOURCES = mul_perf@userdef_bits@.c
  nodist_div10_perf@userdef_bits@_SOURCES = div10_perf@userdef_bits@.c
  nodist_div1000_perf@userdef_bits@_SOURCES = div1000_perf@userdef_bits@.c
  nodist_parse_perf@userdef_bits@_SOURCES = parse_perf@userdef_bits@.c
@@ -114,9 +124,10 @@ if EXTRA_BITLEN
 endif
 
 AM_CPPFLAGS = -I${top_srcdir}/src -I../../src
-LDADD = ../../src/libbiguint.a
+LDADD = perf_common.o ../../src/libbiguint.a
 
-EXTRA_DIST = perf_common128.h
+EXTRA_DIST = perf_common128.h perf_common.h perf_common.c
+DISTCLEANFILES = $(DEPDIR)/perf_common.Po
 
 BUILT_SOURCES = $(CLEANFILES)
 
