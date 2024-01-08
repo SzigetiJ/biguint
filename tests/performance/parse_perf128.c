@@ -1,50 +1,74 @@
 /***************************************
  This example performs multiple (CYCLES)
- string parsing (and summing the parsed
- values).
+ string parsing.
  The main purpose of this program is to
  check the performance of the parser
  function (biguint128_ctor_deccstream)
- and its components like multiplication
- by 10 and addition.
+ with different input stream length.
  Input:
-  -
+  [args]: see option -h
  Output:
-  stdout: The sum of the parsed values.
+  stdout: The sum of the last cells
+   of the parsed values.
 ***************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include "biguint128.h"
+#include "perf_common.h"
+#include "perf_common128.h"
 
-#define CYCLES 10000
+const StandardConstraints LIMITS = {
+ 8,
+ (1<<20) // 1M loops
+};
+const StandardArgs ARGS_DEFAULT = INIT_FUN1ARGS(
+ (1<<16), // 64K loops
+ 3U,
+ 37U);
 
-#define DECDIGITS (3*128/10)	// Approx. max. usage of 128 bits
+#define DECDIGITS (3*128/10)	// A value with that many decimal digits must fit into 128 bits
+#define HEXDIGITS (128/4)	// A value with that many hexadecimal digits must fit into 128 bits
 
-int main(int argc, const char *argv[]) {
- BigUInt128 sum =  biguint128_ctor_default();
- char sum_str[DECDIGITS + 10];
+typedef enum {
+ FUN_PARSE_HEX = 0,
+ FUN_PARSE_DEC
+} ParseFun;
 
- char num_str[DECDIGITS + 1];
- // initialize the num as "111..1"
- memset(num_str, '1', DECDIGITS);
- num_str[DECDIGITS] = 0;
+const char *funname[]={
+ "ctor_hexcstream",
+ "ctor_deccstream"
+};
+const unsigned int numwidth[] = {
+ HEXDIGITS,
+ DECDIGITS
+};
+const unsigned int fun_n = ARRAYSIZE(funname);
 
- for (unsigned int i = 0U; i < CYCLES; ++i) {
-  num_str[i % DECDIGITS] ='0' + ((i * 7) % 10);	// make some change on the string to parse
 
-  // call the parser function
-  BigUInt128 num = biguint128_ctor_deccstream(num_str, DECDIGITS);
+// ### Internal functions
+static void exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args) {
+ char str[DECDIGITS];
+ memset(str, '1', DECDIGITS);
+ buint_size_t str_n = (numwidth[fun] * (ai + 1)) / args->levels;
+ BigUInt128 chkval = biguint128_ctor_default();
+ BigUInt128 res;
+ clock_t t0, t1;
 
-  // make something with the parsed value
-  sum = biguint128_add(&sum, &num);
+ t0 = clock();
+ for (unsigned int i = 0; i < args->loops; ++i) {
+  if (fun == FUN_PARSE_HEX) {
+   res = biguint128_ctor_hexcstream(str, str_n);
+  } else if (fun == FUN_PARSE_DEC) {
+   res = biguint128_ctor_deccstream(str, str_n);
+  }
+  process_result_v1(&res, &chkval.dat[0]);
+  str[i % str_n] = '0' + ((i * args->diff_a) % 10);
  }
-
- // finally, print the result (sum)
- sum_str[biguint128_print_dec(&sum, sum_str, DECDIGITS + 10)] = 0; 
- printf("sum: %s\n", sum_str);
-
- return 0;
+ t1 = clock();
+ print_exec_summary(t0, t1, funname[fun], args->loops, &chkval, 1);
 }
 
+// ### Main function
+int main(int argc, const char *argv[]) {
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_);
+}

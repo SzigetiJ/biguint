@@ -434,12 +434,22 @@ BigUInt128 biguint128_ctor_hexcstream(const char *hex_digits, buint_size_t len) 
 }
 
 BigUInt128 biguint128_ctor_deccstream(const char *dec_digits, buint_size_t len) {
- BigUInt128 retv=biguint128_ctor_default();
- for (buint_size_t i = 0; i < len; ++i) {
-  unsigned char d;
-  get_digit(dec_digits[i], 10, &d);
-  retv = biguint128_mul10(&retv);
-  biguint128_add_tiny(&retv, d);
+ BigUInt128 retv = biguint128_ctor_default();
+ for (buint_size_t i = 0; i < len;) {
+  unsigned int plen = len - i < 3 ? len - i : 3;
+  unsigned int px = 0; // stores the partial, plen digit long value
+  for (buint_size_t pi = 0; pi < plen; ++pi) {
+   px *= 10;
+   unsigned char d;
+   get_digit(dec_digits[i+pi], 10, &d);
+   px += d;
+  }
+  retv =
+   plen == 1 ? biguint128_mul10(&retv) :
+   plen == 2 ? biguint128_mul100(&retv) :
+   biguint128_mul1000(&retv);
+  biguint128_add_tiny(&retv, px);
+  i+=plen;
  }
  return retv;
 }

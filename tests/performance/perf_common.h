@@ -32,6 +32,7 @@ typedef struct {
 
 #define INIT_FUN1ARGS(LOOPS,LEVELS,INCA) (StandardArgs){LOOPS, false, false, LEVELS, -1, 0, INCA, 0, -1, 0}
 #define INIT_FUN2ARGS(LOOPS,LEVELS,INCA,INCB) (StandardArgs){LOOPS, false, false, LEVELS, -1, -1, INCA, INCB, -1, 0}
+#define ARRAYSIZE(X) (sizeof(X)/sizeof(X[0]))
 
 StandardArgs parse_args(int argc, const char *argv[], const StandardArgs res_init);
 void print_help(const char *prgname, unsigned int argmask);
