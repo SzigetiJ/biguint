@@ -25,7 +25,7 @@ static inline void print_exec_summary(clock_t t_begin, clock_t t_end, const char
  char buf[DEC_BIGUINTLEN];
  print_exec_time(t_begin, t_end, op, cnt);
  for (int i=0; i<valnum; ++i) {
-  buf[biguint128_print_dec(val, &buf[i], DEC_BIGUINTLEN-1)] = 0;
+  buf[biguint128_print_dec(val+i, buf, DEC_BIGUINTLEN-1)] = 0;
   fprintf(stdout, "  Check value #%d: %s\n", i+1, buf);
  }
 }
@@ -68,6 +68,10 @@ static inline void process_result_v2(const char *buf, unsigned int buflen, UInt 
  for (unsigned int i=0; i<buflen; ++i) {
   *b+=buf[i];
  }
+}
+
+static inline void process_result_v3(UInt *a, UInt *b) {
+ *b+=*a;
 }
 
 #undef UINT_BITS

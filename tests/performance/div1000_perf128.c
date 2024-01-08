@@ -1,54 +1,53 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <time.h>
 
 #include "biguint128.h"
+#include "perf_common.h"
 #include "perf_common128.h"
 
-#define LOOPS (1<<20) // 1M loops
-#define UINT_BITS (8U * sizeof(UInt))
+const StandardConstraints LIMITS = {
+ 8,
+ (1<<26) // 64M loops
+};
+const StandardArgs ARGS_DEFAULT = INIT_FUN1ARGS(
+ (1<<20), // 1M loops
+ 3U,
+ 29U);
 
 typedef enum {
  VARIANT_DIV_X_1000,
  VARIANT_DIV1000_X
 } Div1000Variant;
 
-void exec_div1000(const BigUInt128 *ainit, const BigUInt128 *astep, Div1000Variant v) {
+// ### Constants
+const char *funname[] = {
+ "div(x,1000)",
+ "div1000(x)"
+};
+const unsigned int fun_n = sizeof(funname) / sizeof(funname[0]);
+
+static void exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args) {
+ BigUInt128 a = get_value_by_level(ai, args->levels);
+ BigUInt128 chkval = biguint128_ctor_default();
  uint32_t loop_cnt;
  clock_t t0, t1;
 
  BigUInt128 bdiv = biguint128_value_of_uint(1000);
- BigUInt128 bx = biguint128_ctor_copy(ainit);
- BigUInt128 bsum = biguint128_ctor_default();
+ BigUIntPair128 res;
 
  t0 = clock();
- for (loop_cnt = 0; loop_cnt < LOOPS; ++loop_cnt) {
-  BigUIntPair128 res = (v==VARIANT_DIV1000_X)?
-   biguint128_div1000(&bx):
-   biguint128_div(&bx, &bdiv);
-  biguint128_add_assign(&bsum, &res.first);
-  biguint128_add_assign(&bx, astep);
+ for (loop_cnt = 0; loop_cnt < args->loops; ++loop_cnt) {
+  res = (fun==VARIANT_DIV1000_X)?
+   biguint128_div1000(&a):
+   biguint128_div(&a, &bdiv);
+  process_result_v1(&res.first, &chkval.dat[0]);
+  process_result_v1(&res.second, &chkval.dat[0]);
+  biguint128_add_tiny(&a, (UInt)args->diff_a);
  }
  t1 = clock();
 
- print_exec_summary(t0, t1, v==VARIANT_DIV1000_X?"div1000(x)":"div(x,1000)", loop_cnt, &bsum, 1);
+ print_exec_summary(t0, t1, funname[fun], loop_cnt, &chkval, 1);
 }
 
-int main() {
- PerfTestInitValues b = get_std_initvalues();
- BigUInt128 bstep = biguint128_value_of_uint(29);
- Div1000Variant variant[] = {
-  VARIANT_DIV_X_1000,
-  VARIANT_DIV1000_X
- };
-
- for (int i=0; i<3; ++i) {
-  fprintf(stdout, "*** Dividing %s numbers ***\n", b.name[i]);
-  for (int j=0; j<2; ++j) {
-   exec_div1000(&b.val[i], &bstep, variant[j]);
-  }
- }
-
- return 0;
+int main(int argc, const char *argv[]) {
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_);
 }

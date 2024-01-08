@@ -94,7 +94,7 @@ void print_help_all(const char *prgname, unsigned int bits, unsigned int argmask
 
 static inline int check_args_(const char *prgname, StandardArgs *args,
    unsigned int bits,
-   unsigned int max_levels, unsigned int max_loops,
+   const StandardConstraints *max,
    unsigned int fun_n, const char *funname[],
    unsigned int argmask) {
  if (args->help) {
@@ -105,28 +105,27 @@ static inline int check_args_(const char *prgname, StandardArgs *args,
   print_help_all(prgname, bits, argmask, fun_n, funname);
   return 1;
  }
- if (max_levels < args->levels) {
-  fprintf(stderr, "The maximal number of levels is %u.\n", max_levels);
-  args->levels = max_levels;
+ if (max->levels < args->levels) {
+  fprintf(stderr, "The maximal number of levels is %u.\n", max->levels);
+  args->levels = max->levels;
  }
  if (args->levels < 1) {
   fprintf(stderr, "The minimal number of levels is 1.\n");
   args->levels = 1;
  }
- if (max_loops < args->loops) {
-  fprintf(stderr, "The maximal number of looops is %u.\n", max_loops);
-  args->loops = max_loops;
+ if (max->loops < args->loops) {
+  fprintf(stderr, "The maximal number of looops is %u.\n", max->loops);
+  args->loops = max->loops;
  }
  return 0;
 }
 
 int fun2_main(int argc, const char *argv[],
-        unsigned int bits, const StandardArgs args_init,
-        unsigned int max_levels, unsigned int max_loops,
+        unsigned int bits, const StandardArgs args_init, const StandardConstraints *max,
         unsigned int fun_n, const char *funname[],
         void (*internal_loop)(unsigned int ai, unsigned int bi, unsigned int funidx, const StandardArgs *args)) {
  StandardArgs args = parse_args(argc, argv, args_init);
- int check_res = check_args_(argv[0], &args, bits, max_levels, max_loops, fun_n, funname, -1);
+ int check_res = check_args_(argv[0], &args, bits, max, fun_n, funname, -1);
  if (check_res) return check_res;
 
  for (unsigned int ai = 0; ai<args.levels; ++ai) {
@@ -147,12 +146,11 @@ int fun2_main(int argc, const char *argv[],
 }
 
 int fun1_main(int argc, const char *argv[],
-        unsigned int bits, const StandardArgs args_init,
-        unsigned int max_levels, unsigned int max_loops,
+        unsigned int bits, const StandardArgs args_init, const StandardConstraints *max,
         unsigned int fun_n, const char *funname[],
         void (*internal_loop)(unsigned int ai, unsigned int funidx, const StandardArgs *args)) {
  StandardArgs args = parse_args(argc, argv, args_init);
- int check_res = check_args_(argv[0], &args, bits, max_levels, max_loops, fun_n, funname, ARGMASK_ALL - ARGMASK_LMASKB - ARGMASK_DIFFB);
+ int check_res = check_args_(argv[0], &args, bits, max, fun_n, funname, ARGMASK_ALL - ARGMASK_LMASKB - ARGMASK_DIFFB);
  if (check_res) return check_res;
 
  for (unsigned int ai = 0; ai<args.levels; ++ai) {
