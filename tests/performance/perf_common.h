@@ -33,6 +33,11 @@ int fun2_main(int argc, const char *argv[],
         unsigned int max_levels, unsigned int max_loops,
         unsigned int fun_n, const char *funname[],
         void (*internal_loop)(unsigned int ai, unsigned int bi, unsigned int funidx, const StandardArgs *args));
+int fun1_main(int argc, const char *argv[],
+        unsigned int bits, const StandardArgs args_init,
+        unsigned int max_levels, unsigned int max_loops,
+        unsigned int fun_n, const char *funname[],
+        void (*internal_loop)(unsigned int ai, unsigned int funidx, const StandardArgs *args));
 
 #endif /* PERF_COMMON_H */
 

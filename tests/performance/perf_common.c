@@ -8,7 +8,7 @@ StandardArgs parse_args(int argc, const char *argv[], const StandardArgs res_ini
  int argi = 1;
  while (argi < argc) {
   if (argv[argi][0]!='-') {
-   retv.error = true;
+   retv.error |= true;
    return retv;
   }
   int val = 0;
@@ -18,17 +18,17 @@ StandardArgs parse_args(int argc, const char *argv[], const StandardArgs res_ini
   char c3 = c2?argv[argi][3]:c2;
   if (c1 != 'h') { // option -h is exceptional
    val = argi+1<argc?atoi(argv[argi + 1]):0;
-   if (!(argi+1<argc)) retv.error = true;
+   if (!(argi+1<argc)) retv.error |= true;
    arginc = 2;
   }
   switch (c1) {
    case 'n':
     retv.loops = val;
-    if (c2) retv.error = true;
+    if (c2) retv.error |= true;
     break;
    case 'h':
     retv.help = true;
-    if (c2) retv.error = true;
+    if (c2) retv.error |= true;
     break;
    case 'l':
     if (c2==0) {
@@ -39,9 +39,9 @@ StandardArgs parse_args(int argc, const char *argv[], const StandardArgs res_ini
      } else if (c2=='b') {
       retv.lmask_b = val;
      } else {
-      retv.error = true;
+      retv.error |= true;
      }
-     if (c3) retv.error = true;
+     if (c3) retv.error |= true;
     }
     break;
    case 'd':
@@ -50,19 +50,20 @@ StandardArgs parse_args(int argc, const char *argv[], const StandardArgs res_ini
     } else if (c2=='b') {
      retv.diff_b = val;
     } else {
-     retv.error = true;
+     retv.error |= true;
     }
-    if (c3) retv.error = true;
+    if (c3) retv.error |= true;
     break;
    case 'f':
     retv.fmask = val;
-    if (c2) retv.error = true;
+    if (c2) retv.error |= true;
     break;
    case 'F':
     retv.fexmask = val;
-    if (c2) retv.error = true;
+    if (c2) retv.error |= true;
+    break;
    default:
-    retv.error = true;
+    retv.error |= true;
   }
   argi+=arginc;
  }
@@ -91,32 +92,42 @@ void print_help_all(const char *prgname, unsigned int bits, unsigned int argmask
  }
 }
 
+static inline int check_args_(const char *prgname, StandardArgs *args,
+   unsigned int bits,
+   unsigned int max_levels, unsigned int max_loops,
+   unsigned int fun_n, const char *funname[],
+   unsigned int argmask) {
+ if (args->help) {
+  print_help_all(prgname, bits, argmask, fun_n, funname);
+  return 0;
+ }
+ if (args->error) {
+  print_help_all(prgname, bits, argmask, fun_n, funname);
+  return 1;
+ }
+ if (max_levels < args->levels) {
+  fprintf(stderr, "The maximal number of levels is %u.\n", max_levels);
+  args->levels = max_levels;
+ }
+ if (args->levels < 1) {
+  fprintf(stderr, "The minimal number of levels is 1.\n");
+  args->levels = 1;
+ }
+ if (max_loops < args->loops) {
+  fprintf(stderr, "The maximal number of looops is %u.\n", max_loops);
+  args->loops = max_loops;
+ }
+ return 0;
+}
+
 int fun2_main(int argc, const char *argv[],
         unsigned int bits, const StandardArgs args_init,
         unsigned int max_levels, unsigned int max_loops,
         unsigned int fun_n, const char *funname[],
         void (*internal_loop)(unsigned int ai, unsigned int bi, unsigned int funidx, const StandardArgs *args)) {
  StandardArgs args = parse_args(argc, argv, args_init);
- if (args.help) {
-  print_help_all(argv[0], bits, -1, fun_n, funname);
-  return 0;
- }
- if (args.error) {
-  print_help_all(argv[0], bits, -1, fun_n, funname);
-  return 1;
- }
- if (max_levels < args.levels) {
-  fprintf(stderr, "The maximal number of levels is %u.\n", max_levels);
-  args.levels = max_levels;
- }
- if (args.levels < 1) {
-  fprintf(stderr, "The minimal number of levels is 1.\n");
-  args.levels = 1;
- }
- if (max_loops < args.loops) {
-  fprintf(stderr, "The maximal number of looops is %u.\n", max_loops);
-  args.loops = max_loops;
- }
+ int check_res = check_args_(argv[0], &args, bits, max_levels, max_loops, fun_n, funname, -1);
+ if (check_res) return check_res;
 
  for (unsigned int ai = 0; ai<args.levels; ++ai) {
   if ((args.lmask_a & (1<<ai))==0) continue;
@@ -133,4 +144,26 @@ int fun2_main(int argc, const char *argv[],
   }
  }
   return 0;
+}
+
+int fun1_main(int argc, const char *argv[],
+        unsigned int bits, const StandardArgs args_init,
+        unsigned int max_levels, unsigned int max_loops,
+        unsigned int fun_n, const char *funname[],
+        void (*internal_loop)(unsigned int ai, unsigned int funidx, const StandardArgs *args)) {
+ StandardArgs args = parse_args(argc, argv, args_init);
+ int check_res = check_args_(argv[0], &args, bits, max_levels, max_loops, fun_n, funname, ARGMASK_ALL - ARGMASK_LMASKB - ARGMASK_DIFFB);
+ if (check_res) return check_res;
+
+ for (unsigned int ai = 0; ai<args.levels; ++ai) {
+  if ((args.lmask_a & (1<<ai))==0) continue;
+  fprintf(stderr, "*** Operand level: a #%u ***\n", ai);
+
+  for (unsigned int fi = 0; fi < fun_n; ++fi) {
+   if ((args.fmask & (1<<fi)) && !(args.fexmask & (1<<fi))) {
+    internal_loop(ai, fi, &args);
+   }
+  }
+ }
+ return 0;
 }

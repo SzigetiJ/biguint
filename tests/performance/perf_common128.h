@@ -64,6 +64,12 @@ static inline void process_result_v1(BigUInt128 *a, UInt *b) {
  if (++idx == BIGUINT128_CELLS) idx = 0;
 }
 
+static inline void process_result_v2(const char *buf, unsigned int buflen, UInt *b) {
+ for (unsigned int i=0; i<buflen; ++i) {
+  *b+=buf[i];
+ }
+}
+
 #undef UINT_BITS
 #undef BIGUINT_BITS
 #undef DEC_BIGUINTLEN

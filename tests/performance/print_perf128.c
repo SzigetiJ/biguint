@@ -1,13 +1,9 @@
 /* This performance test executes
  biguint128 print routines multiple
  times with different values.
- First, decimal prints are done,
- next, hexadecimal prints.
- There is a default number of print iterations,
- however, this number can be overriden
- with command line argument.
  Inputs:
-  [argv(1)]: number of print calls.
+  [argv]: execute this program with -h
+ * (help) for information.
  Outputs:
   <stderr>: statistics.
 */
@@ -17,49 +13,65 @@
 #include <time.h>
 
 #include "biguint128.h"
+#include "perf_common.h"
 #include "perf_common128.h"
 
-#define LOOPS 200000U	// default number of print cycles
 
+// ### Constraints and default values
+#define MAX_LEVELS 8U
+#define DEFAULT_LEVELS 3U
+#define MAX_LOOPS (1<<20) // 1M loops
+#define DEFAULT_LOOPS (1<<17) // 128K loops
 #define BUFLEN (3*128/10)+10	// More than the approx. max. usage of 128 bit long dec string
+#define FBUFLEN 40 // for full function names
+#define INC_A 37U
+#define INC_B 29U
 
-unsigned int exec_print_loop(bool decimal, uint32_t loops) {
- BigUInt128 b0 = biguint128_ctor_default();
+// ### Local types
+typedef enum {
+ FUN_PRINT_HEX = 0,
+ FUN_PRINT_DEC
+} PrintFun;
+
+// ### Constants
+const char *funname[]={
+ "print_hex",
+ "print_dec"
+};
+const unsigned int fun_n = sizeof(funname) / sizeof(funname[0]);
+
+const StandardArgs ARGS_DEFAULT = {
+ DEFAULT_LOOPS, false, false,
+ DEFAULT_LEVELS, -1, -1,
+ INC_A, INC_B,
+ -1, 0
+};
+
+// ### Internal functions
+static void exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args) {
+ BigUInt128 a = get_value_by_level(ai, args->levels);
+ BigUInt128 chkval = biguint128_ctor_default();
+ char pbuf[BUFLEN + 1];
+ buint_size_t plen;
  clock_t t0, t1;
- char buf[BUFLEN];
- unsigned int sum = 0;
- uint32_t loop_cnt;
+ char fnamebuf[FBUFLEN];
 
  t0 = clock();
- for (loop_cnt = 0; loop_cnt < loops; ++loop_cnt) {
-  biguint128_dec(&b0);
-  buint_size_t len = decimal?
-   biguint128_print_dec(&b0, buf, BUFLEN-1):
-   biguint128_print_hex(&b0, buf, BUFLEN-1);
-  buf[len] = 0;
-  // just do something with the printed string
-  for (unsigned int i = 0; i < len; ++i) {
-   sum+= buf[i];
-  }
+ for (unsigned int i = 0; i < args->loops; ++i) {
+   if (fun == FUN_PRINT_HEX) {
+    plen = biguint128_print_hex(&a, pbuf, BUFLEN);
+   } else if (fun == FUN_PRINT_DEC) {
+    plen = biguint128_print_dec(&a, pbuf, BUFLEN);
+   }
+  process_result_v2(pbuf, plen, &chkval.dat[0]);
+  biguint128_add_tiny(&a, (UInt)args->diff_a);
  }
  t1 = clock();
-
- print_exec_time(t0, t1, decimal?"print_dec":"print_hex", loop_cnt);
- fprintf(stderr,"sum: %u\n", sum);
- return sum;
+ snprintf(fnamebuf, FBUFLEN, "%s + 2*add_tiny(C)", funname[fun]);
+ print_exec_summary(t0, t1, fnamebuf, args->loops, &chkval, 1);
 }
 
+// ### Main function
 int main(int argc, const char *argv[]) {
- uint32_t loops = LOOPS;
- if (1<argc){
-  loops = atoi(argv[1]);
- }
-
- // #1: decimal print
- exec_print_loop(true, loops);
-
- // #2: hexadecimal print
- exec_print_loop(false, loops);
-
- return 0;
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, MAX_LEVELS, MAX_LOOPS, fun_n, funname, &exec_function_loop_);
 }
