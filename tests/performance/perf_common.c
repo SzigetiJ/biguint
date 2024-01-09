@@ -142,7 +142,7 @@ int fun2_main(int argc, const char *argv[],
   if ((args.lmask[0] & (1<<ai))==0) continue;
   for (unsigned int bi = 0; bi<args.levels; ++bi) {
    if ((args.lmask[1] & (1<<bi))==0) continue;
-   fprintf(stderr, "*** Operand levels: a #%u, b #%u ***\n", ai, bi);
+   fprintf(stdout, "*** Operand levels: a #%u, b #%u ***\n", ai, bi);
 
    for (unsigned int fi = 0; fi < fun_n; ++fi) {
     if ((args.fmask & (1 << fi)) && !(args.fexmask & (1 << fi))) {
@@ -173,7 +173,7 @@ int fun1_main(int argc, const char *argv[],
 
  for (unsigned int ai = 0; ai<args.levels; ++ai) {
   if ((args.lmask[0] & (1<<ai))==0) continue;
-  fprintf(stderr, "*** Operand level: a #%u ***\n", ai);
+  fprintf(stdout, "*** Operand level: a #%u ***\n", ai);
 
   for (unsigned int fi = 0; fi < fun_n; ++fi) {
    if ((args.fmask & (1 << fi)) && !(args.fexmask & (1 << fi))) {
