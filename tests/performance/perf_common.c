@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "perf_common.h"
 
@@ -92,6 +93,19 @@ void print_help_all(const char *prgname, unsigned int bits, unsigned int argmask
  }
 }
 
+static inline void print_exec_time(clock_t t_begin, clock_t t_end, const char *op, int cnt, unsigned int bits) {
+ clock_t dt = t_end - t_begin;
+ fprintf(stdout, "=== %d BigUInt%u %s operations ===\n", cnt, bits, op);
+ fprintf(stdout, " Elapsed time: %ld us,\t%.1f op/s\n", dt, (1000000.0 * cnt) / dt);
+}
+
+static inline void print_exec_summary(clock_t t_begin, clock_t t_end, const char *op, unsigned int bits, int cnt, const UInt *val, int valnum) {
+ print_exec_time(t_begin, t_end, op, cnt, bits);
+ for (unsigned int i=0; i<valnum; ++i) {
+  fprintf(stdout, "  Check value #%u: %"PRIuint"\n", i+1, val[i]);
+ }
+}
+
 static inline int check_args_(const char *prgname, StandardArgs *args,
    unsigned int bits,
    const StandardConstraints *max,
@@ -123,7 +137,9 @@ static inline int check_args_(const char *prgname, StandardArgs *args,
 int fun2_main(int argc, const char *argv[],
         unsigned int bits, const StandardArgs args_init, const StandardConstraints *max,
         unsigned int fun_n, const char *funname[],
-        void (*internal_loop)(unsigned int ai, unsigned int bi, unsigned int funidx, const StandardArgs *args)) {
+        LoopFunction2 internal_loop,
+        unsigned int chkval_n
+) {
  StandardArgs args = parse_args(argc, argv, args_init);
  int check_res = check_args_(argv[0], &args, bits, max, fun_n, funname, -1);
  if (check_res) return check_res;
@@ -135,8 +151,14 @@ int fun2_main(int argc, const char *argv[],
    fprintf(stderr, "*** Operand levels: a #%u, b #%u ***\n", ai, bi);
 
    for (unsigned int fi = 0; fi < fun_n; ++fi) {
-    if ((args.fmask & (1<<fi)) && !(args.fexmask & (1<<fi))) {
-     internal_loop(ai, bi, fi, &args);
+    if ((args.fmask & (1 << fi)) && !(args.fexmask & (1 << fi))) {
+     UInt chkval[]={0,0};
+     clock_t t0, t1;
+
+     t0 = clock();
+     unsigned int loops = internal_loop(ai, bi, fi, &args, chkval);
+     t1 = clock();
+     print_exec_summary(t0, t1, funname[fi], bits, loops, chkval, chkval_n);
     }
    }
 
@@ -148,7 +170,9 @@ int fun2_main(int argc, const char *argv[],
 int fun1_main(int argc, const char *argv[],
         unsigned int bits, const StandardArgs args_init, const StandardConstraints *max,
         unsigned int fun_n, const char *funname[],
-        void (*internal_loop)(unsigned int ai, unsigned int funidx, const StandardArgs *args)) {
+        LoopFunction1 internal_loop,
+        unsigned int chkval_n
+) {
  StandardArgs args = parse_args(argc, argv, args_init);
  int check_res = check_args_(argv[0], &args, bits, max, fun_n, funname, ARGMASK_ALL - ARGMASK_LMASKB - ARGMASK_DIFFB);
  if (check_res) return check_res;
@@ -158,8 +182,14 @@ int fun1_main(int argc, const char *argv[],
   fprintf(stderr, "*** Operand level: a #%u ***\n", ai);
 
   for (unsigned int fi = 0; fi < fun_n; ++fi) {
-   if ((args.fmask & (1<<fi)) && !(args.fexmask & (1<<fi))) {
-    internal_loop(ai, fi, &args);
+   if ((args.fmask & (1 << fi)) && !(args.fexmask & (1 << fi))) {
+    UInt chkval[]={0,0};
+    clock_t t0, t1;
+
+    t0 = clock();
+    unsigned int loops = internal_loop(ai, fi, &args, chkval);
+    t1 = clock();
+    print_exec_summary(t0, t1, funname[fi], bits, loops, chkval, chkval_n);
    }
   }
  }

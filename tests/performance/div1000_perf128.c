@@ -1,5 +1,3 @@
-#include <time.h>
-
 #include "biguint128.h"
 #include "perf_common.h"
 #include "perf_common128.h"
@@ -25,29 +23,24 @@ const char *funname[] = {
 };
 const unsigned int fun_n = sizeof(funname) / sizeof(funname[0]);
 
-static void exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args) {
+static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args, UInt *chkval) {
  BigUInt128 a = get_value_by_level(ai, args->levels);
- BigUInt128 chkval = biguint128_ctor_default();
  uint32_t loop_cnt;
- clock_t t0, t1;
 
  BigUInt128 bdiv = biguint128_value_of_uint(1000);
  BigUIntPair128 res;
 
- t0 = clock();
  for (loop_cnt = 0; loop_cnt < args->loops; ++loop_cnt) {
   res = (fun==VARIANT_DIV1000_X)?
    biguint128_div1000(&a):
    biguint128_div(&a, &bdiv);
-  process_result_v1(&res.first, &chkval.dat[0]);
-  process_result_v1(&res.second, &chkval.dat[0]);
+  process_result_v1(&res.first, &chkval[0]);
+  process_result_v1(&res.second, &chkval[1]);
   biguint128_add_tiny(&a, (UInt)args->diff_a);
  }
- t1 = clock();
-
- print_exec_summary(t0, t1, funname[fun], loop_cnt, &chkval, 1);
+ return loop_cnt;
 }
 
 int main(int argc, const char *argv[]) {
- return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_);
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_, 2);
 }

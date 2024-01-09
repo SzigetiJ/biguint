@@ -1,5 +1,3 @@
-#include <time.h>
-
 #include "biguint128.h"
 #include "perf_common.h"
 #include "perf_common128.h"
@@ -29,22 +27,16 @@ const char *funname[] = {
  "div10(x)"
 };
 
-static void exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args) {
+static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args, UInt *chkval) {
  const BigUInt128 bdiv = biguint128_value_of_uint(10);
  BigUInt128 a = get_value_by_level(ai, args->levels);
- BigUInt128 chkval[] = {
-  biguint128_ctor_default(),
-  biguint128_ctor_default()
- };
  BigUInt128 res0;
  BigUIntPair128 res;
  BigUIntTinyPair128 rest;
  BigUInt128 *procref1 = fun == VARIANT_DIV10_X?&rest.first:&res.first;
  UInt *procref2 = fun == VARIANT_DIV10_X?&rest.second:&res.second.dat[0];
- uint32_t loop_cnt;
- clock_t t0, t1;
+ unsigned int loop_cnt;
 
- t0 = clock();
  for (loop_cnt = 0; loop_cnt < args->loops; ++loop_cnt) {
   if (fun == VARIANT_DIV_X_10) {
    res = biguint128_div(&a, &bdiv);
@@ -59,15 +51,13 @@ static void exec_function_loop_(unsigned int ai, unsigned int fun, const Standar
   } else {
    rest = biguint128_div10(&a);
   }
-  process_result_v1(procref1, &chkval[0].dat[0]);
-  process_result_v3(procref2, &chkval[1].dat[0]);
+  process_result_v1(procref1, &chkval[0]);
+  process_result_v3(procref2, &chkval[1]);
   biguint128_add_tiny(&a, (UInt) args->diff_a);
  }
- t1 = clock();
-
- print_exec_summary(t0, t1, funname[fun], loop_cnt, chkval, 2);
+ return loop_cnt;
 }
 
 int main(int argc, const char *argv[]) {
- return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, sizeof(funname) / sizeof(funname[0]), funname, &exec_function_loop_);
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, sizeof(funname) / sizeof(funname[0]), funname, &exec_function_loop_,2);
 }

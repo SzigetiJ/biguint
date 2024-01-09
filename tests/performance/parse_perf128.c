@@ -46,29 +46,25 @@ const unsigned int fun_n = ARRAYSIZE(funname);
 
 
 // ### Internal functions
-static void exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args) {
+static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args, UInt *chkval) {
  char str[DECDIGITS];
  memset(str, '1', DECDIGITS);
  buint_size_t str_n = (numwidth[fun] * (ai + 1)) / args->levels;
- BigUInt128 chkval = biguint128_ctor_default();
  BigUInt128 res;
- clock_t t0, t1;
 
- t0 = clock();
  for (unsigned int i = 0; i < args->loops; ++i) {
   if (fun == FUN_PARSE_HEX) {
    res = biguint128_ctor_hexcstream(str, str_n);
   } else if (fun == FUN_PARSE_DEC) {
    res = biguint128_ctor_deccstream(str, str_n);
   }
-  process_result_v1(&res, &chkval.dat[0]);
+  process_result_v1(&res, chkval);
   str[i % str_n] = '0' + ((i * args->diff_a) % 10);
  }
- t1 = clock();
- print_exec_summary(t0, t1, funname[fun], args->loops, &chkval, 1);
+ return args->loops;
 }
 
 // ### Main function
 int main(int argc, const char *argv[]) {
- return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_);
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_, 1);
 }

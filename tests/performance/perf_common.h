@@ -1,6 +1,7 @@
 #ifndef PERF_COMMON_H
 #define PERF_COMMON_H
 #include <stdbool.h>
+#include "uint_types.h"
 
 typedef struct {
  unsigned int levels;
@@ -19,6 +20,10 @@ typedef struct {
  unsigned int fmask;
  unsigned int fexmask;
 } StandardArgs;
+
+typedef unsigned int (*LoopFunction2)(unsigned int ai, unsigned int bi, unsigned int funidx, const StandardArgs *args, UInt *chkval);
+typedef unsigned int (*LoopFunction1)(unsigned int ai, unsigned int funidx, const StandardArgs *args, UInt *chkval);
+typedef unsigned int (*LoopFunctionN)(unsigned int *xi, unsigned int funidx, const StandardArgs *args, UInt *chkval);
 
 #define ARGMASK_LOOPS 1U
 #define ARGMASK_LEVELS 2U
@@ -40,11 +45,12 @@ void print_help_all(const char *prgname, unsigned int bits, unsigned int argmask
 int fun2_main(int argc, const char *argv[],
         unsigned int bits, const StandardArgs args_init, const StandardConstraints *max,
         unsigned int fun_n, const char *funname[],
-        void (*internal_loop)(unsigned int ai, unsigned int bi, unsigned int funidx, const StandardArgs *args));
+        LoopFunction2 internal_loop,
+        unsigned int chkval_n);
 int fun1_main(int argc, const char *argv[],
         unsigned int bits, const StandardArgs args_init, const StandardConstraints *max,
         unsigned int fun_n, const char *funname[],
-        void (*internal_loop)(unsigned int ai, unsigned int funidx, const StandardArgs *args));
-
+        LoopFunction1 internal_loop,
+        unsigned int chkval_n);
 #endif /* PERF_COMMON_H */
 

@@ -2,7 +2,6 @@
 #define _PERF_COMMON_H_
 
 #include <stdio.h>
-#include <time.h>
 
 #include "biguint128.h"
 
@@ -14,21 +13,6 @@ typedef struct {
  char *name[3];
  BigUInt128 val[3];
 } PerfTestInitValues;
-
-static inline void print_exec_time(clock_t t_begin, clock_t t_end, const char *op, int cnt) {
- clock_t dt = t_end - t_begin;
- fprintf(stdout, "=== %d BigUInt128 %s operations ===\n", cnt, op);
- fprintf(stdout, " Elapsed time: %ld us,\t%.1f op/s\n", dt, (1000000.0 * cnt) / dt);
-}
-
-static inline void print_exec_summary(clock_t t_begin, clock_t t_end, const char *op, int cnt, const BigUInt128 *val, int valnum) {
- char buf[DEC_BIGUINTLEN];
- print_exec_time(t_begin, t_end, op, cnt);
- for (int i=0; i<valnum; ++i) {
-  buf[biguint128_print_dec(val+i, buf, DEC_BIGUINTLEN-1)] = 0;
-  fprintf(stdout, "  Check value #%d: %s\n", i+1, buf);
- }
-}
 
 static inline PerfTestInitValues get_std_initvalues() {
  PerfTestInitValues retv = {
