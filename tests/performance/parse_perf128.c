@@ -42,10 +42,7 @@ const unsigned int numwidth[] = {
  HEXDIGITS,
  DECDIGITS
 };
-const unsigned int fun_n = ARRAYSIZE(funname);
 
-
-// ### Internal functions
 static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args, UInt *chkval) {
  char str[DECDIGITS];
  memset(str, '1', DECDIGITS);
@@ -59,12 +56,11 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const
    res = biguint128_ctor_deccstream(str, str_n);
   }
   process_result_v1(&res, chkval);
-  str[i % str_n] = '0' + ((i * args->diff_a) % 10);
+  str[i % str_n] = '0' + ((i * args->diff[0]) % 10);
  }
  return args->loops;
 }
 
-// ### Main function
 int main(int argc, const char *argv[]) {
- return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_, 1);
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, ARRAYSIZE(funname), funname, &exec_function_loop_, 1);
 }

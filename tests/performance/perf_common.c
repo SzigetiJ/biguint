@@ -4,6 +4,12 @@
 
 #include "perf_common.h"
 
+static inline bool set_aorb(char sel, unsigned int *store, unsigned int val) {
+ if (sel<'a' || 'b'<sel) return true;
+ store[sel-'a']=val;
+ return false;
+}
+
 StandardArgs parse_args(int argc, const char *argv[], const StandardArgs res_init) {
  StandardArgs retv = res_init;
  int argi = 1;
@@ -35,24 +41,12 @@ StandardArgs parse_args(int argc, const char *argv[], const StandardArgs res_ini
     if (c2==0) {
      retv.levels = val;
     } else {
-     if (c2=='a') {
-      retv.lmask_a = val;
-     } else if (c2=='b') {
-      retv.lmask_b = val;
-     } else {
-      retv.error |= true;
-     }
+     retv.error|=set_aorb(c2, retv.lmask, val);
      if (c3) retv.error |= true;
     }
     break;
    case 'd':
-    if (c2=='a') {
-     retv.diff_a = val;
-    } else if (c2=='b') {
-     retv.diff_b = val;
-    } else {
-     retv.error |= true;
-    }
+    retv.error|=set_aorb(c2, retv.diff, val);
     if (c3) retv.error |= true;
     break;
    case 'f':
@@ -145,9 +139,9 @@ int fun2_main(int argc, const char *argv[],
  if (check_res) return check_res;
 
  for (unsigned int ai = 0; ai<args.levels; ++ai) {
-  if ((args.lmask_a & (1<<ai))==0) continue;
+  if ((args.lmask[0] & (1<<ai))==0) continue;
   for (unsigned int bi = 0; bi<args.levels; ++bi) {
-   if ((args.lmask_b & (1<<bi))==0) continue;
+   if ((args.lmask[1] & (1<<bi))==0) continue;
    fprintf(stderr, "*** Operand levels: a #%u, b #%u ***\n", ai, bi);
 
    for (unsigned int fi = 0; fi < fun_n; ++fi) {
@@ -178,7 +172,7 @@ int fun1_main(int argc, const char *argv[],
  if (check_res) return check_res;
 
  for (unsigned int ai = 0; ai<args.levels; ++ai) {
-  if ((args.lmask_a & (1<<ai))==0) continue;
+  if ((args.lmask[0] & (1<<ai))==0) continue;
   fprintf(stderr, "*** Operand level: a #%u ***\n", ai);
 
   for (unsigned int fi = 0; fi < fun_n; ++fi) {

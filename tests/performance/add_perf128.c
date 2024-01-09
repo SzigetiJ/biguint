@@ -14,7 +14,6 @@ const StandardArgs ARGS_DEFAULT = INIT_FUN2ARGS(
  37U,
  29U);
 
-// ### Local types
 typedef enum {
  FUN_ADD = 0,
  FUN_ADD_ASGN,
@@ -26,7 +25,6 @@ typedef enum {
  FUN_SUB_TINY
 } AdditiveFun;
 
-// ### Constants
 const char *funname[]={
  "add",
  "add_assign",
@@ -37,9 +35,7 @@ const char *funname[]={
  "sub_replace",
  "sub_tiny"
 };
-const unsigned int fun_n = ARRAYSIZE(funname);
 
-// ### Internal functions
 static unsigned int exec_function_loop_(unsigned int ai, unsigned int bi, unsigned int fun, const StandardArgs *args, UInt *chkval) {
  BigUInt128 a = get_value_by_level(ai, args->levels);
  BigUInt128 b = get_value_by_level(bi, args->levels);
@@ -69,12 +65,11 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int bi, unsign
    }
   }
   process_result_v1(procref, chkval);
-  inc_operands_v1(&a, &b, args->diff_a, args->diff_b);
+  inc_operands_v1(&a, &b, args->diff[0], args->diff[1]);
  }
  return args->loops;
 }
 
-// ### Main function
 int main(int argc, const char *argv[]) {
- return fun2_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_, 1);
+ return fun2_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, ARRAYSIZE(funname), funname, &exec_function_loop_, 1);
 }

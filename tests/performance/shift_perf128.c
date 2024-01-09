@@ -37,9 +37,7 @@ const char *funname[]={
   "shr_assign(x,i)",
   "shr_tiny(copy(x),i)"
 };
-const unsigned int fun_n = ARRAYSIZE(funname);
 
-// ### Internal functions
 static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args, UInt *chkval) {
  BigUInt128 a = get_value_by_level(ai, args->levels);
  uint32_t loop_cnt;
@@ -115,12 +113,12 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const
     ++loop_cnt;
    }
   }
-  biguint128_add_tiny(&a, (UInt)args->diff_a);
+  biguint128_add_tiny(&a, (UInt)args->diff[0]);
  }
  return loop_cnt;
 }
 
 // ### Main function
 int main(int argc, const char *argv[]) {
- return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_, 1);
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, ARRAYSIZE(funname), funname, &exec_function_loop_, 1);
 }

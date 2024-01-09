@@ -16,31 +16,28 @@ typedef enum {
  VARIANT_DIV1000_X
 } Div1000Variant;
 
-// ### Constants
 const char *funname[] = {
  "div(x,1000)",
  "div1000(x)"
 };
-const unsigned int fun_n = sizeof(funname) / sizeof(funname[0]);
 
 static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args, UInt *chkval) {
- BigUInt128 a = get_value_by_level(ai, args->levels);
- uint32_t loop_cnt;
-
  BigUInt128 bdiv = biguint128_value_of_uint(1000);
+ BigUInt128 a = get_value_by_level(ai, args->levels);
  BigUIntPair128 res;
+ uint32_t loop_cnt;
 
  for (loop_cnt = 0; loop_cnt < args->loops; ++loop_cnt) {
   res = (fun==VARIANT_DIV1000_X)?
    biguint128_div1000(&a):
    biguint128_div(&a, &bdiv);
   process_result_v1(&res.first, &chkval[0]);
-  process_result_v1(&res.second, &chkval[1]);
-  biguint128_add_tiny(&a, (UInt)args->diff_a);
+  process_result_v3(&res.second.dat[0], &chkval[1]);
+  biguint128_add_tiny(&a, (UInt)args->diff[0]);
  }
  return loop_cnt;
 }
 
 int main(int argc, const char *argv[]) {
- return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_, 2);
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, ARRAYSIZE(funname), funname, &exec_function_loop_, 2);
 }

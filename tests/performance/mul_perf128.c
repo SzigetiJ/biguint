@@ -14,23 +14,18 @@ const StandardArgs ARGS_DEFAULT = INIT_FUN2ARGS(
  37U,
  29U);
 
-// ### Local types
 typedef enum {
  FUN_MUL = 0,
  FUN_DMUL,
  FUN_DIV
 } MultiplicativeFun;
 
-// ### Constants
 const char *funname[]={
  "mul",
  "dmul",
  "div"
 };
-const unsigned int fun_n = ARRAYSIZE(funname);
 
-
-// ### Internal functions
 static unsigned int exec_function_loop_(unsigned int ai, unsigned int bi, unsigned int fun, const StandardArgs *args, UInt *chkval) {
  BigUInt128 a = get_value_by_level(ai, args->levels);
  BigUInt128 b = get_value_by_level(bi, args->levels);
@@ -49,12 +44,11 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int bi, unsign
   }
   process_result_v1(procref2, chkval+0);
   process_result_v1(procref1, chkval+1);
-  inc_operands_v1(&a, &b, (UInt) args->diff_a, (UInt) args->diff_b);
+  inc_operands_v1(&a, &b, (UInt) args->diff[0], (UInt) args->diff[1]);
  }
  return args->loops;
 }
 
-// ### Main function
 int main(int argc, const char *argv[]) {
- return fun2_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_, 2);
+ return fun2_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, ARRAYSIZE(funname), funname, &exec_function_loop_, 2);
 }

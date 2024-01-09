@@ -13,10 +13,8 @@ typedef struct {
  bool error;
  bool help;
  unsigned char levels;
- unsigned int lmask_a;
- unsigned int lmask_b;
- int diff_a;
- int diff_b;
+ unsigned int lmask[2];
+ int diff[2];
  unsigned int fmask;
  unsigned int fexmask;
 } StandardArgs;
@@ -35,8 +33,8 @@ typedef unsigned int (*LoopFunctionN)(unsigned int *xi, unsigned int funidx, con
 #define ARGMASK_FEXMASK 128U
 #define ARGMASK_ALL 255U
 
-#define INIT_FUN1ARGS(LOOPS,LEVELS,INCA) (StandardArgs){LOOPS, false, false, LEVELS, -1, 0, INCA, 0, -1, 0}
-#define INIT_FUN2ARGS(LOOPS,LEVELS,INCA,INCB) (StandardArgs){LOOPS, false, false, LEVELS, -1, -1, INCA, INCB, -1, 0}
+#define INIT_FUN1ARGS(LOOPS,LEVELS,INCA) (StandardArgs){LOOPS, false, false, LEVELS, {-1, 0}, {INCA, 0}, -1, 0}
+#define INIT_FUN2ARGS(LOOPS,LEVELS,INCA,INCB) (StandardArgs){LOOPS, false, false, LEVELS, {-1, -1}, {INCA, INCB}, -1, 0}
 #define ARRAYSIZE(X) (sizeof(X)/sizeof(X[0]))
 
 StandardArgs parse_args(int argc, const char *argv[], const StandardArgs res_init);

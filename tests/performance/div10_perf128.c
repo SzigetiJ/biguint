@@ -19,7 +19,6 @@ typedef enum {
  VARIANT_DIV10_X
 } Div10Variant;
 
-// ### Constants
 const char *funname[] = {
  "div(x,10)",
  "d1000(m100(x))",
@@ -53,11 +52,11 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const
   }
   process_result_v1(procref1, &chkval[0]);
   process_result_v3(procref2, &chkval[1]);
-  biguint128_add_tiny(&a, (UInt) args->diff_a);
+  biguint128_add_tiny(&a, (UInt) args->diff[0]);
  }
  return loop_cnt;
 }
 
 int main(int argc, const char *argv[]) {
- return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, sizeof(funname) / sizeof(funname[0]), funname, &exec_function_loop_,2);
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, ARRAYSIZE(funname), funname, &exec_function_loop_,2);
 }

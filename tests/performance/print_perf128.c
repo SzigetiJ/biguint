@@ -23,20 +23,16 @@ const StandardArgs ARGS_DEFAULT = INIT_FUN1ARGS(
  3U,
  37U);
 
-// ### Local types
 typedef enum {
  FUN_PRINT_HEX = 0,
  FUN_PRINT_DEC
 } PrintFun;
 
-// ### Constants
 const char *funname[]={
  "print_hex",
  "print_dec"
 };
-const unsigned int fun_n = sizeof(funname) / sizeof(funname[0]);
 
-// ### Internal functions
 static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args, UInt *chkval) {
  BigUInt128 a = get_value_by_level(ai, args->levels);
  char pbuf[BUFLEN + 1];
@@ -49,12 +45,11 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const
     plen = biguint128_print_dec(&a, pbuf, BUFLEN);
    }
   process_result_v2(pbuf, plen, chkval);
-  biguint128_add_tiny(&a, (UInt)args->diff_a);
+  biguint128_add_tiny(&a, (UInt)args->diff[0]);
  }
  return args->loops;
 }
 
-// ### Main function
 int main(int argc, const char *argv[]) {
- return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, fun_n, funname, &exec_function_loop_, 1);
+ return fun1_main(argc, argv, 128, ARGS_DEFAULT, &LIMITS, ARRAYSIZE(funname), funname, &exec_function_loop_, 1);
 }
