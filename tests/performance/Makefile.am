@@ -4,6 +4,7 @@ BUINT128_PROGS = \
     mul_perf128 \
 	div10_perf128 \
 	div1000_perf128 \
+	msb_perf128 \
 	parse_perf128 \
 	print_perf128 \
 	shift_perf128
@@ -17,6 +18,7 @@ BUINT256_PROGS = \
     mul_perf256 \
 	div10_perf256 \
 	div1000_perf256 \
+	msb_perf256 \
 	parse_perf256 \
 	print_perf256 \
 	shift_perf256
@@ -26,6 +28,7 @@ BUINT512_PROGS = \
     mul_perf512 \
 	div10_perf512 \
 	div1000_perf512 \
+	msb_perf512 \
 	parse_perf512 \
 	print_perf512 \
 	shift_perf512
@@ -35,6 +38,7 @@ BUINTEXTRA_PROGS = \
     mul_perf@userdef_bits@ \
 	div10_perf@userdef_bits@ \
 	div1000_perf@userdef_bits@ \
+	msb_perf@userdef_bits@ \
 	parse_perf@userdef_bits@ \
 	print_perf@userdef_bits@ \
 	shift_perf@userdef_bits@
@@ -47,6 +51,7 @@ if WITH_BIGUINT256
     mul_perf256.c \
 	div10_perf256.c \
 	div1000_perf256.c \
+	msb_perf256.c \
 	parse_perf256.c \
 	print_perf256.c \
 	shift_perf256.c
@@ -55,6 +60,7 @@ if WITH_BIGUINT256
  nodist_mul_perf256_SOURCES = mul_perf256.c
  nodist_div10_perf256_SOURCES = div10_perf256.c
  nodist_div1000_perf256_SOURCES = div1000_perf256.c
+ nodist_msb_perf256_SOURCES = msb_perf256.c
  nodist_parse_perf256_SOURCES = parse_perf256.c
  nodist_print_perf256_SOURCES = print_perf256.c
  nodist_shift_perf256_SOURCES = shift_perf256.c
@@ -75,6 +81,7 @@ if WITH_BIGUINT512
     mul_perf512.c \
 	div10_perf512.c \
 	div1000_perf512.c \
+	msb_perf512.c \
 	parse_perf512.c \
 	print_perf512.c \
 	shift_perf512.c
@@ -83,6 +90,7 @@ if WITH_BIGUINT512
  nodist_mul_perf512_SOURCES = mul_perf512.c
  nodist_div10_perf512_SOURCES = div10_perf512.c
  nodist_div1000_perf512_SOURCES = div1000_perf512.c
+ nodist_msb_perf512_SOURCES = msb_perf512.c
  nodist_parse_perf512_SOURCES = parse_perf512.c
  nodist_print_perf512_SOURCES = print_perf512.c
  nodist_shift_perf512_SOURCES = shift_perf512.c
@@ -103,6 +111,7 @@ if EXTRA_BITLEN
     mul_perf@userdef_bits@.c \
 	div10_perf@userdef_bits@.c \
 	div1000_perf@userdef_bits@.c \
+	msb_perf@userdef_bits@.c \
 	parse_perf@userdef_bits@.c \
 	print_perf@userdef_bits@.c \
 	shift_perf@userdef_bits@.c
@@ -111,6 +120,7 @@ if EXTRA_BITLEN
  nodist_mul_perf@userdef_bits@_SOURCES = mul_perf@userdef_bits@.c
  nodist_div10_perf@userdef_bits@_SOURCES = div10_perf@userdef_bits@.c
  nodist_div1000_perf@userdef_bits@_SOURCES = div1000_perf@userdef_bits@.c
+ nodist_msb_perf@userdef_bits@_SOURCES = msb_perf@userdef_bits@.c
  nodist_parse_perf@userdef_bits@_SOURCES = parse_perf@userdef_bits@.c
  nodist_print_perf@userdef_bits@_SOURCES = print_perf@userdef_bits@.c
  nodist_shift_perf@userdef_bits@_SOURCES = shift_perf@userdef_bits@.c
