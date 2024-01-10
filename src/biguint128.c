@@ -32,7 +32,7 @@
 #define FOREACHCELLREV(i) FORRANGEREV(i,BIGUINT128_CELLS)
 
 #define UINT_BYTES sizeof(UInt)
-#define UINT_BITS (8 * UINT_BYTES)
+//#define UINT_BITS (8 * UINT_BYTES)
 #define MINUS_SIGN '-'
 
 // Assertions
@@ -494,6 +494,11 @@ BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b) {
  biguint128_add_replace(&retv, a, b);
  return retv;
 }
+BigUInt128 biguint128_add_raw(const BigUInt128 a, const BigUInt128 b) {
+ BigUInt128 retv;
+ biguint128_add_replace(&retv, &a, &b);
+ return retv;
+}
 
 BigUInt128 *biguint128_add_assign(BigUInt128 *a, const BigUInt128 *b) {
  buint_bool carry = 0;
@@ -918,18 +923,15 @@ buint_bool biguint128_eqz(const BigUInt128 *a) {
 // ### Section BIT level
 buint_size_t biguint128_msb(const BigUInt128 *a) {
  buint_size_t j;
- buint_bool found = 0;
+ buint_size_t result = 0;
  FOREACHCELL(i) {
   j = BIGUINT128_CELLS - i - 1;
-  if (0 < a->dat[j]) {
-   found = 1;
+  if (0 != a->dat[j]) {
+   result = j * 8 * sizeof(UInt) + uint_msb(a->dat[j]);
    break;
   }
  }
- if (!found) {
-  return 0;
- }
- return j * UINT_BITS + uint_msb(a->dat[j]);
+ return result;
 }
 
 buint_size_t biguint128_lzc(const BigUInt128 *a) {

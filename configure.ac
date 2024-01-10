@@ -7,6 +7,20 @@ AC_PROG_SED
 
 AC_DEFINE(USE_STD_TYPES)
 
+## ax_gcc_builtin extracted
+## snippet taken from Libgcrypt
+## (slightly modified)
+AC_CACHE_CHECK(for __builtin_clz,
+       [buint_cv_have_builtin_clz],
+       [buint_cv_have_builtin_clz=no
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([],
+          [unsigned int x = 0; int y = __builtin_clz(x); return y;])],
+          [buint_cv_have_builtin_clz=yes])])
+if test "$buint_cv_have_builtin_clz" = "yes" ; then
+   AC_DEFINE(HAVE_BUILTIN_CLZ, 1,
+             [Defined if compiler has '__builtin_clz' intrinsic])
+fi
+
 AC_CHECK_SIZEOF([UInt],,[#include "$srcdir/src/uint_types.h"])
 AS_VAR_ARITH([UINT_BITS], [$ac_cv_sizeof_UInt \* 8])
 

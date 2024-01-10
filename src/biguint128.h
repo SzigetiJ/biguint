@@ -115,6 +115,7 @@ buint_size_t biguint128_import(BigUInt128 *dest, const char *src);
  @brief Addition with overflow.
 */
 BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b);
+BigUInt128 biguint128_add_raw(const BigUInt128 a, const BigUInt128 b);
 
 /**
  @brief Add-assignment with overflow.

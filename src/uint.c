@@ -59,6 +59,12 @@ UIntPair uint_mul(UInt a, UInt b) {
  return retv;
 }
 
+#ifndef INLINE_UINT_MSB
+#ifdef HAVE_BUILTIN_CLZ
+buint_size_t uint_msb(UInt a) {
+ return UINT_BITS - 1 - BUILTIN_CLZ(a);
+}
+#else
 buint_size_t uint_msb(UInt a) {
  // kind of binary search..
  buint_size_t n = 4 * sizeof(UInt);
@@ -73,4 +79,5 @@ buint_size_t uint_msb(UInt a) {
  }
  return a < (UInt)1 << n ? inf : n;
 }
-
+#endif
+#endif

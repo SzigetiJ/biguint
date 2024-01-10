@@ -110,8 +110,31 @@ UIntPair uint_mul(UInt a, UInt b);
 /**
  @return most significant bit (set to 1) of the value.
 */
+#ifndef INLINE_UINT_MSB
 buint_size_t uint_msb(UInt a);
+#else
+#ifdef HAVE_BUILTIN_CLZ
+static inline buint_size_t uint_msb(UInt a) {
+ return UINT_BITS - 1 - BUILTIN_CLZ(a);
+}
+#else
+static inline buint_size_t uint_msb(UInt a) {
+ // kind of binary search..
+ buint_size_t n = 4 * sizeof(UInt);
+ buint_size_t inf = 0;
+ for (buint_size_t s = n / 2; 0 < s; s/=2) {
+  if (a < (UInt)1 << n) {
+   n-=s;    // same as n=inf+s
+  } else {
+   inf = n;
+   n+=s;
+  }
+ }
+ return a < (UInt)1 << n ? inf : n;
+}
+#endif
 
-#undef UINT_BITS
+#endif
+
 #endif
 

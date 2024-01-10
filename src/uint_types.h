@@ -32,10 +32,12 @@
     typedef uint64_t UInt;	///< Alias on the basic store unit.
     #define PRIuint "llu"
     #define PRIuintX "llX"
+    #define BUILTIN_CLZ(X) __builtin_clzll(X)
 #else
     typedef uint32_t UInt;	///< Alias on the basic store unit.
     #define PRIuint "u"
     #define PRIuintX "X"
+    #define BUILTIN_CLZ(X) __builtin_clz(X)
 #endif
   #define PRIbuint_size_t "zu"
 #else
@@ -44,6 +46,7 @@
   typedef unsigned int UInt;	///< Alias on the basic store unit.
   #define PRIuint "u"
   #define PRIuintX "X"
+  #define BUILTIN_CLZ(X) __builtin_clz(X)
   #define PRIbuint_size_t "u"
 #endif  // USE_STD_TYPES
 
