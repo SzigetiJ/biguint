@@ -21,3 +21,12 @@ Initial version containing:
 * Improved interface: multiple, different parameter / return value passing to add method and some other methods.
 * BigIntXXX support (two's complement representation; functions for decimal IO, comparison)
 * Flexible build: the set of generated/build biguint types can be configured (see configure --help)
+
+2024.01.09. version 1.2.1, jszigeti
+-----------------------------------
+* BigDecimalXXX support (BigInt with precision).
+* Extended BigUIntXXX interface: new assignment functions (with _tiny suffix).
+* Fixed BigIntXXX division with signed values.
+* Improved performance: parse / print in decimal format, division.
+* Multiplication/division for special numbers.
+* Unified performance test utilities.

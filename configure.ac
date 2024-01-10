@@ -1,5 +1,5 @@
 AC_PREREQ([2.69])
-AC_INIT([biguint],[1.2.0])
+AC_INIT([biguint],[1.2.1])
 AM_INIT_AUTOMAKE
 AC_PROG_CC
 AC_PROG_RANLIB
