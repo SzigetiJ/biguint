@@ -385,6 +385,7 @@ BigUInt128 biguint128_rorv(const BigUInt128 a, const buint_size_t b);
 BigUInt128 biguint128_rolv(const BigUInt128 a, const buint_size_t b);
 
 buint_bool biguint128_ltv(const BigUInt128 a, const BigUInt128 b);
+buint_bool bigint128_ltv(const BigUInt128 a, const BigUInt128 b);
 buint_bool biguint128_eqv(const BigUInt128 a, const BigUInt128 b);
 buint_bool bigint128_ltzv(const BigUInt128 a);
 buint_bool biguint128_eqzv(const BigUInt128 a);

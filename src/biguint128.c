@@ -1082,6 +1082,10 @@ buint_bool biguint128_ltv(const BigUInt128 a, const BigUInt128 b) {
  return biguint128_lt(&a, &b);
 }
 
+buint_bool bigint128_ltv(const BigUInt128 a, const BigUInt128 b) {
+ return bigint128_lt(&a, &b);
+}
+
 buint_bool biguint128_eqv(const BigUInt128 a, const BigUInt128 b) {
  return biguint128_eq(&a, &b);
 }

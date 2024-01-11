@@ -126,7 +126,7 @@ bool test_import() {
  return pass;
 }
 
-bool test_export() {
+bool test_export(bool type) {
  BigUInt128 a = biguint128_ctor_default();
  for (unsigned int i=0; i < BIGUINT_SIZE; ++i) {
   ((char*)a.dat)[i]=(char)(i&0xFF);
@@ -134,8 +134,11 @@ bool test_export() {
 
  // test action phase
  char dump[BIGUINT_SIZE];
- buint_size_t result = biguint128_export(&a,dump);
-
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+ buint_size_t result = type?biguint128_export(&a,dump):biguint128_exportv(a,dump);
+#else
+ buint_size_t result = biguint128_export(&a,dump):
+#endif
  // check phase
  bool pass = result == BIGUINT_SIZE;
  pass&=check_dat_array("export", (UInt*)dump, a.dat);
@@ -152,8 +155,10 @@ int main(int argc, char **argv) {
  assert(test_ctor_uint(false, val_uint_n, val_uint, exp_fill_unsigned));
  assert(test_ctor_uint(true, val_uint_n, val_uint, exp_fill_signed));
  assert(test_import());
- assert(test_export());
-
+ assert(test_export(true));
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+ assert(test_export(false));
+#endif
  return 0;
 }
 

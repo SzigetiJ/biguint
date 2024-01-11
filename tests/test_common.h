@@ -15,6 +15,7 @@ typedef struct {
  size_t len;
 } CStr;
 #define STR(X) {X,sizeof(X)-1}
+#define ARRAYSIZE(X) (sizeof(X)/sizeof(X[0]))
 
 bool negate_strcpy(char *dest, size_t dest_size, const char *src, size_t src_len);
 

@@ -5,6 +5,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#define HEX_UINTLEN (2*sizeof(UInt))
+
 typedef struct {
  BigUInt128 a;
  BigUInt128 b;
@@ -13,12 +15,6 @@ typedef struct {
  BigUInt128 exp_res;
  buint_bool exp_c;
 } AdcSbcTestV;
-
-typedef struct {
- BigUInt128 a;
- bool is_inc;
- BigUInt128 exp_res;
-} IncDecTestV;
 
 const CStr hex_samples[][3] = {
  { STR("0"), STR("1"), STR("1")},
@@ -32,7 +28,7 @@ const CStr hex_samples[][3] = {
  { STR("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE"), STR("1"), STR("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF")},
  { STR("EFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"), STR("1"), STR("F000000000000000000000000000000000000000000000000000000000000000")}
 };
-int hex_sample_len = sizeof(hex_samples) / (sizeof(hex_samples[0]));
+int hex_sample_len = ARRAYSIZE(hex_samples);
 
 bool test_adcsbc_all() {
  bool fail=false;
@@ -79,39 +75,35 @@ bool test_adcsbc_all() {
 
 bool test_incdec0() {
  bool fail=false;
+ // init values
+ char auxhex[2][HEX_BIGUINTLEN+1]; // stores 'FFFF...FFFF' and 'FFFF...FFFE'
+ char uintmax[HEX_UINTLEN+1]; // stores 'FF..FF' (full uint)
+ char uintoflow[HEX_UINTLEN+2]; // stores '100..00' (full uint + 1)
 
-  BigUInt128 * (*fun[])(BigUInt128 *dest)={
-  biguint128_dec,
-  biguint128_inc
+ memset(auxhex[0],'F',HEX_BIGUINTLEN);
+ auxhex[0][HEX_BIGUINTLEN]=0;
+ memset(auxhex[1],'F',HEX_BIGUINTLEN);
+ auxhex[1][HEX_BIGUINTLEN-1]='E';
+ auxhex[1][HEX_BIGUINTLEN]=0;
+ memset(uintmax,'F', HEX_UINTLEN);
+ uintmax[HEX_UINTLEN]=0;
+ memset(uintoflow+1,'0',HEX_UINTLEN);
+ uintoflow[0]='1';
+ uintoflow[HEX_UINTLEN+1]=0;
+
+ CStr incsamples[][2]={
+  {STR(auxhex[1]), STR(auxhex[0])},
+  {STR(auxhex[0]), STR("0")},
+  {STR("0"),STR("1")},
+  {STR("1"),STR("2")},
+  {STR(uintmax),STR(uintoflow)}
  };
- const char *op[]={"--","++"};
 
- IncDecTestV tests[]={
-  {maxbutone,1,max},
-  {max,1,zero},
-  {zero,1,one},
-  {one,1,two},
-  {uintmax,1,uintoflow},
-
-  {max,0,maxbutone},
-  {zero,0,max},
-  {one,0,zero},
-  {two,0,one},
-  {uintoflow,0,uintmax}
- };
- int tests_num= sizeof(tests)/sizeof(tests[0]);
-
- for (int i= 0; i < tests_num; ++i) {
-  BigUInt128 *act_res;
-  BigUInt128 act_param = tests[i].a;
-  act_res=fun[tests[i].is_inc](&act_param);
-  if (!biguint128_eq(&tests[i].exp_res, &act_param) || act_res!=&act_param) {
-   fprintf_biguint128_unop_testresult(
-           stderr, &tests[i].a, &tests[i].exp_res, &act_param, op[tests[i].is_inc]);
-   fprintf(stderr,"returned expected: %p, actual: %p\n", (void*)&act_param, (void*)act_res);
-   fail = 1;
-  }
- }
+ unsigned int inc_params[]={0,1};
+ unsigned int dec_params[]={1,0};
+ // check
+ fail|=test_genfun(&incsamples[0][0], 2, ARRAYSIZE(incsamples), FMT_HEX, inc_params, XUFUN0A(biguint128_inc), "inc", NULL);
+ fail|=test_genfun(&incsamples[0][0], 2, ARRAYSIZE(incsamples), FMT_HEX, dec_params, XUFUN0A(biguint128_dec), "dec", NULL);
 
  return fail;
 }
@@ -121,19 +113,19 @@ int main() {
  unsigned int diff_params1[]={2,1,0};
  unsigned int diff_params2[]={2,0,1};
 
- assert(test_binop0(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, sum_params, biguint128_add, "+") == 0);
- assert(test_binop0(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params1, biguint128_sub, "-") == 0);
- assert(test_binop0(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params2, biguint128_sub, "-") == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, sum_params, XBFUN0(biguint128_add), "add", NULL) == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params1, XBFUN0(biguint128_sub), "sub", NULL) == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params2, XBFUN0(biguint128_sub), "sub", NULL) == 0);
 
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
- assert(test_binop0v(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, sum_params, biguint128_addv, "v+") == 0);
- assert(test_binop0v(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params1, biguint128_subv, "v-") == 0);
- assert(test_binop0v(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params2, biguint128_subv, "v-") == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, sum_params, XBFUN0V(biguint128_addv), "addv", NULL) == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params1, XBFUN0V(biguint128_subv), "subv", NULL) == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params2, XBFUN0V(biguint128_subv), "subv", NULL) == 0);
 #endif
 
- assert(test_binop0_assign(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, sum_params, biguint128_add_assign, "+=") == 0);
- assert(test_binop0_assign(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params1, biguint128_sub_assign, "-=") == 0);
- assert(test_binop0_assign(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params2, biguint128_sub_assign, "-=") == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, sum_params, XBFUN0A(biguint128_add_assign), "add_assign", NULL) == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params1, XBFUN0A(biguint128_sub_assign), "sub_assign", NULL) == 0);
+ assert(test_genfun(&hex_samples[0][0], 3, hex_sample_len, FMT_HEX, diff_params2, XBFUN0A(biguint128_sub_assign), "sub_assign", NULL) == 0);
 
  init_testvalues();
  assert(test_adcsbc_all() == 0);

@@ -4,11 +4,42 @@
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #define BIGUINT_BITS 128
 #define UINT_BITS (8*sizeof(UInt))
 #define PRINTBUFFER_LEN 80
 
+// Logical bitwise test data
+// A, B, A|B, A&B, A^B
+#define LSAMPLE_LEN 5U
+const CStr lsamples[][LSAMPLE_LEN] = {
+ {STR("FF0"), STR("F00F"), STR("FFFF"), STR("0"), STR("FFFF")},
+ {STR("FFF"), STR("F00F"), STR("FFFF"), STR("F"), STR("FFF0")},
+ {STR("3FFFFFFFFFFFFFFFF"), STR("5FFFFFFFFFFFFFFFF"), STR("7FFFFFFFFFFFFFFFF"), STR("1FFFFFFFFFFFFFFFF"), STR("60000000000000000")}
+};
+const unsigned int lsamples_n = sizeof (lsamples) / sizeof (lsamples[0]);
+
+// Shift test data
+
+#define SHSAMPLE_LEN 4U
+typedef struct {
+ buint_size_t bits_limit;
+ CStr dat[SHSAMPLE_LEN];
+} ShiftSample;
+const ShiftSample shsamples[] = {
+ {-1,
+  {STR("1"), STR("1"), STR("2"), STR("0")}},
+ {-1,
+  {STR("1"), STR("2"), STR("4"), STR("0")}},
+ {-1,
+  {STR("12345678"), STR("4"), STR("123456780"), STR("1234567")}},
+ {127+1,
+  {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"), STR("127"), STR("80000000000000000000000000000000"), STR("1")}},
+ {-1,
+  {STR("5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5"), STR("1"), STR("B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4B4A"), STR("2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2D2")}}
+};
+const unsigned int shsamples_n = sizeof (shsamples) / sizeof (shsamples[0]);
 
 static void print_fun1_error(const char *expr, const BigUInt128 *a, buint_size_t expected, buint_size_t actual) {
  char abuf[BIGUINT_BITS/4 + 1];
@@ -16,162 +47,8 @@ static void print_fun1_error(const char *expr, const BigUInt128 *a, buint_size_t
  fprintf(stderr, "%s(%s) -- expected: %"PRIbuint_size_t", actual: %"PRIbuint_size_t"\n", expr, abuf, expected, actual);
 }
 
-static void print_fun2_error(const char *expr, const char *a, const char *b, const char *expected, const BigUInt128 *actual) {
- char pbuffer[PRINTBUFFER_LEN];
- char buffer[HEX_BIGUINTLEN + 1];
- snprintf(pbuffer, PRINTBUFFER_LEN, "[%s] -- expected: [%%s], actual [%%s]\n", expr);
- buffer[biguint128_print_hex(actual, buffer, HEX_BIGUINTLEN)] = 0;
- fprintf(stderr, pbuffer, a, b, expected, buffer);
-}
-
 static void print_assign_ptr_error(const char *expr, const BigUInt128 *expected, const BigUInt128 *actual) {
  fprintf(stderr, "%s does not preserve pointer -- input parameter: %p, return value: %p\n", expr, (void*)expected, (void*)actual);
-}
-
-
-bool test_and_or_not0() {
- const CStr samples_a[]={
-  STR("0"),
-  STR("1"),
-  STR("7FFFFFFF"),
-  STR("100000000"),
-  STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5")
- };
- const unsigned int samples_a_len = sizeof(samples_a) / sizeof(samples_a[0]);
- const CStr samples_b[]={
-  STR("3"),
-  STR("300000000"),
-  STR("30000000000000000"),
-  STR("3000000000000000000000000")
- };
- const unsigned int samples_b_len = sizeof(samples_b) / sizeof(samples_b[0]);
-
- const CStr intersections[][4]={
-  {STR("0"),STR("0"),STR("0"),STR("0")},
-  {STR("1"),STR("0"),STR("0"),STR("0")},
-  {STR("3"),STR("0"),STR("0"),STR("0")},
-  {STR("0"),STR("100000000"),STR("0"),STR("0")},
-  {STR("1"),STR("100000000"),STR("10000000000000000"),STR("1000000000000000000000000")}
- };
- const CStr unions[][4]={
-  {STR("3"),STR("300000000"),STR("30000000000000000"),STR("3000000000000000000000000")},
-  {STR("3"),STR("300000001"),STR("30000000000000001"),STR("3000000000000000000000001")},
-  {STR("7FFFFFFF"),STR("37FFFFFFF"),STR("3000000007FFFFFFF"),STR("300000000000000007FFFFFFF")},
-  {STR("100000003"),STR("300000000"),STR("30000000100000000"),STR("3000000000000000100000000")},
-  {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A7"),STR("A5A5A5A5A5A5A5A5A5A5A5A7A5A5A5A5"),STR("A5A5A5A5A5A5A5A7A5A5A5A5A5A5A5A5"),STR("A5A5A5A7A5A5A5A5A5A5A5A5A5A5A5A5")}
- };
-
- const CStr sym_diffs[][4]={
-  {STR("3"),STR("300000000"),STR("30000000000000000"),STR("3000000000000000000000000")},
-  {STR("2"),STR("300000001"),STR("30000000000000001"),STR("3000000000000000000000001")},
-  {STR("7FFFFFFC"),STR("37FFFFFFF"),STR("3000000007FFFFFFF"),STR("300000000000000007FFFFFFF")},
-  {STR("100000003"),STR("200000000"),STR("30000000100000000"),STR("3000000000000000100000000")},
-  {STR("A5A5A5A5A5A5A5A5A5A5A5A5A5A5A5A6"),STR("A5A5A5A5A5A5A5A5A5A5A5A6A5A5A5A5"),STR("A5A5A5A5A5A5A5A6A5A5A5A5A5A5A5A5"),STR("A5A5A5A6A5A5A5A5A5A5A5A5A5A5A5A5")}
- };
-
- bool fail = false;
-
- for (unsigned int a_i = 0; a_i < samples_a_len; ++a_i) {
-  BigUInt128 a = biguint128_ctor_hexcstream(samples_a[a_i].str, samples_a[a_i].len);
-  BigUInt128 not_a = biguint128_not(&a);
-  for (unsigned int b_i = 0; b_i < samples_b_len; ++b_i) {
-   BigUInt128 b = biguint128_ctor_hexcstream(samples_b[b_i].str, samples_b[b_i].len);
-   BigUInt128 not_b = biguint128_not(&b);
-
-   BigUInt128 expected_and = biguint128_ctor_hexcstream(intersections[a_i][b_i].str, intersections[a_i][b_i].len);
-   BigUInt128 expected_or = biguint128_ctor_hexcstream(unions[a_i][b_i].str, unions[a_i][b_i].len);
-   BigUInt128 expected_xor = biguint128_ctor_hexcstream(sym_diffs[a_i][b_i].str, sym_diffs[a_i][b_i].len);
-
-
-   BigUInt128 result_and = biguint128_and(&a, &b);
-   BigUInt128 result_or = biguint128_or(&a, &b);
-   BigUInt128 tmp_or = biguint128_or(&not_a, &not_b);
-   BigUInt128 result_and2 = biguint128_not(&tmp_or);
-   BigUInt128 result_xor = biguint128_xor(&a, &b);
-
-   BigUInt128 obj_and_assign = biguint128_ctor_copy(&a);
-   BigUInt128 *res_and_assign = biguint128_and_assign(&obj_and_assign, &b);
-   BigUInt128 obj_or_assign = biguint128_ctor_copy(&a);
-   BigUInt128 *res_or_assign = biguint128_or_assign(&obj_or_assign, &b);
-   BigUInt128 obj_xor_assign = biguint128_ctor_copy(&a);
-   BigUInt128 *res_xor_assign = biguint128_xor_assign(&obj_xor_assign, &b);
-   BigUInt128 obj_not_assign = biguint128_ctor_copy(&tmp_or);
-   BigUInt128 *res_not_assign = biguint128_not_assign(&obj_not_assign);
-
-   buint_bool eq_and = biguint128_eq(&expected_and, &result_and);
-   buint_bool eq_and2 = biguint128_eq(&expected_and, &result_and2);
-   buint_bool eq_or = biguint128_eq(&expected_or, &result_or);
-   buint_bool eq_xor = biguint128_eq(&expected_xor, &result_xor);
-
-   buint_bool eq_and_assign = biguint128_eq(&expected_and, &obj_and_assign);
-   buint_bool eq2_and_assign = (res_and_assign == &obj_and_assign);
-   buint_bool eq_or_assign = biguint128_eq(&expected_or, &obj_or_assign);
-   buint_bool eq2_or_assign = (res_or_assign == &obj_or_assign);
-   buint_bool eq_xor_assign = biguint128_eq(&expected_xor, &obj_xor_assign);
-   buint_bool eq2_xor_assign = (res_xor_assign == &obj_xor_assign);
-   buint_bool eq_not_assign = biguint128_eq(&expected_and, &obj_not_assign);
-   buint_bool eq2_not_assign = (res_not_assign == &obj_not_assign);
-
-   if (!eq_and) {
-    print_fun2_error("%s & %s", samples_a[a_i].str, samples_b[b_i].str, intersections[a_i][b_i].str, &result_and);
-    fail = true;
-   }
-
-   if (!eq_and2) {
-    print_fun2_error("~(~%s | ~%s)", samples_a[a_i].str, samples_b[b_i].str, intersections[a_i][b_i].str, &result_and2);
-    fail = true;
-   }
-
-   if (!eq_or) {
-    print_fun2_error("%s | %s", samples_a[a_i].str, samples_b[b_i].str, unions[a_i][b_i].str, &result_or);
-    fail = true;
-   }
-
-   if (!eq_xor) {
-    print_fun2_error("%s ^ %s", samples_a[a_i].str, samples_b[b_i].str, sym_diffs[a_i][b_i].str, &result_xor);
-    fail = true;
-   }
-
-   if (!eq_and_assign) {
-    print_fun2_error("%s &= %s", samples_a[a_i].str, samples_b[b_i].str, intersections[a_i][b_i].str, &obj_and_assign);
-    fail = true;
-   }
-   if (!eq2_and_assign) {
-    print_assign_ptr_error("a &= b", &obj_and_assign, res_and_assign);
-    fail = true;
-   }
-
-   if (!eq_or_assign) {
-    print_fun2_error("%s |= %s", samples_a[a_i].str, samples_b[b_i].str, unions[a_i][b_i].str, &obj_or_assign);
-    fail = true;
-   }
-   if (!eq2_or_assign) {
-    print_assign_ptr_error("a |= b", &obj_or_assign, res_or_assign);
-    fail = true;
-   }
-
-   if (!eq_xor_assign) {
-    print_fun2_error("%s ^= %s", samples_a[a_i].str, samples_b[b_i].str, sym_diffs[a_i][b_i].str, &obj_xor_assign);
-    fail = true;
-   }
-   if (!eq2_xor_assign) {
-    print_assign_ptr_error("a ^= b", &obj_xor_assign, res_xor_assign);
-    fail = true;
-   }
-
-   if (!eq_not_assign) {
-    print_fun2_error("flip(~%s | ~%s)", samples_a[a_i].str, samples_b[b_i].str, intersections[a_i][b_i].str, &obj_not_assign);
-    fail = true;
-   }
-   if (!eq2_not_assign) {
-    print_assign_ptr_error("a = ~a", &obj_not_assign, res_not_assign);
-    fail = true;
-   }
-
-  }
- }
-
- return !fail;
 }
 
 bool test_gen_write_get0(bool clr) {
@@ -363,11 +240,103 @@ bool test_lzx_single_bit0() {
  return check_lzx(&a, 0, res_cell, 0, res_bit);
 }
 
-int main(int argc, char **argv) {
+static void create_rotated_(CStr *dst, char *buf, unsigned int buflen, const CStr src, buint_size_t shl) {
+ BigUInt128 a = biguint128_ctor_hexcstream(src.str, src.len);
+ BigUInt128 ahi = biguint128_shl(&a, shl);
+ BigUInt128 alo = biguint128_shr(&a, BIGUINT_BITS-shl);
+ BigUInt128 res = biguint128_or(&ahi, &alo);
+ buint_size_t len = biguint128_print_hex(&res, buf,buflen);
+ buf[len]=0;
+ dst->str = buf;
+ dst->len = len;
+}
+// checker
+static buint_bool check_tiny_(const GenArgU *aa, unsigned int n) {
+ return aa[1].sz < UINT_BITS;
+}
 
- assert(test_and_or_not0());
+// wrapper functions
+static BigUInt128 nandn_(const BigUInt128 *a, const BigUInt128 *b) {
+ BigUInt128 na = biguint128_not(a);
+ BigUInt128 nb = biguint128_not(b);
+ BigUInt128 naandnb = biguint128_and(&na,&nb);
+ return biguint128_not(&naandnb);
+};
+
+static BigUInt128 *notnot_asg_(BigUInt128 *a) {
+ return biguint128_not_assign(biguint128_not_assign(a));
+};
+
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+static BigUInt128 nandnv_(const BigUInt128 a, const BigUInt128 b) {
+ BigUInt128 na = biguint128_notv(a);
+ BigUInt128 nb = biguint128_notv(b);
+ BigUInt128 naandnb = biguint128_andv(na,nb);
+ return biguint128_notv(naandnb);
+};
+#endif
+
+int main() {
+ unsigned int or_params[]={0,1,2};
+ unsigned int and_params[]={0,1,3};
+ unsigned int xor_params[]={0,1,4};
+ unsigned int id_params[]={0,0};
+
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, and_params,XBFUN0(biguint128_and), "and", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, or_params, XBFUN0(biguint128_or), "or", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, xor_params, XBFUN0(biguint128_xor), "xor", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, or_params, XBFUN0(nandn_), "nandofnots", NULL) == 0);
+
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, and_params, XBFUN0V(biguint128_andv), "andv", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, or_params, XBFUN0V(biguint128_orv), "orv", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, xor_params, XBFUN0V(biguint128_xorv), "xorv", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, or_params, XBFUN0V(nandnv_), "nandofnotsv", NULL) == 0);
+#endif
+
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, and_params, XBFUN0A(biguint128_and_assign), "and_assign", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, or_params, XBFUN0A(biguint128_or_assign), "or_assign", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, xor_params, XBFUN0A(biguint128_xor_assign), "xor_assign", NULL) == 0);
+ assert(test_genfun(&lsamples[0][0], LSAMPLE_LEN, lsamples_n, FMT_HEX, id_params, XUFUN0A(notnot_asg_), "notnot_assign", NULL) == 0);
+
+// assert(test_and_or_not0());
  assert(test_gen_write_get0(false));
  assert(test_gen_write_get0(true));
+
+// *** SHIFT / ROTATE ***
+ unsigned int shl_params[] = {0, 1, 2};
+ unsigned int shr_params[] = {0, 1, 3};
+ unsigned int rol_params[] = {0, 1, 4};
+ unsigned int ror_params[] = {0, 1, 5};
+
+ CStr shxsamples[shsamples_n][6];
+ char rolbuffer[shsamples_n][HEX_BIGUINTLEN+1];
+ char rorbuffer[shsamples_n][HEX_BIGUINTLEN+1];
+ for (unsigned int i = 0; i < shsamples_n; ++i) {
+  for (unsigned int j = 0; j < SHSAMPLE_LEN; ++j) {
+   shxsamples[i][j] = shsamples[i].dat[j];
+  }
+  if (shsamples[i].bits_limit < BIGUINT_BITS) { // disable inputs if test suite exceeds size limit
+   shxsamples[i][0].len = 0;
+  }
+  unsigned int shift = atoi(shsamples[i].dat[1].str);
+  create_rotated_(&shxsamples[i][4], rolbuffer[i], HEX_BIGUINTLEN, shxsamples[i][0], shift);
+  create_rotated_(&shxsamples[i][5], rorbuffer[i], HEX_BIGUINTLEN, shxsamples[i][0], BIGUINT_BITS - shift);
+ }
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, shl_params, XBFUN1(biguint128_shl), "shl", NULL) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, shr_params, XBFUN1(biguint128_shr), "shr", NULL) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, rol_params, XBFUN1(biguint128_rol), "rol", NULL) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, ror_params, XBFUN1(biguint128_ror), "ror", NULL) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, shr_params, XBFUN1A(biguint128_shr_assign), "shr_assign", NULL) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, shl_params, XBFUN1A(biguint128_shl_tiny), "shl_tiny", check_tiny_) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, shr_params, XBFUN1A(biguint128_shr_tiny), "shr_tiny", check_tiny_) == 0);
+
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, shl_params, XBFUN1V(biguint128_shlv), "shlv", NULL) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, shr_params, XBFUN1V(biguint128_shrv), "shrv", NULL) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, rol_params, XBFUN1V(biguint128_rolv), "rolv", NULL) == 0);
+ assert(test_genfun(&shxsamples[0][0], 6, shsamples_n, FMT_HEX, ror_params, XBFUN1V(biguint128_rorv), "rorv", NULL) == 0);
+#endif
 
  assert(test_shiftrot0());
 
@@ -375,4 +344,3 @@ int main(int argc, char **argv) {
  assert(test_lzx_single_bit0());
  return 0;
 }
-
