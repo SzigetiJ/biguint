@@ -1,6 +1,15 @@
 #include "test_common128.h"
 #include "test_common.h"
 
+// maximum string length by format. If the length of the
+// input string is higher than this number, the parsing
+// can fail.
+static buint_size_t maxparselen[] = {
+ HEX_BIGUINTLEN,
+ DEC_BIGUINTLEN_LO,
+ DEC_BIGUINTLEN_LO
+};
+
 // Note: these values rely on add/sub functions.
 // They can be used only after basic add/del tests passed.
 BigUInt128 zero;
@@ -21,44 +30,25 @@ void init_testvalues() {
  maxbutone= biguint128_sub(&max, &one);
 }
 
-bool readhex_biguint128(BigUInt128 *result, const char* const hexstr, size_t hexlen) {
- if (hexlen == 0 || HEX_BIGUINTLEN < hexlen) {
+bool read_biguint128(BigUInt128 *result, const char* const str, size_t len, Format fmt) {
+ if (len == 0 || 2<fmt || maxparselen[fmt] < len) {
   return false;
  }
- *result = biguint128_ctor_hexcstream(hexstr, hexlen);
+ *result =
+   fmt==FMT_HEX?biguint128_ctor_hexcstream(str, len):
+   fmt==FMT_DEC?biguint128_ctor_deccstream(str, len):
+   bigint128_ctor_deccstream(str, len);
  return true;
 }
 
-bool readdec_bigint128(BigUInt128 *result, const char* const decstr, size_t declen) {
- if (declen == 0 || DEC_BIGINTLEN_HI < declen) {
-  return false;
- }
- *result = bigint128_ctor_deccstream(decstr, declen);
- return true;
+bool read_cstr_biguint128(BigUInt128 *result, const CStr* const a, Format fmt) {
+ return read_biguint128(result, a->str, a->len, fmt);
 }
 
-
-bool readhex_cstr_biguint128(BigUInt128 *result, const CStr* const hex) {
- return readhex_biguint128(result, hex->str, hex->len);
-}
-
-bool readdec_cstr_bigint128(BigUInt128 *result, const CStr* const dec) {
- return readdec_bigint128(result, dec->str, dec->len);
-}
-
-
-bool readhex_more_cstr_biguint128(BigUInt128 *result_arr, const CStr* const hex_arr, size_t num) {
+bool read_more_cstr_biguint128(BigUInt128 *result_arr, const CStr* const a_arr, size_t num, Format fmt) {
  bool retv = true;
  for (size_t i = 0; i < num; ++i) {
-  retv &= readhex_cstr_biguint128(result_arr + i, hex_arr + i);
- }
- return retv;
-}
-
-bool readdec_more_cstr_bigint128(BigUInt128 *result_arr, const CStr * const dec_arr, size_t num) {
- bool retv = true;
- for (size_t i = 0; i < num; ++i) {
-  retv &= readdec_cstr_bigint128(result_arr + i, dec_arr + i);
+  retv &= read_cstr_biguint128(result_arr + i, a_arr + i, fmt);
  }
  return retv;
 }
@@ -111,4 +101,108 @@ void fprintf_biguint128_genfun_testresult(FILE *out, const char *funname, int pa
    fprintf(out, "], actual [");
    print_numbers(out, resnum, actual, fmt);
    fprintf(out, "]\n");
+}
+
+void fprintf_biguint128_binop_testresult(FILE *out, BigUInt128 *op0, BigUInt128 *op1, BigUInt128 *expected, BigUInt128 *actual, const char *op_str) {
+ char buffer[4][HEX_BIGUINTLEN + 1];
+ BigUInt128 * v_refs[] = {op0, op1, expected, actual};
+ for (int j = 0; j < 4; ++j) {
+  buffer[j][biguint128_print_hex(v_refs[j], buffer[j], HEX_BIGUINTLEN)] = 0;
+ }
+ fprintf(out, "[%s %s %s] -- expected: [%s], actual [%s]\n", buffer[0], op_str, buffer[1], buffer[2], buffer[3]);
+}
+
+void fprintf_biguint128_unop_testresult(FILE *out, const BigUInt128 *op0, const BigUInt128 *expected, const BigUInt128 *actual, const char *op_str) {
+ char buffer[3][HEX_BIGUINTLEN + 1];
+ const BigUInt128 * v_refs[] = {op0, expected, actual};
+ for (int j = 0; j < 3; ++j) {
+  buffer[j][biguint128_print_hex(v_refs[j], buffer[j], HEX_BIGUINTLEN)] = 0;
+ }
+ fprintf(out, "[%s%s] -- expected: [%s], actual [%s]\n", op_str, buffer[0], buffer[1], buffer[2]);
+}
+
+int test_binop0(const CStr *samples, unsigned int sample_len, unsigned int sample_n, Format fmt, unsigned int *param_idx, BigUInt128BinaryFun fun, const char *op_str) {
+ int fail = 0;
+ for (int i = 0; i < sample_n; ++i) {
+  BigUInt128 result;
+  BigUInt128 values[3];
+  BigUInt128 *a = &values[param_idx[0]];
+  BigUInt128 *b = &values[param_idx[1]];
+  BigUInt128 *c = &values[param_idx[2]];
+
+  if (!read_more_cstr_biguint128(values, &samples[i * sample_len], 3, fmt)) {
+   continue;
+  }
+
+  // operation
+  result = fun(a, b);
+
+  // eval
+  buint_bool result_ok = biguint128_eq(c, &result);
+  if (!result_ok) {
+   fprintf_biguint128_binop_testresult(stderr, a, b, c, &result, op_str);
+   fail |= 1;
+  }
+ }
+
+ return fail;
+}
+
+int test_binop0_assign(const CStr *samples, unsigned int sample_len, unsigned int sample_n, Format fmt, unsigned int *param_idx, BigUInt128BinaryAsgnFun fun, const char *op_str) {
+ int fail = 0;
+ for (int i = 0; i < sample_n; ++i) {
+  BigUInt128 values[3];
+  BigUInt128 *a = &values[param_idx[0]];
+  BigUInt128 *b = &values[param_idx[1]];
+  BigUInt128 *c = &values[param_idx[2]];
+
+  if (!read_more_cstr_biguint128(values, &samples[i * sample_len], 3, fmt)) {
+   continue;
+  }
+
+  // operation
+  BigUInt128 acopy = biguint128_ctor_copy(a);
+  BigUInt128 *result = fun(&acopy, b);
+
+  // eval
+  buint_bool result_ok = biguint128_eq(c, result);
+  buint_bool retv_ok = (result == &acopy);
+  if (!result_ok) {
+   fprintf_biguint128_binop_testresult(stderr, a, b, c, result, op_str);
+   fail |= 1;
+  }
+  if (!retv_ok) {
+   fprintf(stderr, "Operation '%s' returned invalid pointer. Expected: %p, actual: %p\n", op_str,
+     (void*) &acopy, (void*) result);
+   fail |= 1;
+  }
+ }
+
+ return fail;
+}
+
+int test_binop0v(const CStr *samples, unsigned int sample_len, unsigned int sample_n, Format fmt, unsigned int *param_idx, BigUInt128BinaryVFun fun, const char *op_str) {
+ int fail = 0;
+ for (int i = 0; i < sample_n; ++i) {
+  BigUInt128 values[3];
+  BigUInt128 *a = &values[param_idx[0]];
+  BigUInt128 *b = &values[param_idx[1]];
+  BigUInt128 *c = &values[param_idx[2]];
+
+  if (!read_more_cstr_biguint128(values, &samples[i * sample_len], 3, fmt)) {
+   continue;
+  }
+
+  // operation
+  BigUInt128 result = fun(*a, *b);
+
+  // eval
+  buint_bool result_ok = biguint128_eq(c, &result);
+  if (!result_ok) {
+   fprintf_biguint128_binop_testresult(stderr, a, b, c, &result, op_str);
+   fail |= 1;
+  }
+ }
+
+ return fail;
 }

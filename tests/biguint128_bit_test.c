@@ -264,7 +264,7 @@ bool test_shiftrot0() {
  for (size_t vi= 0; vi < val_len; ++vi) {
   for (size_t si= 0; si < sh_len; ++si) {
    BigUInt128 a;
-   if (!readhex_cstr_biguint128(&a, &val_a[vi])) continue;
+   if (!read_cstr_biguint128(&a, &val_a[vi], FMT_HEX)) continue;
    BigUInt128 act_rol= biguint128_rol(&a, sh_a[si]);
    BigUInt128 act_ror= biguint128_ror(&a, sh_a[si]);
 

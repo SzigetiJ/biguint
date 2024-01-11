@@ -45,7 +45,7 @@ bool test_mul0() {
  bool fail = false;
  for (int i=0; i<hex_sample_len; ++i) {
   BigUInt128 val[3];
-  if (!readhex_more_cstr_biguint128(val, hex_samples[i],3)) {
+  if (!read_more_cstr_biguint128(val, hex_samples[i],3, FMT_HEX)) {
    continue;
   }
 
@@ -157,7 +157,7 @@ bool test_div0() {
 
  for (int i=0; i<hex_sample_len; ++i) {
   BigUInt128 val[3];
-  if (!readhex_more_cstr_biguint128(val, hex_samples[i],3)) {
+  if (!read_more_cstr_biguint128(val, hex_samples[i],3, FMT_HEX)) {
    continue;
   }
 
@@ -207,7 +207,7 @@ bool test_div1() {
   BigUInt128 val[3];
   BigUInt128 *a=&val[0];
   BigUInt128 *b=&val[2];
-  if (!readhex_more_cstr_biguint128(val, hex_samples[i], 3)) {
+  if (!read_more_cstr_biguint128(val, hex_samples[i], 3, FMT_HEX)) {
    continue;
   }
   if (biguint128_eq(a, &zero)) {
@@ -239,7 +239,7 @@ bool test_mul_signed0() {
  bool fail = false;
  for (int i=0; i<bigint_dec_sample_len; ++i) {
   BigUInt128 val[3];
-  if (!readdec_more_cstr_bigint128(val, bigint_dec_samples[i], 3)) {
+  if (!read_more_cstr_biguint128(val, bigint_dec_samples[i], 3, FMT_SDEC)) {
    continue;
   }
 
@@ -269,7 +269,7 @@ bool test_div_signed0() {
  bool fail = false;
  for (int i=0; i<bigint_dec_sample_len; ++i) {
   BigUInt128 val[5];
-  if (!readdec_more_cstr_bigint128(val, bigint_dec_samples[i], 5)) {
+  if (!read_more_cstr_biguint128(val, bigint_dec_samples[i], 5, FMT_SDEC)) {
    continue;
   }
 
@@ -295,7 +295,7 @@ bool test_div10_a() {
  bool fail = false;
  for (int i=0; i<div10_sample_len; ++i) {
   BigUInt128 val;
-  if (!readdec_more_cstr_bigint128(&val, &div10_sample[i], 1)) {
+  if (!read_more_cstr_biguint128(&val, &div10_sample[i], 1, FMT_SDEC)) {
    continue;
   }
   BigUIntPair128 expected = biguint128_div(&val, &divisor);
@@ -337,7 +337,7 @@ bool test_div3_a() {
  bool fail = false;
  for (int i=0; i<div10_sample_len; ++i) {
   BigUInt128 val;
-  if (!readdec_more_cstr_bigint128(&val, &div10_sample[i], 1)) {
+  if (!read_more_cstr_biguint128(&val, &div10_sample[i], 1, FMT_SDEC)) {
    continue;
   }
   BigUIntPair128 expected = biguint128_div(&val, &divisor);

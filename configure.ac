@@ -86,6 +86,15 @@ AM_COND_IF([EXTRA_BITLEN],
 )
 dnl ===SECTION EXTRABITLEN END===
 
+dnl ===SECTION PASS-BY-VALUE BEGIN===
+AC_ARG_ENABLE([pass-by-value],
+    AS_HELP_STRING([--disable-pass-by-value], [Do not generate function with parameters passed by value.]))
+
+if test "x$enable_pass_by_value" == xno; then
+ AC_DEFINE([WITHOUT_PASS_BY_VALUE_FUNCTIONS])
+fi
+dnl ===SECTION PASS-BY-VALUE END===
+
 AC_CONFIG_FILES([
   Makefile
   src/Makefile

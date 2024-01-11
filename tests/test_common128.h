@@ -24,11 +24,20 @@ extern BigUInt128 uintoflow;
 extern BigUInt128 max;
 extern BigUInt128 maxbutone;
 
+typedef BigUInt128 (*BigUInt128BinaryFun)(const BigUInt128 *a, const BigUInt128 *b);
+typedef BigUInt128* (*BigUInt128BinaryAsgnFun)(BigUInt128 *a, const BigUInt128 *b);
+typedef BigUInt128 (*BigUInt128BinaryVFun)(const BigUInt128 a, const BigUInt128 b);
+typedef union {
+ BigUInt128BinaryFun fun2;
+ BigUInt128BinaryAsgnFun fun2asg;
+ BigUInt128BinaryVFun fun2v;
+} BigUInt128BinFun;
+
 void init_testvalues();
-bool readhex_biguint128(BigUInt128 *result, const char * const hexstr, size_t hexlen);
-bool readhex_cstr_biguint128(BigUInt128 *result, const CStr * const hexstr);
-bool readhex_more_cstr_biguint128(BigUInt128 *result_arr, const CStr * const hex_arr, size_t num);
-bool readdec_more_cstr_bigint128(BigUInt128 *result_arr, const CStr * const dec_arr, size_t num);
+
+bool read_biguint128(BigUInt128 *result, const char* const str, size_t len, Format fmt);
+bool read_cstr_biguint128(BigUInt128 *result, const CStr* const a, Format fmt);
+bool read_more_cstr_biguint128(BigUInt128 *result_arr, const CStr* const hex_arr, size_t num, Format fmt);
 
 void fprint_funres_buint128_x_bsz_buint128(FILE *out, const char *funname, const BigUInt128 *a, buint_size_t b, const BigUInt128 *expected, const BigUInt128 *actual);
 void fprint_funres_buint128_x_bsz_bb(FILE *out, const char *funname, const BigUInt128 *a, buint_size_t b, buint_bool expected, buint_bool actual);
@@ -37,6 +46,13 @@ void fprintf_biguint128_genfun_testresult(
  int parnum, BigUInt128 *param,
  int resnum, BigUInt128 *expected, BigUInt128 *actual,
  Format fmt);
+
+void fprintf_biguint128_binop_testresult(FILE *out, BigUInt128 *op0, BigUInt128 *op1, BigUInt128 *expected, BigUInt128 *actual, const char *op_str);
+void fprintf_biguint128_unop_testresult(FILE *out, const BigUInt128 *op0, const BigUInt128 *expected, const BigUInt128 *actual, const char *op_str);
+
+int test_binop0(const CStr *samples, unsigned int sample_len, unsigned int sample_n, Format fmt, unsigned int *param_idx, BigUInt128BinaryFun fun, const char *op_str);
+int test_binop0_assign(const CStr *samples, unsigned int sample_len, unsigned int sample_n, Format fmt, unsigned int *param_idx, BigUInt128BinaryAsgnFun fun, const char *op_str);
+int test_binop0v(const CStr *samples, unsigned int sample_len, unsigned int sample_n, Format fmt, unsigned int *param_idx, BigUInt128BinaryVFun fun, const char *op_str);
 
 #endif /* TEST_COMMON128_H */
 

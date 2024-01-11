@@ -112,7 +112,7 @@ buint_size_t biguint128_import(BigUInt128 *dest, const char *src);
 
 // addition / subtraction
 /**
- @brief Addition with overflow.
+ @brief Addition with overflow. Parameters passed by reference.
 */
 BigUInt128 biguint128_add(const BigUInt128 *a, const BigUInt128 *b);
 
@@ -365,6 +365,36 @@ buint_size_t bigint128_print_dec(const BigUInt128 *a, char *buf, buint_size_t bu
  @return Number of written bytes.
 */
 buint_size_t biguint128_export(const BigUInt128 *a, char *dest);
+
+// Pass-by-value functions
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+BigUInt128 biguint128_addv(const BigUInt128 a, const BigUInt128 b);
+BigUInt128 biguint128_subv(const BigUInt128 a, const BigUInt128 b);
+BigUInt128 biguint128_mulv(const BigUInt128 a, const BigUInt128 b);
+BigUIntPair128 biguint128_divv(const BigUInt128 a, const BigUInt128 b);
+BigUIntPair128 bigint128_divv(const BigUInt128 a, const BigUInt128 b);
+
+BigUInt128 biguint128_andv(const BigUInt128 a, const BigUInt128 b);
+BigUInt128 biguint128_orv(const BigUInt128 a, const BigUInt128 b);
+BigUInt128 biguint128_xorv(const BigUInt128 a, const BigUInt128 b);
+BigUInt128 biguint128_notv(const BigUInt128 a);
+
+BigUInt128 biguint128_shrv(const BigUInt128 a, const buint_size_t b);
+BigUInt128 biguint128_shlv(const BigUInt128 a, const buint_size_t b);
+BigUInt128 biguint128_rorv(const BigUInt128 a, const buint_size_t b);
+BigUInt128 biguint128_rolv(const BigUInt128 a, const buint_size_t b);
+
+buint_bool biguint128_ltv(const BigUInt128 a, const BigUInt128 b);
+buint_bool biguint128_eqv(const BigUInt128 a, const BigUInt128 b);
+buint_bool bigint128_ltzv(const BigUInt128 a);
+buint_bool biguint128_eqzv(const BigUInt128 a);
+
+buint_size_t biguint128_print_hexv(const BigUInt128 a, char *buf, buint_size_t buf_len);
+buint_size_t biguint128_print_decv(const BigUInt128 a, char *buf, buint_size_t buf_len);
+buint_size_t bigint128_print_decv(const BigUInt128 a, char *buf, buint_size_t buf_len);
+buint_size_t biguint128_exportv(const BigUInt128 a, char *dest);
+#endif
+
 
 // Auxiliary divisions and multiplications by special numbers
 /**

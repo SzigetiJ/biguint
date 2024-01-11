@@ -1024,6 +1024,94 @@ buint_size_t biguint128_export(const BigUInt128 *a, char *dest) {
 }
 
 
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+
+BigUInt128 biguint128_addv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_add(&a, &b);
+}
+
+BigUInt128 biguint128_subv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_sub(&a, &b);
+}
+
+BigUInt128 biguint128_mulv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_mul(&a, &b);
+}
+
+BigUIntPair128 biguint128_divv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_div(&a, &b);
+}
+
+BigUIntPair128 bigint128_divv(const BigUInt128 a, const BigUInt128 b) {
+ return bigint128_div(&a, &b);
+}
+
+BigUInt128 biguint128_andv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_and(&a, &b);
+}
+
+BigUInt128 biguint128_orv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_or(&a, &b);
+}
+
+BigUInt128 biguint128_xorv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_xor(&a, &b);
+}
+
+BigUInt128 biguint128_notv(const BigUInt128 a) {
+ return biguint128_not(&a);
+}
+
+BigUInt128 biguint128_shrv(const BigUInt128 a, const buint_size_t b) {
+ return biguint128_shr(&a, b);
+}
+
+BigUInt128 biguint128_shlv(const BigUInt128 a, const buint_size_t b) {
+ return biguint128_shl(&a, b);
+}
+
+BigUInt128 biguint128_rorv(const BigUInt128 a, const buint_size_t b) {
+ return biguint128_ror(&a, b);
+}
+
+BigUInt128 biguint128_rolv(const BigUInt128 a, const buint_size_t b) {
+ return biguint128_rol(&a, b);
+}
+
+buint_bool biguint128_ltv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_lt(&a, &b);
+}
+
+buint_bool biguint128_eqv(const BigUInt128 a, const BigUInt128 b) {
+ return biguint128_eq(&a, &b);
+}
+
+buint_bool bigint128_ltzv(const BigUInt128 a) {
+ return bigint128_ltz(&a);
+}
+
+buint_bool biguint128_eqzv(const BigUInt128 a) {
+ return biguint128_eqz(&a);
+}
+
+buint_size_t biguint128_print_hexv(const BigUInt128 a, char *buf, buint_size_t buf_len) {
+ return biguint128_print_hex(&a, buf, buf_len);
+}
+
+buint_size_t biguint128_print_decv(const BigUInt128 a, char *buf, buint_size_t buf_len) {
+ return biguint128_print_dec(&a, buf, buf_len);
+}
+
+buint_size_t bigint128_print_decv(const BigUInt128 a, char *buf, buint_size_t buf_len) {
+ return bigint128_print_dec(&a, buf, buf_len);
+}
+
+buint_size_t biguint128_exportv(const BigUInt128 a, char *dest) {
+ return biguint128_export(&a, dest);
+}
+#endif
+
+
 // ### Section special DIV/MUL
 // #### Subsection MUL as combined SHL/ADD
 BigUInt128 biguint128_mul3(const BigUInt128 *a) {

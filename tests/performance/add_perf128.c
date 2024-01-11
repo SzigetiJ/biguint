@@ -22,7 +22,8 @@ typedef enum {
  FUN_SUB,
  FUN_SUB_ASGN,
  FUN_SUB_REPL,
- FUN_SUB_TINY
+ FUN_SUB_TINY,
+ FUN_ADDV
 } AdditiveFun;
 
 const char *funname[]={
@@ -34,6 +35,10 @@ const char *funname[]={
  "sub_assign",
  "sub_replace",
  "sub_tiny"
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+   ,
+ "addv"
+#endif
 };
 
 static unsigned int exec_function_loop_(unsigned int ai, unsigned int bi, unsigned int fun, const StandardArgs *args, UInt *chkval) {
@@ -41,7 +46,6 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int bi, unsign
  BigUInt128 b = get_value_by_level(bi, args->levels);
  BigUInt128 res;
  BigUInt128 *procref = (fun & 1) ? &a : &res; // note, every second function is an assignment operation
-
  for (unsigned int i = 0; i < args->loops; ++i) {
   if (!(fun & 4)) { // lower 4 functions
    if (fun == FUN_ADD) {
@@ -52,6 +56,10 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int bi, unsign
     biguint128_add_tiny(&a, b.dat[0]);
    } else if (fun == FUN_ADD_REPL) {
     biguint128_add_replace(&res, &a, &b);
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+   } else if (fun == FUN_ADDV) {
+    res = biguint128_addv(a,b);
+#endif
    }
   } else { // upper 4 functions
    if (fun == FUN_SUB) {
