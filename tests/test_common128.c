@@ -143,45 +143,48 @@ void fprintf_biguint128_genfun0_testresult(FILE *out, const char *funname, GenAr
    fprintf(out, "]\n");
 }
 
+#define FL_REL 1 // is relation
+#define FL_ASG 2 // is assignment
+#define FL_EXP 4 // is export
+#define FL_PAIR 8 // return pair
+
 typedef struct {
  unsigned int args;
  ArgType atypes[4];
- bool is_asg;
+ unsigned int flags;
 } FunProperties;
 
 FunProperties FUNPROP[]={
- {2, {BUINT_XROREF, BUINT_XVAL,   BUINT_VOID,    BUINT_VOID}, false},   // FUN_UN0
- {2, {BUINT_XRWREF, BUINT_XRWREF, BUINT_VOID,    BUINT_VOID}, true},    // FUN_UN0_ASG
- {3, {BUINT_XROREF, BUINT_XROREF, BUINT_XVAL,    BUINT_VOID}, false},   // FUN_BIN0
- {3, {BUINT_XRWREF, BUINT_XROREF, BUINT_XRWREF,  BUINT_VOID}, true},    // FUN_BIN0_ASG
- {3, {BUINT_XROREF, BUINT_TSIZE,  BUINT_XVAL,    BUINT_VOID}, false},   // FUN_BIN1
- {3, {BUINT_XRWREF, BUINT_TSIZE,  BUINT_XRWREF,  BUINT_VOID}, true},    // FUN_BIN1_ASG
- {4, {BUINT_XROREF, BUINT_CWOREF, BUINT_TSIZE,   BUINT_TSIZE}, true},   // FUN_TER0
- {2, {BUINT_XROREF, BUINT_TBOOL,  BUINT_VOID,    BUINT_VOID}, false},   // REL_UN0
- {3, {BUINT_XROREF, BUINT_XROREF, BUINT_TBOOL,   BUINT_VOID}, false},   // REL_BIN0
+ {2, {BUINT_XROREF, BUINT_XVAL,   BUINT_VOID,    BUINT_VOID}, 0},        // FUN_UN0
+ {2, {BUINT_XRWREF, BUINT_XRWREF, BUINT_VOID,    BUINT_VOID}, FL_ASG},   // FUN_UN0_ASG
+ {3, {BUINT_XROREF, BUINT_XROREF, BUINT_XVAL,    BUINT_VOID}, 0},        // FUN_BIN0
+ {3, {BUINT_XRWREF, BUINT_XROREF, BUINT_XRWREF,  BUINT_VOID}, FL_ASG},   // FUN_BIN0_ASG
+ {3, {BUINT_XROREF, BUINT_TSIZE,  BUINT_XVAL,    BUINT_VOID}, 0},        // FUN_BIN1
+ {3, {BUINT_XRWREF, BUINT_TSIZE,  BUINT_XRWREF,  BUINT_VOID}, FL_ASG},   // FUN_BIN1_ASG
+ {4, {BUINT_XROREF, BUINT_XROREF, BUINT_XVAL,    BUINT_XVAL}, FL_PAIR},  // FUN_BIN3
+ {4, {BUINT_XROREF, BUINT_CWOREF, BUINT_TSIZE,   BUINT_TSIZE}, FL_EXP},  // FUN_TER0
+ {2, {BUINT_XROREF, BUINT_TBOOL,  BUINT_VOID,    BUINT_VOID}, FL_REL},   // REL_UN0
+ {3, {BUINT_XROREF, BUINT_XROREF, BUINT_TBOOL,   BUINT_VOID}, FL_REL},   // REL_BIN0
 
- {3, {BUINT_XVAL,   BUINT_XVAL,   BUINT_XVAL,    BUINT_VOID}, false},  // FUN_BIN0V
- {3, {BUINT_XVAL,   BUINT_TSIZE,  BUINT_XVAL,    BUINT_VOID}, false},  // FUN_BIN1V
- {4, {BUINT_XROREF, BUINT_CWOREF, BUINT_TSIZE,   BUINT_TSIZE}, true},  // FUN_TER0V
- {2, {BUINT_XVAL,   BUINT_TBOOL,  BUINT_VOID,    BUINT_VOID}, false},  // REL_UN0V
- {3, {BUINT_XVAL,   BUINT_XVAL,   BUINT_TBOOL,   BUINT_VOID}, false}   // REL_BIN0V
+ {3, {BUINT_XVAL,   BUINT_XVAL,   BUINT_XVAL,    BUINT_VOID}, 0},        // FUN_BIN0V
+ {3, {BUINT_XVAL,   BUINT_TSIZE,  BUINT_XVAL,    BUINT_VOID}, 0},        // FUN_BIN1V
+ {4, {BUINT_XVAL,   BUINT_XVAL,   BUINT_XVAL,    BUINT_XVAL}, FL_PAIR},  // FUN_BIN3V
+ {4, {BUINT_XROREF, BUINT_CWOREF, BUINT_TSIZE,   BUINT_TSIZE}, FL_EXP},  // FUN_TER0V
+ {2, {BUINT_XVAL,   BUINT_TBOOL,  BUINT_VOID,    BUINT_VOID}, FL_REL},   // REL_UN0V
+ {3, {BUINT_XVAL,   BUINT_XVAL,   BUINT_TBOOL,   BUINT_VOID}, FL_REL}    // REL_BIN0V
 };
-
-static inline bool is_rel(BigUInt128FunType t) {
- return t==REL_UN0 || t==REL_UN0V || t==REL_BIN0 || t==REL_BIN0V;
-}
-static inline bool is_export(BigUInt128FunType t) {
- return t==FUN_TER0 || t==FUN_TER0V;
-}
 
 int test_genfun(const CStr *samples, unsigned int sample_width, unsigned int sample_n, Format fmt, const unsigned int *param_idx, BigUInt128GenFun fun, const char *funname, ParamRelation param_valid) {
  int fail = 0;
  FunProperties prop = FUNPROP[fun.t];
+ unsigned int retv_n = prop.flags & FL_PAIR ? 2 : 1;
  for (int i = 0; i < sample_n; ++i) {
   GenArgU result;
+  BigUIntPair128 resultp; // exceptional case: function is returning a pair
   GenArgU values[5];
   GenArgU *expected = &values[prop.args - 1];
-  char buffer[2*DEC_BIGINTLEN_HI+10]; // big enough buffer
+  GenArgU *expected_aux = &values[prop.args - retv_n];
+  char buffer[2 * DEC_BIGINTLEN_HI + 10]; // big enough buffer
   if (!read_more_cstr_genarg(values, &samples[i * sample_width], param_idx, prop.args, prop.atypes, fmt)) {
    continue;
   }
@@ -210,6 +213,9 @@ int test_genfun(const CStr *samples, unsigned int sample_width, unsigned int sam
     values[prop.args].x = values[0].x;
     result.xptr = fun.u.bfun1_asg(&values[prop.args].x, values[1].sz);
     break;
+   case FUN_BIN3:
+    resultp = fun.u.bfun3(&values[0].x, &values[1].x);
+    break;
    case FUN_TER0:
     result.sz = fun.u.tfun(&values[0].x, buffer, values[2].sz);
     break;
@@ -225,6 +231,9 @@ int test_genfun(const CStr *samples, unsigned int sample_width, unsigned int sam
    case FUN_BIN1V:
     result.x = fun.u.bfun1v(values[0].x, values[1].sz);
     break;
+   case FUN_BIN3V:
+    resultp = fun.u.bfun3v(values[0].x, values[1].x);
+    break;
    case FUN_TER0V:
     result.sz = fun.u.tfunv(values[0].x, buffer, values[2].sz);
     break;
@@ -237,15 +246,19 @@ int test_genfun(const CStr *samples, unsigned int sample_width, unsigned int sam
   }
 
   // eval
-  if (!prop.is_asg) {
-   buint_bool result_ok = is_rel(fun.t)?
-    !!expected->b == !!result.b:
-    biguint128_eq(&expected->x, &result.x);
+  if (prop.flags & FL_ASG) {
+   buint_bool result_ok = biguint128_eq(&expected->x, &values[prop.args].x);
+   bool retv_ok = (result.xptr == &values[prop.args].x);
    if (!result_ok) {
-    fprintf_biguint128_genfun0_testresult(stderr, funname, values, &result, values + (prop.args - 1), prop.args - 1, prop.atypes, 1, prop.atypes + (prop.args - 1), fmt);
+    fprintf_biguint128_genfun0_testresult(stderr, funname, values, &values[prop.args], values + (prop.args - 1), prop.args - 1, prop.atypes, 1, prop.atypes + (prop.args - 1), fmt);
     fail |= 1;
    }
-  } else if (is_export(fun.t)) {
+   if (!retv_ok) {
+    fprintf(stderr, "Operation '%s' returned invalid pointer. Expected: %p, actual: %p\n", funname,
+      (void*) &values[prop.args].x, (void*) result.xptr);
+    fail |= 1;
+   }
+  } else if (prop.flags & FL_EXP) {
    bool result_ok = (strncmp(buffer, values[1].str, result.sz) == 0);
    bool retv_ok = (result.sz == values[prop.args-1].sz);
    if (!result_ok) {
@@ -260,17 +273,17 @@ int test_genfun(const CStr *samples, unsigned int sample_width, unsigned int sam
     fail |= 1;
    }
   } else {
-   buint_bool result_ok = biguint128_eq(&expected->x, &values[prop.args].x);
-   bool retv_ok = (result.xptr == &values[prop.args].x);
+   buint_bool result_ok =
+     (prop.flags & FL_REL) ? !!expected->b == !!result.b :
+     (prop.flags & FL_PAIR) ? (biguint128_eq(&expected_aux->x, &resultp.first) && biguint128_eq(&expected->x, &resultp.second)) :
+     biguint128_eq(&expected->x, &result.x);
    if (!result_ok) {
-    fprintf_biguint128_genfun0_testresult(stderr, funname, values, &values[prop.args], values + (prop.args - 1), prop.args - 1, prop.atypes, 1, prop.atypes + (prop.args - 1), fmt);
+    GenArgU res_gen[] = {{.x = resultp.first}, {.x = resultp.second}};
+    if (!(prop.flags & FL_PAIR)) res_gen[0] = result;
+    fprintf_biguint128_genfun0_testresult(stderr, funname, values, res_gen, values + (prop.args - retv_n), prop.args - retv_n, prop.atypes, retv_n, prop.atypes + (prop.args - retv_n), fmt);
     fail |= 1;
    }
-   if (!retv_ok) {
-    fprintf(stderr, "Operation '%s' returned invalid pointer. Expected: %p, actual: %p\n", funname,
-      (void*) &values[prop.args].x, (void*) result.xptr);
-    fail |= 1;
-   }
+
   }
  }
 

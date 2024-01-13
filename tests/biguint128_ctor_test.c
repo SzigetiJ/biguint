@@ -145,8 +145,7 @@ bool test_export(bool type) {
  return pass;
 }
 
-
-int main(int argc, char **argv) {
+int main() {
 
  assert(test_ctor_default());
  assert(test_ctor_unit());
@@ -161,4 +160,3 @@ int main(int argc, char **argv) {
 #endif
  return 0;
 }
-

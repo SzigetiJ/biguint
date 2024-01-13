@@ -59,6 +59,7 @@ typedef BigUInt128* (*BigUInt128BinaryAsgFun)(BigUInt128 *a, const BigUInt128 *b
 typedef BigUInt128 (*BigUInt128BinaryFun1)(const BigUInt128 *a, const buint_size_t b);
 typedef BigUInt128* (*BigUInt128BinaryAsgFun1)(BigUInt128 *a, const buint_size_t b);
 typedef buint_size_t (*BigUInt128BinaryFun2)(const BigUInt128 *a, char *b);
+typedef BigUIntPair128 (*BigUInt128BinaryFun3)(const BigUInt128 *a, const BigUInt128 *b);
 
 typedef buint_size_t (*BigUInt128TernaryFun)(const BigUInt128 *a, char *b, buint_size_t c);
 
@@ -68,6 +69,7 @@ typedef buint_bool (*BigUInt128BinaryRel)(const BigUInt128 *a, const BigUInt128 
 typedef BigUInt128 (*BigUInt128BinaryVFun)(const BigUInt128 a, const BigUInt128 b);
 typedef BigUInt128 (*BigUInt128BinaryVFun1)(const BigUInt128 a, const buint_size_t b);
 typedef buint_size_t (*BigUInt128BinaryVFun2)(const BigUInt128 a, char *b);
+typedef BigUIntPair128 (*BigUInt128BinaryVFun3)(const BigUInt128 a, const BigUInt128 b);
 
 typedef buint_size_t (*BigUInt128TernaryVFun)(const BigUInt128 a, char *b, buint_size_t c);
 
@@ -83,12 +85,14 @@ typedef union {
  BigUInt128BinaryAsgFun bfun_asg;
  BigUInt128BinaryFun1 bfun1;
  BigUInt128BinaryAsgFun1 bfun1_asg;
+ BigUInt128BinaryFun3 bfun3;
  BigUInt128TernaryFun tfun;
  BigUInt128UnaryRel urel;
  BigUInt128BinaryRel brel;
 
  BigUInt128BinaryVFun bfunv;
  BigUInt128BinaryVFun1 bfun1v;
+ BigUInt128BinaryVFun3 bfun3v;
  BigUInt128TernaryVFun tfunv;
  BigUInt128UnaryVRel urelv;
  BigUInt128BinaryVRel brelv;
@@ -101,12 +105,14 @@ typedef enum {
  FUN_BIN0_ASG,
  FUN_BIN1,
  FUN_BIN1_ASG,
+ FUN_BIN3,
  FUN_TER0,
  REL_UN0,
  REL_BIN0,
 
  FUN_BIN0V,
  FUN_BIN1V,
+ FUN_BIN3V,
  FUN_TER0V,
  REL_UN0V,
  REL_BIN0V
@@ -123,11 +129,13 @@ typedef struct {
 #define XBFUN0A(X) (BigUInt128GenFun){FUN_BIN0_ASG, {.bfun_asg=X}}
 #define XBFUN1(X) (BigUInt128GenFun){FUN_BIN1, {.bfun1=X}}
 #define XBFUN1A(X) (BigUInt128GenFun){FUN_BIN1_ASG, {.bfun1_asg=X}}
+#define XBFUN3(X) (BigUInt128GenFun){FUN_BIN3, {.bfun3=X}}
 #define XTFUN0(X) (BigUInt128GenFun){FUN_TER0, {.tfun=X}}
 #define XUREL0(X) (BigUInt128GenFun){REL_UN0, {.urel=X}}
 #define XBREL0(X) (BigUInt128GenFun){REL_BIN0, {.brel=X}}
 #define XBFUN0V(X) (BigUInt128GenFun){FUN_BIN0V, {.bfunv=X}}
 #define XBFUN1V(X) (BigUInt128GenFun){FUN_BIN1V, {.bfun1v=X}}
+#define XBFUN3V(X) (BigUInt128GenFun){FUN_BIN3V, {.bfun3v=X}}
 #define XTFUN0V(X) (BigUInt128GenFun){FUN_TER0V, {.tfunv=X}}
 #define XUREL0V(X) (BigUInt128GenFun){REL_UN0V, {.urelv=X}}
 #define XBREL0V(X) (BigUInt128GenFun){REL_BIN0V, {.brelv=X}}

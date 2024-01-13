@@ -182,6 +182,7 @@ bool test_div3_a() {
  return !fail;
 }
 
+// filters
 static buint_bool check_divisor_(const GenArgU *aa, unsigned int n) {
  return !biguint128_eqz(&aa[1].x);
 }
@@ -190,77 +191,26 @@ static buint_bool check_altb_(const GenArgU *aa, unsigned int n) {
  return biguint128_lt(&aa[0].x, &aa[1].x);
 }
 
-// wrapper functions
-static BigUInt128 div_(const BigUInt128 *a, const BigUInt128 *b) {
- return biguint128_div(a, b).first;
-}
-
-static BigUInt128 mod_(const BigUInt128 *a, const BigUInt128 *b) {
- return biguint128_div(a, b).second;
-}
-
-static BigUInt128 idiv_(const BigUInt128 *a, const BigUInt128 *b) {
- return bigint128_div(a, b).first;
-}
-
-static BigUInt128 imod_(const BigUInt128 *a, const BigUInt128 *b) {
- return bigint128_div(a, b).second;
-}
-
-static BigUInt128 dmul_hi_(const BigUInt128 *a, const BigUInt128 *b) {
- return biguint128_dmul(a, b).second;
-}
-
-static BigUInt128 dmul_lo_(const BigUInt128 *a, const BigUInt128 *b) {
- return biguint128_dmul(a, b).first;
-}
-
-#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
-static BigUInt128 divv_(const BigUInt128 a, const BigUInt128 b) {
- return biguint128_divv(a, b).first;
-}
-
-static BigUInt128 modv_(const BigUInt128 a, const BigUInt128 b) {
- return biguint128_divv(a, b).second;
-}
-
-static BigUInt128 idivv_(const BigUInt128 a, const BigUInt128 b) {
- return bigint128_divv(a, b).first;
-}
-
-static BigUInt128 imodv_(const BigUInt128 a, const BigUInt128 b) {
- return bigint128_divv(a, b).second;
-}
-#endif
-
 int main(int argc, char **argv) {
 
  init_testvalues();
 
  {
   unsigned int mul_params[] = {0, 1, 2};
-  unsigned int dmul_hi_params[] = {0, 1, 3};
-  unsigned int div_params1[] = {2, 1, 0};
-  unsigned int mod_params1[] = {2, 1, 3};
-  unsigned int div_params2[] = {2, 0, 1};
-  unsigned int mod_params2[] = {2, 0, 3};
-  unsigned int div_params3[] = {0, 2, 3};
-  unsigned int mod_params3[] = {0, 2, 0};
+  unsigned int dmul_params[] = {0, 1, 2, 3};
+  unsigned int div_params1[] = {2, 1, 0, 3};
+  unsigned int div_params2[] = {2, 0, 1, 3};
+  unsigned int div_params3[] = {0, 2, 3, 0};
 
   assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mul_params, XBFUN0(biguint128_mul), "mul", NULL) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, dmul_hi_params, XBFUN0(dmul_hi_), "dmul.hi", NULL) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mul_params, XBFUN0(dmul_lo_), "dmul.lo", NULL) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params1, XBFUN0(div_), "div", check_divisor_) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mod_params1, XBFUN0(mod_), "mod", check_divisor_) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params2, XBFUN0(div_), "div", check_divisor_) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mod_params2, XBFUN0(mod_), "mod", check_divisor_) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params3, XBFUN0(div_), "div", check_altb_) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mod_params3, XBFUN0(mod_), "mod", check_altb_) == 0);
+  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, dmul_params, XBFUN3(biguint128_dmul), "dmul", NULL) == 0);
+  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params1, XBFUN3(biguint128_div), "div", check_divisor_) == 0);
+  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params2, XBFUN3(biguint128_div), "div", check_divisor_) == 0);
+  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params3, XBFUN3(biguint128_div), "div", check_altb_) == 0);
 
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
   assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mul_params, XBFUN0V(biguint128_mulv), "mulv", NULL) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params1, XBFUN0V(divv_), "divv", check_divisor_) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mod_params1, XBFUN0V(modv_), "modv", check_divisor_) == 0);
+  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params1, XBFUN3V(biguint128_divv), "divv", check_divisor_) == 0);
 #endif
  }
 
@@ -271,15 +221,12 @@ int main(int argc, char **argv) {
 
  {
   unsigned int mul_params[] = {0, 1, 2};
-  unsigned int div_params[] = {3, 1, 0};
-  unsigned int mod_params[] = {3, 1, 4};
+  unsigned int div_params[] = {3, 1, 0, 4};
   assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, mul_params, XBFUN0(biguint128_mul), "imul", NULL) == 0);
-  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, div_params, XBFUN0(idiv_), "idiv", check_divisor_) == 0);
-  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, mod_params, XBFUN0(imod_), "imod", check_divisor_) == 0);
+  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, div_params, XBFUN3(bigint128_div), "idiv", check_divisor_) == 0);
 
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
-  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, div_params, XBFUN0V(idivv_), "idivv", check_divisor_) == 0);
-  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, mod_params, XBFUN0V(imodv_), "imodv", check_divisor_) == 0);
+  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, div_params, XBFUN3V(bigint128_divv), "idivv", check_divisor_) == 0);
 #endif
  }
 
