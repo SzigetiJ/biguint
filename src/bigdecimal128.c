@@ -208,6 +208,9 @@ buint_bool bigdecimal128_eq(const BigDecimal128 *a, const BigDecimal128 *b) {
 }
 
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+BigDecimal128 bigdecimal128_ctor_precv(const BigDecimal128 a, UInt prec) {
+ return bigdecimal128_ctor_prec(&a, prec);
+}
 BigDecimal128 bigdecimal128_addv(const BigDecimal128 a, const BigDecimal128 b) {
  return bigdecimal128_add(&a, &b);
 }

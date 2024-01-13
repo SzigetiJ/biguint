@@ -113,6 +113,7 @@ buint_size_t bigdecimal128_print(const BigDecimal128 *a, char *buf, buint_size_t
 
 // Pass-by-value functions
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+BigDecimal128 bigdecimal128_ctor_precv(const BigDecimal128 a, UInt prec);
 BigDecimal128 bigdecimal128_addv(const BigDecimal128 a, const BigDecimal128 b);
 BigDecimal128 bigdecimal128_subv(const BigDecimal128 a, const BigDecimal128 b);
 BigDecimal128 bigdecimal128_mulv(const BigDecimal128 a, const BigDecimal128 b);

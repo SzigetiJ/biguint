@@ -190,11 +190,11 @@ static BigUInt128 nandn_(const BigUInt128 *a, const BigUInt128 *b) {
  BigUInt128 nb = biguint128_not(b);
  BigUInt128 naandnb = biguint128_and(&na,&nb);
  return biguint128_not(&naandnb);
-};
+}
 
 static BigUInt128 *notnot_asg_(BigUInt128 *a) {
  return biguint128_not_assign(biguint128_not_assign(a));
-};
+}
 
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
 static BigUInt128 nandnv_(const BigUInt128 a, const BigUInt128 b) {
@@ -202,7 +202,7 @@ static BigUInt128 nandnv_(const BigUInt128 a, const BigUInt128 b) {
  BigUInt128 nb = biguint128_notv(b);
  BigUInt128 naandnb = biguint128_andv(na,nb);
  return biguint128_notv(naandnb);
-};
+}
 #endif
 
 int main() {

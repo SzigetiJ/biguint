@@ -11,6 +11,7 @@ TESTS = \
 	bigdecimal128_add_test \
 	bigdecimal128_mul_test \
 	bigdecimal128_eq_test \
+	bigdecimal128_pval_test \
 	bigdecimal128_prec_test
 
 check_PROGRAMS = $(TESTS)

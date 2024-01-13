@@ -109,7 +109,7 @@ static inline void print_gennums(FILE *out, const GenArgU *nums, unsigned int nu
   fmt == FMT_SDEC?bigint128_print_dec :
   NULL;
   char buf[DEC_BIGINTLEN_HI + 1];
- for (int i=0; i<num_n; ++i) {
+ for (unsigned int i=0; i<num_n; ++i) {
   if (i!=0) fprintf(out, ", ");
   if (numt[i] == BUINT_XROREF || numt[i] == BUINT_XRWREF || numt[i] == BUINT_XVAL) {
    buf[fun(&nums[i].x, buf, DEC_BIGINTLEN_HI)]=0;
@@ -169,7 +169,7 @@ int test_genfun(const CStr *samples, unsigned int sample_width, unsigned int sam
  int fail = 0;
  FunProperties prop = FUNPROP[fun.t];
  unsigned int retv_n = prop.flags & FL_PAIR ? 2 : 1;
- for (int i = 0; i < sample_n; ++i) {
+ for (unsigned int i = 0; i < sample_n; ++i) {
   GenArgU result;
   BigUIntPair128 resultp; // exceptional case: function is returning a pair
   GenArgU values[5];

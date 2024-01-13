@@ -73,9 +73,9 @@ bool test_ctor_standard() {
 bool test_ctor_uint(bool fun_signed, size_t len, UInt *tin, UInt *fillexp) {
  UInt expected[BIGUINT_CELLS];
  bool pass = true;
- for (int j = 0; j < len; ++j) {
+ for (unsigned int j = 0; j < len; ++j) {
   expected[0] = tin[j];
-  for (int i=1; i < BIGUINT_CELLS; ++i) {
+  for (unsigned int i=1; i < BIGUINT_CELLS; ++i) {
    expected[i]=fillexp[j];
   }
 
@@ -137,7 +137,7 @@ bool test_export(bool type) {
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
  buint_size_t result = type?biguint128_export(&a,dump):biguint128_exportv(a,dump);
 #else
- buint_size_t result = biguint128_export(&a,dump):
+ buint_size_t result = biguint128_export(&a,dump);
 #endif
  // check phase
  bool pass = result == BIGUINT_SIZE;

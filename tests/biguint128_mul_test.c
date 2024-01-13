@@ -116,7 +116,7 @@ bool test_dmul0() {
 bool test_div10_a() {
  BigUInt128 divisor = biguint128_value_of_uint(10U);
  bool fail = false;
- for (int i = 0; i < div10_sample_len; ++i) {
+ for (unsigned int i = 0; i < div10_sample_len; ++i) {
   BigUInt128 val;
   if (!read_more_cstr_biguint128(&val, &div10_sample[i], std_idx, 1, FMT_SDEC)) {
    continue;
@@ -158,7 +158,7 @@ bool test_div10_a() {
 bool test_div3_a() {
  BigUInt128 divisor = biguint128_value_of_uint(3U);
  bool fail = false;
- for (int i = 0; i < div10_sample_len; ++i) {
+ for (unsigned int i = 0; i < div10_sample_len; ++i) {
   BigUInt128 val;
   if (!read_more_cstr_biguint128(&val, &div10_sample[i], std_idx, 1, FMT_SDEC)) {
    continue;

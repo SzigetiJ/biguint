@@ -17,7 +17,7 @@ LDFLAGS=-fprofile-arcs -ftest-coverage
 
 TEST_X0 = ctor io eq bit add mul
 TEST_X1 = intio uint
-TEST_Y0 = io prec add mul eq
+TEST_Y0 = io prec add mul eq pval
 
 INFO_FILE=biguint.info
 HTML_DIR=html
