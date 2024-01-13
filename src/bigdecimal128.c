@@ -207,3 +207,26 @@ buint_bool bigdecimal128_eq(const BigDecimal128 *a, const BigDecimal128 *b) {
  return biguint128_eq(&cp.a.val, &cp.b.val);
 }
 
+#ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
+BigDecimal128 bigdecimal128_addv(const BigDecimal128 a, const BigDecimal128 b) {
+ return bigdecimal128_add(&a, &b);
+}
+BigDecimal128 bigdecimal128_subv(const BigDecimal128 a, const BigDecimal128 b) {
+ return bigdecimal128_sub(&a, &b);
+}
+BigDecimal128 bigdecimal128_mulv(const BigDecimal128 a, const BigDecimal128 b) {
+ return bigdecimal128_mul(&a, &b);
+}
+BigDecimal128 bigdecimal128_divv(const BigDecimal128 a, const BigDecimal128 b, UInt prec) {
+ return bigdecimal128_div(&a, &b, prec);
+}
+buint_bool bigdecimal128_ltv(const BigDecimal128 a, const BigDecimal128 b) {
+ return bigdecimal128_lt(&a, &b);
+}
+buint_bool bigdecimal128_eqv(const BigDecimal128 a, const BigDecimal128 b) {
+ return bigdecimal128_eq(&a, &b);
+}
+buint_size_t bigdecimal128_printv(const BigDecimal128 a, char *buf, buint_size_t buf_len) {
+ return bigdecimal128_print(&a, buf, buf_len);
+}
+#endif
