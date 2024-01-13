@@ -8,8 +8,9 @@
 
 const unsigned int std_idx[] = {0, 1, 2, 3, 4};
 
+#define HEXSAMPLES_W 4U
 // [0]: a, [1]: b, [2]: a*b, [3]: (a*b)%a
-const CStr hex_samples[][4] = {
+const CStr hex_samples[][HEXSAMPLES_W] = {
  { STR("0"), STR("1"), STR("0"), STR("0")},
  { STR("1"), STR("1"), STR("1"), STR("0")},
  { STR("1"), STR("FFFFFFFF"), STR("FFFFFFFF"), STR("0")},
@@ -18,14 +19,15 @@ const CStr hex_samples[][4] = {
  { STR("100000001"), STR("200000001"), STR("20000000300000001"), STR("0")},
  { STR("400000005"), STR("600000003"), STR("180000002A0000000F"), STR("0")}
 };
-int hex_sample_len = sizeof (hex_samples) / (sizeof (hex_samples[0]));
+const unsigned int hex_sample_len = ARRAYSIZE(hex_samples);
 
-const CStr bigint_dec_samples[][5] = {
+#define SDECSAMPLES_W 5U
+const CStr bigint_dec_samples[][SDECSAMPLES_W] = {
  { STR("-10"), STR("10"), STR("-100"), STR("-105"), STR("-5")},
  { STR("10"), STR("-10"), STR("-100"), STR("-103"), STR("-3")},
  { STR("-10"), STR("-10"), STR("100"), STR("102"), STR("2")},
 };
-int bigint_dec_sample_len = sizeof (bigint_dec_samples) / (sizeof (bigint_dec_samples[0]));
+const unsigned int bigint_dec_sample_len = ARRAYSIZE(bigint_dec_samples);
 
 const CStr div10_sample[] = {
  STR("2"),
@@ -42,31 +44,28 @@ const CStr div10_sample[] = {
  STR("12345678901234567890"),
  STR("123456789012345678901234567890")
 };
-int div10_sample_len = sizeof (div10_sample) / (sizeof (div10_sample[0]));
+const unsigned int div10_sample_len = ARRAYSIZE(div10_sample);
 
 bool test_mul1() {
  bool fail = false;
- char max_str[HEX_BIGUINTLEN + 1];
- max_str[biguint128_print_hex(&max, max_str, sizeof (max_str) / sizeof (max_str[0]) - 1)] = 0;
+ ArgType argt[] = {BUINT_XROREF, BUINT_XROREF, BUINT_XVAL};
+ GenArgU params[2];
+ params[0].x = max;
+ GenArgU prod;
+ GenArgU exp;
+ char exp_str[2 * HEX_BIGUINTLEN + 1]; // 'FFFF...FFF000...0000' - we always read the exp value from this string in a 128 bit window.
+ memset(exp_str, 'F', HEX_BIGUINTLEN);
+ memset(exp_str + HEX_BIGUINTLEN, '0', HEX_BIGUINTLEN);
+ exp_str[2 * HEX_BIGUINTLEN] = 0; // not necessary, but let it be a normal cstr.
 
  for (buint_size_t i = 0; i < HEX_BIGUINTLEN; ++i) {
-  char buffer[HEX_BIGUINTLEN + 1];
-  char expected[HEX_BIGUINTLEN + 1];
 
-  BigUInt128 mult = biguint128_shl(&one, 4 * i);
-  BigUInt128 prod = biguint128_mul(&max, &mult);
+  params[1].x = biguint128_shl(&one, 4 * i);
+  prod.x = biguint128_mul(&params[0].x, &params[1].x);
+  exp.x = biguint128_ctor_hexcstream(exp_str+i, HEX_BIGUINTLEN);
 
-  for (buint_size_t digit = 0; digit < HEX_BIGUINTLEN; ++digit) {
-   expected[digit] = digit + i < HEX_BIGUINTLEN ? 'F' : '0';
-  }
-  expected[HEX_BIGUINTLEN] = 0;
-
-  buffer[biguint128_print_hex(&prod, buffer, HEX_BIGUINTLEN)] = 0;
-
-  if (strcmp(expected, buffer) != 0) {
-   char mult_str[HEX_BIGUINTLEN + 1];
-   mult_str[biguint128_print_hex(&mult, mult_str, HEX_BIGUINTLEN)] = 0;
-   fprintf(stderr, "[%s * %s] -- expected: [%s], actual [%s]\n", max_str, mult_str, expected, buffer);
+  if (!biguint128_eq(&exp.x, &prod.x)) {
+   fprintf_biguint128_genfun0_testresult(stderr, "mul", params, &prod, &exp, 2, argt, 1, argt + 2, FMT_HEX);
    fail = true;
   }
  }
@@ -202,15 +201,15 @@ int main(int argc, char **argv) {
   unsigned int div_params2[] = {2, 0, 1, 3};
   unsigned int div_params3[] = {0, 2, 3, 0};
 
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mul_params, XBFUN0(biguint128_mul), "mul", NULL) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, dmul_params, XBFUN3(biguint128_dmul), "dmul", NULL) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params1, XBFUN3(biguint128_div), "div", check_divisor_) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params2, XBFUN3(biguint128_div), "div", check_divisor_) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params3, XBFUN3(biguint128_div), "div", check_altb_) == 0);
+  assert(test_genfun(&hex_samples[0][0], HEXSAMPLES_W, hex_sample_len, FMT_HEX, mul_params, XBFUN0(biguint128_mul), "mul", NULL) == 0);
+  assert(test_genfun(&hex_samples[0][0], HEXSAMPLES_W, hex_sample_len, FMT_HEX, dmul_params, XBFUN3(biguint128_dmul), "dmul", NULL) == 0);
+  assert(test_genfun(&hex_samples[0][0], HEXSAMPLES_W, hex_sample_len, FMT_HEX, div_params1, XBFUN3(biguint128_div), "div", check_divisor_) == 0);
+  assert(test_genfun(&hex_samples[0][0], HEXSAMPLES_W, hex_sample_len, FMT_HEX, div_params2, XBFUN3(biguint128_div), "div", check_divisor_) == 0);
+  assert(test_genfun(&hex_samples[0][0], HEXSAMPLES_W, hex_sample_len, FMT_HEX, div_params3, XBFUN3(biguint128_div), "div", check_altb_) == 0);
 
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, mul_params, XBFUN0V(biguint128_mulv), "mulv", NULL) == 0);
-  assert(test_genfun(&hex_samples[0][0], 4, hex_sample_len, FMT_HEX, div_params1, XBFUN3V(biguint128_divv), "divv", check_divisor_) == 0);
+  assert(test_genfun(&hex_samples[0][0], HEXSAMPLES_W, hex_sample_len, FMT_HEX, mul_params, XBFUN0V(biguint128_mulv), "mulv", NULL) == 0);
+  assert(test_genfun(&hex_samples[0][0], HEXSAMPLES_W, hex_sample_len, FMT_HEX, div_params1, XBFUN3V(biguint128_divv), "divv", check_divisor_) == 0);
 #endif
  }
 
@@ -222,11 +221,11 @@ int main(int argc, char **argv) {
  {
   unsigned int mul_params[] = {0, 1, 2};
   unsigned int div_params[] = {3, 1, 0, 4};
-  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, mul_params, XBFUN0(biguint128_mul), "imul", NULL) == 0);
-  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, div_params, XBFUN3(bigint128_div), "idiv", check_divisor_) == 0);
+  assert(test_genfun(&bigint_dec_samples[0][0], SDECSAMPLES_W, bigint_dec_sample_len, FMT_SDEC, mul_params, XBFUN0(biguint128_mul), "imul", NULL) == 0);
+  assert(test_genfun(&bigint_dec_samples[0][0], SDECSAMPLES_W, bigint_dec_sample_len, FMT_SDEC, div_params, XBFUN3(bigint128_div), "idiv", check_divisor_) == 0);
 
 #ifndef WITHOUT_PASS_BY_VALUE_FUNCTIONS
-  assert(test_genfun(&bigint_dec_samples[0][0], 5, bigint_dec_sample_len, FMT_SDEC, div_params, XBFUN3V(bigint128_divv), "idivv", check_divisor_) == 0);
+  assert(test_genfun(&bigint_dec_samples[0][0], SDECSAMPLES_W, bigint_dec_sample_len, FMT_SDEC, div_params, XBFUN3V(bigint128_divv), "idivv", check_divisor_) == 0);
 #endif
  }
 

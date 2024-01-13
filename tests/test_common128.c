@@ -124,15 +124,6 @@ static inline void print_gennums(FILE *out, const GenArgU *nums, unsigned int nu
  }
 }
 
-void fprintf_biguint128_binop_testresult(FILE *out, BigUInt128 *op0, BigUInt128 *op1, BigUInt128 *expected, BigUInt128 *actual, const char *op_str) {
- char buffer[4][HEX_BIGUINTLEN + 1];
- BigUInt128 * v_refs[] = {op0, op1, expected, actual};
- for (int j = 0; j < 4; ++j) {
-  buffer[j][biguint128_print_hex(v_refs[j], buffer[j], HEX_BIGUINTLEN)] = 0;
- }
- fprintf(out, "[%s %s %s] -- expected: [%s], actual [%s]\n", buffer[0], op_str, buffer[1], buffer[2], buffer[3]);
-}
-
 void fprintf_biguint128_genfun0_testresult(FILE *out, const char *funname, GenArgU *values, GenArgU *result, GenArgU *expected, unsigned int arg_n, ArgType *argt, unsigned int res_n, ArgType *rest, Format fmt) {
    fprintf(out, "%s(", funname);
    print_gennums(out, values, arg_n, argt, fmt);

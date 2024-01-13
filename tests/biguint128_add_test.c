@@ -30,6 +30,20 @@ const CStr hex_samples[][3] = {
 };
 int hex_sample_len = ARRAYSIZE(hex_samples);
 
+static void fprintf_biguint128_xxc_testresult(FILE *out, BigUInt128 *op0, BigUInt128 *op1, buint_bool op2, BigUInt128 *expected, buint_bool exp2, BigUInt128 *actual, buint_bool actual2, const char *funname) {
+ ArgType argt[] = {BUINT_XROREF, BUINT_XROREF, BUINT_TBOOL};
+ GenArgU values[] = {
+  {.x = *op0},
+  {.x = *op1},
+  {.b = op2},
+  {.x = *expected},
+  {.b = exp2},
+  {.x = *actual},
+  {.b = actual2}
+ };
+ fprintf_biguint128_genfun0_testresult(out, funname, values, values + 5, values + 3, 3, argt, 2, argt + 1, FMT_HEX);
+}
+
 bool test_adcsbc_all() {
  bool fail=false;
 
@@ -37,7 +51,7 @@ bool test_adcsbc_all() {
   biguint128_adc_replace,
   biguint128_sbc_replace
  };
- const char *op[]={"+'","-'"};
+ const char *op[]={"adc","sbc"};
 
  AdcSbcTestV tests[]= {
   {max, zero, 0, 0, max, 0},
@@ -63,10 +77,9 @@ bool test_adcsbc_all() {
   buint_bool act_c=tests[i].c;
   fun[tests[i].sbc](&act_res, &tests[i].a, &tests[i].b, &act_c);
   if (!biguint128_eq(&tests[i].exp_res, &act_res) || tests[i].exp_c!=act_c) {
-   fprintf_biguint128_binop_testresult(
-           stderr, &tests[i].a, &tests[i].b, &tests[i].exp_res, &act_res, op[tests[i].sbc]);
-   fprintf(stderr,"carry expected: %u, actual: %u\n", tests[i].exp_c, act_c);
-   fail = 1;
+   fprintf_biguint128_xxc_testresult(
+           stderr, &tests[i].a, &tests[i].b, tests[i].c, &tests[i].exp_res, tests[i].exp_c, &act_res, act_c, op[tests[i].sbc]);
+   fail |= 1;
   }
  }
 

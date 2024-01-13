@@ -149,9 +149,6 @@ void fprint_funres_buint128_x_bsz_buint128(FILE *out, const char *funname, const
 void fprint_funres_buint128_x_bsz_bb(FILE *out, const char *funname, const BigUInt128 *a, buint_size_t b, buint_bool expected, buint_bool actual);
 void fprintf_biguint128_genfun0_testresult(FILE *out, const char *funname, GenArgU *values, GenArgU *result, GenArgU *expected, unsigned int arg_n, ArgType *argt, unsigned int res_n, ArgType *rest, Format fmt);
 
-void fprintf_biguint128_binop_testresult(FILE *out, BigUInt128 *op0, BigUInt128 *op1, BigUInt128 *expected, BigUInt128 *actual, const char *op_str);
-void fprintf_biguint128_unop_testresult(FILE *out, const BigUInt128 *op0, const BigUInt128 *expected, const BigUInt128 *actual, const char *op_str);
-
 int test_genfun(const CStr *samples, unsigned int sample_width, unsigned int sample_n, Format fmt, const unsigned int *param_idx, BigUInt128GenFun fun, const char *funname, ParamRelation param_valid);
 
 #endif /* TEST_COMMON128_H */
