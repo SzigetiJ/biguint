@@ -118,16 +118,17 @@ make
 make install
 ```
 
-#### Different configurations at the same
+#### Different configurations simultaneously
 
-The `configure` script supports different build profiles
-(see [VPATH Builds](https://www.gnu.org/software/automake/manual/html_node/VPATH-Builds.html)):
-it generates the outputs (Makefiles) in the current working directory;
-and executing `make` with the generated Makefiles
-will put their output in the container directory of the given Makefiles.
+The `configure` script supports handling different build profiles simultaneously
+(see [VPATH Builds](https://www.gnu.org/software/automake/manual/html_node/VPATH-Builds.html)).
+It generates the outputs (Makefiles) in the current working directory, whereever the `configure` script has been called.
+Executing `make` with these generated Makefiles
+will put the build output in the directory, where the Makefiles reside.
 Well, except for `make install`, of course.
 
-You can create, e.g., a **Debug** and a **Release** profile within the base directory of the project:
+You can create and manage multiple profiles, e.g., a **Debug** and a **Release** profile,
+within the base directory of the project:
 
 ```sh
 mkdir -p dist/Debug
@@ -148,13 +149,17 @@ make install
 cd ../..
 ```
 
-Cross compilation is also supported. You can create a profile for the target.
-Note, you have to give options `--host` and `--build` to `configure` see the
+Cross compilation is also supported.
+All you have to do is to create a profile for the desired target.
+Note, you have to give options `--host` and `--build` to `configure`, see the
 [online manual](https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/autoconf-2.70/html_node/Hosts-and-Cross_002dCompilation.html#Hosts-and-Cross_002dCompilation).
 
 ## How to use
 
-Use case: Summing very long values (C strings).
+Read some words about the naming conventions of functions [here](docs/NAMING.md).
+### Use case #1: Summing very long values (C strings)
+
+And getting the sum in C string (i.e., 0-terminated char array) as well.
 
 ```c
 #include <string.h>
@@ -172,6 +177,27 @@ int main() {
  BigUInt128 res = biguint128_add(&a, &b);
  res_str[biguint128_print_dec(&res, res_str, BUFLEN)]=0;
  // now res_str contains the sum of a and b in decimal format.
+}
+```
+
+### Use case #2: Multiplying beyond 64 bits
+
+10^21 is greater than 2^64.
+```c
+#include <stdio.h>
+#include "biguint128.h"
+
+int main() {
+ BigUInt128 a = biguint128_value_of_uint(10000000);
+
+ BigUInt128 asquare = biguint128_mul(&a,&a);
+ BigUInt128 acube = biguint128_mul(&a,&asquare);
+
+ printf("Highest bit set in a: %d\n", (int)biguint128_msb(&a));
+ printf("Highest bit set in a^2: %d\n", (int)biguint128_msb(&asquare));
+ printf("Highest bit set in a^3: %d\n", (int)biguint128_msb(&acube));
+
+ return 0;
 }
 ```
 
