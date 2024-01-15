@@ -132,21 +132,21 @@ bool test_div10_a() {
   BigUIntTinyPair128 actual3 = biguint128_div10(&val);
 
   if (!biguint128_eq(&actual1, &expected.first)) {
-   fprintf(stderr, "failed div1000(mul100(x)) test at test input #%d\n", i);
+   fprintf(stderr, "failed div1000(mul100(x)) test at test input #%u\n", i);
    fail = true;
   }
 
   if (!biguint128_eq(&actual2, &expected.first)) {
-   fprintf(stderr, "failed div30(mul3(x)) test at test input #%d\n", i);
+   fprintf(stderr, "failed div30(mul3(x)) test at test input #%u\n", i);
    fail = true;
   }
 
   if (!biguint128_eq(&actual3.first, &expected.first)) {
-   fprintf(stderr, "failed div10(x) test at test input #%d\n", i);
+   fprintf(stderr, "failed div10(x) test at test input #%u\n", i);
    fail = true;
   }
   if (actual3.second != expected.second.dat[0]) {
-   fprintf(stderr, "failed div10(x) remainder test at test input #%d\n", i);
+   fprintf(stderr, "failed div10(x) remainder test at test input #%u\n", i);
    fail = true;
   }
 
@@ -168,11 +168,11 @@ bool test_div3_a() {
   BigUIntTinyPair128 actual = biguint128_div3(&val);
 
   if (!biguint128_eq(&actual.first, &expected.first)) {
-   fprintf(stderr, "failed div3(x) test at test input #%d\n", i);
+   fprintf(stderr, "failed div3(x) test at test input #%u\n", i);
    fail = true;
   }
   if (actual.second != expected.second.dat[0]) {
-   fprintf(stderr, "failed div3(x) remainder test at test input #%d\n", i);
+   fprintf(stderr, "failed div3(x) remainder test at test input #%u\n", i);
    fail = true;
   }
 
@@ -190,7 +190,7 @@ static buint_bool check_altb_(const GenArgU *aa, unsigned int n) {
  return biguint128_lt(&aa[0].x, &aa[1].x);
 }
 
-int main(int argc, char **argv) {
+int main() {
 
  init_testvalues();
 
