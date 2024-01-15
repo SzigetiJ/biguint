@@ -156,7 +156,7 @@ Note, you have to give options `--host` and `--build` to `configure`, see the
 
 ## How to use
 
-Read some words about the naming conventions of functions [here](docs/NAMING.md).
+Read some words about the naming conventions of functions [here](../../wiki/Naming).
 ### Use case #1: Summing very long values (C strings)
 
 And getting the sum in C string (i.e., 0-terminated char array) as well.
