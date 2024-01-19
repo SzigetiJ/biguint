@@ -72,9 +72,56 @@ bool test_prec0() {
  return !fail;
 }
 
-int main(int argc, char **argv) {
+bool test_prec_safe(unsigned int init_prec, unsigned int str_crop) {
+ bool pass = true;
+
+ BigUInt128 a = bigint128_value_of_uint(-1);   // FFFFFF..FFF
+ BigUInt128 max_bint = biguint128_shr(&a, 1);  // 7FFFFF..FFF
+ BigUInt128 min_bint = max_bint;
+ biguint128_inc(&min_bint);                    // 800000..000
+
+ char buf[BUFLEN + 1];  // for error printing
+ // max_bint as deccstr
+ char bufp[BUFLEN + 1];
+ unsigned int bufplen = bigint128_print_dec(&max_bint, bufp, BUFLEN);
+ bufp[bufplen] = 0;
+ // min_bint as deccstr
+ char bufn[BUFLEN + 1];
+ unsigned int bufnlen = bigint128_print_dec(&min_bint, bufn, BUFLEN);
+ bufp[bufnlen] = 0;
+
+ BigDecimal128 maxd_orig = bigdecimal128_ctor_cstream(bufp, bufplen - str_crop);
+ maxd_orig.prec = init_prec;
+ BigDecimal128 mind_orig = bigdecimal128_ctor_cstream(bufn, bufnlen - str_crop);
+ mind_orig.prec = init_prec;
+
+ for (UInt i = 0; i < init_prec + str_crop + 5; ++i) {
+  BigDecimal128 max_di;
+  BigDecimal128 min_di;
+  bool max_ok = bigdecimal128_prec_safe(&max_di, &maxd_orig, i);
+  bool min_ok = bigdecimal128_prec_safe(&min_di, &mind_orig, i);
+  if (!!max_ok != !!(0 <= (int) (init_prec + str_crop - i))) {
+   fprintf(stderr, "original: %.*s.%.*s\n", bufplen - init_prec - str_crop, bufp, init_prec, bufp + bufplen - init_prec - str_crop);
+   buf[bigdecimal128_print(&max_di, buf, BUFLEN)] = 0;
+   fprintf(stderr, "prec_safe(%u): %s\n", (unsigned int) i, max_ok ? buf : "OVERFLOW");
+   pass = false;
+  }
+  if (!!min_ok != !!(0 <= (int) (init_prec + str_crop - i))) {
+   fprintf(stderr, "original: %.*s.%.*s\n", bufnlen - init_prec - str_crop, bufn, init_prec, bufn + bufplen - init_prec - str_crop);
+   buf[bigdecimal128_print(&min_di, buf, BUFLEN)] = 0;
+   fprintf(stderr, "prec_safe(%u): %s\n", (unsigned int) i, min_ok ? buf : "OVERFLOW");
+   pass = false;
+  }
+ }
+ return pass;
+}
+
+int main() {
 
  assert(test_prec0());
+ assert(test_prec_safe(7,2));
+ assert(test_prec_safe(8,4));
+ assert(test_prec_safe(8,20));
 
  return 0;
 }

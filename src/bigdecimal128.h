@@ -56,6 +56,16 @@ BigDecimal128 bigdecimal128_ctor_cstream(const char *dec_digits, buint_size_t le
 BigDecimal128 bigdecimal128_ctor_prec(const BigDecimal128 *a, UInt prec);
 
 /**
+ * @brief Sets the precision of a decimal number.
+ * @param dest Writes the output data here.
+ * @param a Input value.
+ * @param prec New precision of the number.
+ * @return Success, based on capacity estimation expoiting 10^3 &lt; 2^10.
+ * Thus, for big precision values, at the boundaries, it may return false negative.
+ */
+buint_bool bigdecimal128_prec_safe(BigDecimal128 *dest, const BigDecimal128 *a, UInt prec);
+
+/**
  @brief Addition.
 */
 BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b);

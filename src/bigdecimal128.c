@@ -83,6 +83,53 @@ BigDecimal128 bigdecimal128_ctor_prec(const BigDecimal128 *a, UInt prec) {
  return retv;
 }
 
+buint_bool bigdecimal128_prec_safe(BigDecimal128 *dest, const BigDecimal128 *a, UInt prec) {
+ *dest = *a;
+ static BigUInt128 divs[] = {
+  {10},
+  {100}
+ };
+ if (dest->prec < prec) { // multiplication (may overflow)
+  UInt pdiff = prec - dest->prec;
+  buint_bool aneg = bigint128_ltz(&a->val);
+  BigUInt128 aabs = aneg ? bigint128_negate(&a->val) : a->val;
+  buint_size_t free_bits = 128 - biguint128_lzb(&aabs);
+  if (free_bits * 3 < pdiff * 10) { // rough estimation..
+   return 0;
+  }
+  while (dest->prec < prec) {
+   switch (pdiff) {
+    case 1:
+     dest->val = biguint128_mul10(&dest->val);
+     ++dest->prec;
+     break;
+    case 2:
+     dest->val = biguint128_mul100(&dest->val);
+     dest->prec += 2;
+     break;
+    default:
+     dest->val = biguint128_mul1000(&dest->val);
+     dest->prec += 3;
+   }
+  }
+ } else {
+  while (prec < dest->prec) { // divisions (no overflow danger)
+   UInt pdiff = dest->prec - prec;
+   switch (pdiff) {
+    case 1:
+    case 2:
+     dest->val = bigint128_div(&dest->val, &divs[pdiff - 1]).first;
+     dest->prec -= pdiff;
+     break;
+    default:
+     dest->val = bigint128_div1000(&dest->val).first;
+     dest->prec -= 3;
+   }
+  }
+ }
+ return 1;
+}
+
 BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b) {
  BigDecimalCommon128 cp = gen_common_prec_(a,b);
 
