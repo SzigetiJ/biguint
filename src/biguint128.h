@@ -160,6 +160,7 @@ void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
  @brief Invert (negate) a signed value.
  */
 BigUInt128 bigint128_negate(const BigUInt128 *a);
+BigUInt128 *bigint128_negate_assign(BigUInt128 *a);
 
 /**
  @brief Sub-assignment of UInt to biguint.

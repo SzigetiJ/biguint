@@ -52,7 +52,6 @@ typedef struct {
 // Static function declarations
 static inline buint_size_p bitpos_(buint_size_t a);
 static inline buint_bool is_bigint_negative_(const BigUInt128 *a);
-static inline BigUInt128 *negate_(BigUInt128 *a);
 static inline BigUInt128 *clrall_(BigUInt128 *a);
 static inline void fast_div_phase2_(BigUIntPair128 *res, UInt divisor);
 static inline BigUInt128 divmax_tiny_(UInt divisor);
@@ -94,17 +93,6 @@ static inline buint_size_p bitpos_(buint_size_t a) {
  */
 static inline buint_bool is_bigint_negative_(const BigUInt128 *a) {
  return biguint128_gbit(a, 128u - 1u);
-}
-
-/**
- * Negates a signed value.
- * @param a Subject of operation.
- * @return a.
- */
-static inline BigUInt128 *negate_(BigUInt128 *a) {
- biguint128_dec(a);
- biguint128_not_assign(a);
- return a;
 }
 
 /**
@@ -568,9 +556,21 @@ void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
  }
 }
 
+/**
+ * Negates a signed value.
+ * @param a Subject of operation.
+ * @return a.
+ */
+
+BigUInt128 *bigint128_negate_assign(BigUInt128 *a) {
+ biguint128_dec(a);
+ biguint128_not_assign(a);
+ return a;
+}
+
 BigUInt128 bigint128_negate(const BigUInt128 *a) {
  BigUInt128 retv = biguint128_ctor_copy(a);
- negate_(&retv);
+ bigint128_negate_assign(&retv);
  return retv;
 }
 
@@ -872,10 +872,10 @@ BigUIntPair128 bigint128_div(const BigUInt128 *a, const BigUInt128 *b) {
 
  // afterwork
  if (!neg[0] != !neg[1]) {
-  negate_(&retv.first);
+  bigint128_negate_assign(&retv.first);
  }
  if (neg[0]) {
-  negate_(&retv.second);
+  bigint128_negate_assign(&retv.second);
  }
  return retv;
 }
@@ -1198,10 +1198,10 @@ BigUIntPair128 biguint128_div1000(const BigUInt128 *a) {
 BigUIntPair128 bigint128_div1000(const BigUInt128 *a) {
  if (is_bigint_negative_(a)) {
   BigUInt128 ac = *a;
-  negate_(&ac);
+  bigint128_negate_assign(&ac);
   BigUIntPair128 retv = biguint128_div1000(&ac);
-  negate_(&retv.first);
-  negate_(&retv.second);
+  bigint128_negate_assign(&retv.first);
+  bigint128_negate_assign(&retv.second);
   return retv;
  } else {
   return biguint128_div1000(a);

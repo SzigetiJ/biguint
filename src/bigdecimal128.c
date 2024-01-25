@@ -40,6 +40,12 @@ typedef struct {
 
 // STATIC FUNCTION DECLARATIONS
 static inline BigDecimalCommon128 gen_common_prec_(const BigDecimal128 *a, const BigDecimal128 *b);
+static inline buint_bool gen_common_xprec_safe_(UInt *aprec, UInt *bprec, UInt trg_prec, BigUInt128 *aval, BigUInt128 *bval, buint_bool *has_remainder);
+static inline buint_bool gen_common_hiprec_safe_(UInt *aprec, UInt *bprec, BigUInt128 *aval, BigUInt128 *bval);
+static inline buint_bool gen_common_loprec_safe_(UInt *aprec, UInt *bprec, BigUInt128 *aval, BigUInt128 *bval, buint_bool *has_remainder);
+static inline UInt oom_lb_(UInt prec, const BigUInt128 *val);
+static inline UInt oom_ub_(UInt prec, const BigUInt128 *val);
+static buint_bool tune_prec_(BigUInt128 *a, UInt *aprec, UInt trg_prec, buint_bool *has_remainder);
 
 // IMPLEMENTATION
 // internal functions
@@ -50,6 +56,114 @@ static inline BigDecimalCommon128 gen_common_prec_(const BigDecimal128 *a, const
   bigdecimal128_ctor_prec(b, prec_hi),
   prec_hi
  };
+}
+
+static inline buint_bool gen_common_xprec_safe_(UInt *aprec, UInt *bprec, UInt trg_prec, BigUInt128 *aval, BigUInt128 *bval, buint_bool *has_remainder) {
+ buint_bool res_a = tune_prec_(aval, aprec, trg_prec, has_remainder);
+ buint_bool res_b = tune_prec_(bval, bprec, trg_prec, has_remainder);
+ return res_a && res_b;
+}
+
+static inline buint_bool gen_common_hiprec_safe_(UInt *aprec, UInt *bprec, BigUInt128 *aval, BigUInt128 *bval) {
+ return gen_common_xprec_safe_(aprec, bprec, *aprec < *bprec ? *bprec : *aprec, aval, bval, NULL);
+}
+
+static inline buint_bool gen_common_loprec_safe_(UInt *aprec, UInt *bprec, BigUInt128 *aval, BigUInt128 *bval, buint_bool *has_remainder) {
+ return gen_common_xprec_safe_(aprec, bprec, *aprec < *bprec ? *aprec : *bprec, aval, bval, has_remainder);
+}
+
+/**
+ * Quick (negative) order of magnitude estimation frame-function.
+ * Can be used to estimate (base-10*log10(x)) for any x=val*10^(-prec). Kind of dB(x).
+ * @param base Choose a high enough base in order to always get positive result.
+ * @param corr_step Within the estimation the -3*lzb(val) member needs a correction as lzb gets higher.
+ * By means of corr_step a linear correction can be defined: if lzb(val) is greater than corr_step, the result is decreased by 1.
+ * If lzb is greater than 2*corr_step, the result is decreased by 2, etc.
+ * @param prec The examined value x is given by prec and val.
+ * @param val The examined value x is given by prec and val.
+ * @return Calculated order of magnitude descriptor. For x=1 it returns base.
+ * For any x={1.0, 1.00, 1.000, etc} it return a value close to base.
+ */
+static inline UInt oom_estimation_(UInt base, UInt corr_step, UInt prec, const BigUInt128 *val) {
+ buint_size_t lzb = biguint128_lzb(val);
+ buint_size_t correction = lzb / corr_step;
+ return base + 3 + 10 * prec - 3 * lzb - correction;
+}
+
+static inline UInt oom_lb_(UInt prec, const BigUInt128 *val) {
+ return oom_estimation_(3 * 128, 96, prec, val);
+}
+
+/**
+ * The base of oom_ub_ is increased by 3 (compared to oom_lb_).
+ * That is highest n-bit value is almost as much as the lowest n+1 bit value.
+ * @param prec
+ * @param val
+ * @return
+ */
+static inline UInt oom_ub_(UInt prec, const BigUInt128 *val) {
+ return oom_estimation_(3 * 128 + 3, 100, prec, val);
+}
+
+/**
+ * Multiplies a by 10^(trg_prec - aprec), (this can also be division), if possible.
+ * Note, this function assumes that a is unsigned integer, however check if the result can fit into 128 - 1 bits.
+ * @param a
+ * @param aprec
+ * @param trg_prec
+ * @param has_remainder
+ * @return
+ */
+static buint_bool tune_prec_(BigUInt128 *a, UInt *aprec, UInt trg_prec, buint_bool *has_remainder) {
+ static BigUInt128 divs[] = {
+  {{10}},
+  {{100}}
+ };
+ if (*aprec < trg_prec) { // multiplication (may overflow)
+  UInt pdiff = trg_prec - *aprec;
+  buint_size_t lzb = biguint128_lzb(a);
+  buint_bool low_a = lzb < 2 || !biguint128_gbit(a, lzb - 2); // low_a means a is 1 or b10xx..xxx. It counts as a third free bit
+  buint_bool low2_a = low_a && (lzb < 3 || !biguint128_gbit(a, lzb - 3)); // low2_a means a is 1 or b100xx..xxx. It counts as a third free bit
+  buint_size_t free_bits = 128 - 1 - lzb;
+
+  if (free_bits * 3 + !!low_a + !!low2_a < pdiff * 10) { // rough estimation..
+   return 0;
+  }
+  while (*aprec < trg_prec) {
+   switch (trg_prec - *aprec) {
+    case 1:
+     *a = biguint128_mul10(a);
+     ++*aprec;
+     break;
+    case 2:
+     *a = biguint128_mul100(a);
+     *aprec += 2;
+     break;
+    default:
+     *a = biguint128_mul1000(a);
+     *aprec += 3;
+   }
+  }
+ } else {
+  while (trg_prec < *aprec) { // divisions (no overflow danger)
+   UInt pdiff = *aprec - trg_prec;
+   BigUIntPair128 dx;
+   switch (pdiff) {
+    case 1:
+    case 2:
+     dx = biguint128_div(a, &divs[pdiff - 1]);
+     *aprec -= pdiff;
+     break;
+    default:
+     dx = biguint128_div1000(a);
+     *aprec -= 3;
+   }
+   *a = dx.first;
+   if (has_remainder != NULL) *has_remainder |= (dx.second.dat[0] != 0);
+  }
+ }
+ return 1;
+
 }
 
 // interface functions
@@ -85,49 +199,13 @@ BigDecimal128 bigdecimal128_ctor_prec(const BigDecimal128 *a, UInt prec) {
 
 buint_bool bigdecimal128_prec_safe(BigDecimal128 *dest, const BigDecimal128 *a, UInt prec) {
  *dest = *a;
- static BigUInt128 divs[] = {
-  {10},
-  {100}
- };
- if (dest->prec < prec) { // multiplication (may overflow)
-  UInt pdiff = prec - dest->prec;
-  buint_bool aneg = bigint128_ltz(&a->val);
-  BigUInt128 aabs = aneg ? bigint128_negate(&a->val) : a->val;
-  buint_size_t free_bits = 128 - biguint128_lzb(&aabs);
-  if (free_bits * 3 < pdiff * 10) { // rough estimation..
-   return 0;
-  }
-  while (dest->prec < prec) {
-   switch (pdiff) {
-    case 1:
-     dest->val = biguint128_mul10(&dest->val);
-     ++dest->prec;
-     break;
-    case 2:
-     dest->val = biguint128_mul100(&dest->val);
-     dest->prec += 2;
-     break;
-    default:
-     dest->val = biguint128_mul1000(&dest->val);
-     dest->prec += 3;
-   }
-  }
- } else {
-  while (prec < dest->prec) { // divisions (no overflow danger)
-   UInt pdiff = dest->prec - prec;
-   switch (pdiff) {
-    case 1:
-    case 2:
-     dest->val = bigint128_div(&dest->val, &divs[pdiff - 1]).first;
-     dest->prec -= pdiff;
-     break;
-    default:
-     dest->val = bigint128_div1000(&dest->val).first;
-     dest->prec -= 3;
-   }
-  }
+ if (bigint128_ltz(&a->val)) {
+  bigint128_negate_assign(&dest->val);
+  buint_bool retv = tune_prec_(&dest->val, &dest->prec, prec, NULL);
+  bigint128_negate_assign(&dest->val);
+  return retv;
  }
- return 1;
+ return tune_prec_(&dest->val, &dest->prec, prec, NULL);
 }
 
 BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b) {
@@ -243,9 +321,59 @@ buint_size_t bigdecimal128_print(const BigDecimal128 *a, char *buf, buint_size_t
 }
 
 buint_bool bigdecimal128_lt(const BigDecimal128 *a, const BigDecimal128 *b) {
- BigDecimalCommon128 cp = gen_common_prec_(a,b);
+ UInt pdiff = b->prec - a->prec;
 
- return bigint128_lt(&cp.a.val, &cp.b.val);
+ // check #0: a and b are of the same precision
+ if (pdiff == 0) {
+  return bigint128_lt(&a->val, &b->val);
+ }
+
+ // check #1: sign
+ buint_bool aeqz = biguint128_eqz(&a->val);
+ buint_bool beqz = biguint128_eqz(&b->val);
+ buint_bool altz = bigint128_ltz(&a->val);
+ buint_bool bltz = bigint128_ltz(&b->val);
+ // math is as follows:
+ // !xltz: (-inf,-1] -> 0; [0,inf) -> 1
+ // !xeqz: (-inf,-1] -> 1; 0 -> 0; [1,inf) -> 1
+ // !xeqz + 2 * !xltz: (-inf,-1]-> 1; 0 -> 2; [1,inf) -> 3
+ if (!aeqz + 2 * !altz < !beqz + 2 * !bltz) return 1;
+ if (!beqz + 2 * !bltz < !aeqz + 2 * !altz) return 0;
+ if (aeqz && beqz) return 0;
+ // at this point ltz(a)==ltz(b) is sure.
+
+ // check #2: order of magnitude
+ BigUInt128 av=a->val;
+ BigUInt128 bv=b->val;
+ if (altz) {
+  bigint128_negate_assign(&av);
+  bigint128_negate_assign(&bv);
+ }
+ UInt ooma_lo = oom_lb_(a->prec, &av);
+ UInt ooma_hi = oom_ub_(a->prec, &av);
+ UInt oomb_lo = oom_lb_(b->prec, &bv);
+ UInt oomb_hi = oom_ub_(b->prec, &bv);
+ if (ooma_hi < oomb_lo) return altz; // va gt vb. If the numbers were negative that means a lt b
+ if (oomb_hi < ooma_lo) return !altz;
+ // at this point a and b are near the same order of magnitude
+
+ // check #3: multiplication is possible
+ UInt aprec = a->prec;
+ UInt bprec = b->prec;
+ buint_bool hiprec_ok = gen_common_hiprec_safe_(&aprec, &bprec, &av, &bv);
+ if (hiprec_ok) {
+  return biguint128_lt(&av, &bv) != altz;
+ }
+
+ // check #4: division by 10 with remainder check
+ buint_bool has_remainder = 0;
+ gen_common_loprec_safe_(&aprec, &bprec, &av, &bv, &has_remainder);
+
+ return biguint128_lt(&av, &bv) ? !altz :
+  biguint128_lt(&bv, &av) ? altz :
+   has_remainder &&               // at this point we know that av == bv. Still, a lt b is possible if the truncated digits were not zero
+   ((!altz && a->prec == aprec) ||  // either b was truncated and became less - for positive values this means a lt b,
+   (altz && b->prec == bprec));     // or a was truncated and for negative values this means that a became greater, thus originally a lt b.
 }
 
 buint_bool bigdecimal128_eq(const BigDecimal128 *a, const BigDecimal128 *b) {
