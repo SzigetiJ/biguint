@@ -12,6 +12,7 @@ TESTS = \
 	bigdecimal128_mul_test \
 	bigdecimal128_eq_test \
 	bigdecimal128_pval_test \
+	bigdecimal128_oom_test \
 	bigdecimal128_prec_test
 
 check_PROGRAMS = $(TESTS)
@@ -29,7 +30,8 @@ if WITH_BIGUINT256
 	biguint@bits256@_bit_test \
 	biguint@bits256@_add_test \
 	biguint@bits256@_mul_test \
-	bigdecimal@bits256@_io_test
+	bigdecimal@bits256@_io_test \
+	bigdecimal@bits256@_oom_test
 
  TESTS += $(ADDITIONAL256)
  check_PROGRAMS += $(ADDITIONAL256)
@@ -74,6 +76,9 @@ biguint256_mul_test.c: biguint128_mul_test.c
 bigdecimal256_io_test.c: bigdecimal128_io_test.c
 	$(SED) 's/128/256/g' < $< > $@
 
+bigdecimal256_oom_test.c: bigdecimal128_oom_test.c
+	$(SED) 's/128/256/g' < $< > $@
+
 test_common256.c: test_common128.c
 	$(SED) 's/128/256/g' < $< > $@
 
@@ -86,6 +91,7 @@ test_common256.h: test_common128.h
  biguint@bits256@_add_test_LDADD = test_common.o test_common256.o ../src/libbiguint.a
  biguint@bits256@_bit_test_LDADD = test_common.o test_common256.o ../src/libbiguint.a
  bigdecimal@bits256@_io_test_LDADD = test_common.o ../src/libbiguint.a
+ bigdecimal@bits256@_oom_test_LDADD = test_common.o ../src/libbiguint.a
 
  DISTCLEANFILES += $(DEPDIR)/test_common256.Po
 endif
@@ -101,6 +107,7 @@ biguint128_mul_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
 biguint128_add_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
 biguint128_bit_test_LDADD = test_common.o test_common128.o ../src/libbiguint.a
 bigdecimal128_io_test_LDADD = test_common.o ../src/libbiguint.a
+bigdecimal128_oom_test_LDADD = test_common.o ../src/libbiguint.a
 bigdecimal128_prec_test_LDADD = test_common.o ../src/libbiguint.a
 
 SUBDIRS=performance

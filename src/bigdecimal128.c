@@ -87,11 +87,11 @@ static inline buint_bool gen_common_loprec_safe_(UInt *aprec, UInt *bprec, BigUI
 static inline UInt oom_estimation_(UInt base, UInt corr_step, UInt prec, const BigUInt128 *val) {
  buint_size_t lzb = biguint128_lzb(val);
  buint_size_t correction = lzb / corr_step;
- return base + 3 + 10 * prec - 3 * lzb - correction;
+ return base + 10 * prec - 3 * lzb - correction;
 }
 
 static inline UInt oom_lb_(UInt prec, const BigUInt128 *val) {
- return oom_estimation_(3 * 128, 96, prec, val);
+ return oom_estimation_(4 * 128, 96, prec, val);
 }
 
 /**
@@ -102,7 +102,7 @@ static inline UInt oom_lb_(UInt prec, const BigUInt128 *val) {
  * @return
  */
 static inline UInt oom_ub_(UInt prec, const BigUInt128 *val) {
- return oom_estimation_(3 * 128 + 3, 100, prec, val);
+ return oom_estimation_(4 * 128 + 3, 100, prec, val);
 }
 
 /**
