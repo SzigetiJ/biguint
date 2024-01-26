@@ -292,16 +292,21 @@ bool test_ltx() {
    for (int xi = 0; xi < 3; ++xi) { // which x value
     buint_bool expxy = xlty[i][yi][xi];
     buint_bool expyx = yltx[i][yi][xi];
+    buint_bool expeq = (xi==0 && yi==1);
     buint_bool resxy = bigdecimal128_lt(&x[i][xi], &y[i][yi]);
     buint_bool resyx = bigdecimal128_lt(&y[i][yi], &x[i][xi]);
+    buint_bool reseq = bigdecimal128_eq(&y[i][yi], &x[i][xi]);
 
-    if (resxy != expxy || resyx != expyx) {
+    if (resxy != expxy || resyx != expyx || reseq != expeq) {
      fprintf(stderr, "i: %d, yi: %d, xi: %d\n", i, yi, xi);
      if (resxy != expxy) {
       print_relation_result(stderr, "lt(a,b)", &x[i][xi], &y[i][yi], expxy, resxy);
      }
      if (resyx != expyx) {
       print_relation_result(stderr, "lt(a,b)", &y[i][yi], &x[i][xi], expyx, resyx);
+     }
+     if (reseq != expeq) {
+      print_relation_result(stderr, "eq(a,b)", &y[i][yi], &x[i][xi], expeq, reseq);
      }
      pass = false;
     }
