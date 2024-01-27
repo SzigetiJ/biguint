@@ -10,117 +10,41 @@
 #define BIGDECCAP ((BIGUINT_BITS / 10 + 1) * 3 + 1)
 #define BUFLEN (BIGDECCAP + 3)
 
-typedef struct {
- CStr num1;
- CStr num2;
-} PrecTestInputType;
-
-typedef struct {
- buint_bool rel;
-} PrecTestOutputType;
-
-const PrecTestInputType any_in[] = {
- {STR("20"),STR("20")},
- {STR("0.2"),STR("-0.2")},
- {STR("0.0"),STR("-0.0")},
- {STR("+0.0"),STR("0.0")},
- {STR("0.0"),STR("-0.00")},
- {STR("10.0"),STR("10")},
- {STR("10.0"),STR("10.00")},
- {STR("10.0"),STR("10.0")},
- {STR("10.0"),STR("9")},
- {STR("10.0"),STR("9.9")},
- {STR("10.0"),STR("11")},
- {STR("10.0"),STR("10.0000001")},
- {STR("20"),STR("0.5")},
- {STR("0.2"),STR("0.6")},
- {STR("10"),STR("30")},
- {STR("-1.5"),STR("1.5")},
- {STR("2.0"),STR("-0.5")},
- {STR("-10"),STR("0.001")},
- {STR("0.000"),STR("10.00")},
- {STR("0.1"),STR("0.099999999999999999999999999999999")},
- {STR("0.1"),STR("0.1000000000000000000000000000000001")},
- {STR("-0.2"),STR("-0.19999999999999999999999999999999")},
- {STR("-0.2"),STR("-0.2000000000000000000000000000001")},
- {STR("0.3"),STR("0.31")},
- {STR("0.3"),STR("0.3001")},
- {STR("0.3"),STR("0.30001")},
- {STR("0.3"),STR("0.30000000001")},
- {STR("0.3"),STR("0.300000000000000000000001")},
- {STR("0.3"),STR("0.300000000000000000000000000000001")},
- {STR("0.4"),STR("0.399999999999999999999999999999999")},
- {STR("0.4"),STR("0.4000000000000000000000000000000001")}
+// a, b, eq(a,b), lt(a,b)
+const CStr samples[][4] = {
+ {STR("20"),STR("20"),STR("1"),STR("0")},
+ {STR("0.2"),STR("-0.2"),STR("0"),STR("0")},
+ {STR("0.0"),STR("-0.0"),STR("1"),STR("0")},
+ {STR("+0.0"),STR("0.0"),STR("1"),STR("0")},
+ {STR("0.0"),STR("-0.00"),STR("1"),STR("0")},
+ {STR("10.0"),STR("10"),STR("1"),STR("0")},
+ {STR("10.0"),STR("10.00"),STR("1"),STR("0")},
+ {STR("10.0"),STR("10.0"),STR("1"),STR("0")},
+ {STR("10.0"),STR("9"),STR("0"),STR("0")},
+ {STR("10.0"),STR("9.9"),STR("0"),STR("0")},
+ {STR("10.0"),STR("11"),STR("0"),STR("1")},
+ {STR("10.0"),STR("10.0000001"),STR("0"),STR("1")},
+ {STR("20"),STR("0.5"),STR("0"),STR("0")},
+ {STR("0.2"),STR("0.6"),STR("0"),STR("1")},
+ {STR("10"),STR("30"),STR("0"),STR("1")},
+ {STR("-1.5"),STR("1.5"),STR("0"),STR("1")},
+ {STR("2.0"),STR("-0.5"),STR("0"),STR("0")},
+ {STR("-10"),STR("0.001"),STR("0"),STR("1")},
+ {STR("0.000"),STR("10.00"),STR("0"),STR("1")},
+ {STR("0.1"),STR("0.099999999999999999999999999999999"),STR("0"),STR("0")},
+ {STR("0.1"),STR("0.1000000000000000000000000000000001"),STR("0"),STR("1")},
+ {STR("-0.2"),STR("-0.19999999999999999999999999999999"),STR("0"),STR("1")},
+ {STR("-0.2"),STR("-0.2000000000000000000000000000001"),STR("0"),STR("0")},
+ {STR("0.3"),STR("0.31"),STR("0"),STR("1")},
+ {STR("0.3"),STR("0.3001"),STR("0"),STR("1")},
+ {STR("0.3"),STR("0.30001"),STR("0"),STR("1")},
+ {STR("0.3"),STR("0.30000000001"),STR("0"),STR("1")},
+ {STR("0.3"),STR("0.300000000000000000000001"),STR("0"),STR("1")},
+ {STR("0.3"),STR("0.300000000000000000000000000000001"),STR("0"),STR("1")},
+ {STR("0.4"),STR("0.399999999999999999999999999999999"),STR("0"),STR("0")},
+ {STR("0.4"),STR("0.4000000000000000000000000000000001"),STR("0"),STR("1")}
 };
-
-const PrecTestOutputType eq_out[] = {
- {1},
- {0},
- {1},
- {1},
- {1},
- {1},
- {1},
- {1},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0}
-};
-
-const PrecTestOutputType lt_out[] = {
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {0},
- {1},
- {1},
- {0},
- {1},
- {1},
- {1},
- {0},
- {1},
- {1},
- {0},
- {1},
- {1},
- {0},
- {1},
- {1},
- {1},
- {1},
- {1},
- {1},
- {0},
- {1}
-};
-int input_len = ARRAYSIZE(any_in);
+int input_len = ARRAYSIZE(samples);
 
 BigUInt128 bint_store[6];
 const BigUInt128 *MAX_BINT = &bint_store[0];
@@ -153,31 +77,30 @@ static void print_relation_result(FILE *out, const char *fnname, const BigDecima
  fprintf(out, "%s with\n\ta: %s\n\tb: %s\n\texpected: %s, actual: %s\n", fnname, bufa, bufb, bool_to_str(expected), bool_to_str(actual));
 }
 
+static bool check_relation(const CStr *astr, const CStr *bstr, bool expected, bool lt) {
+ bool pass = true;
+  if (BIGDECCAP < astr->len || BIGDECCAP < bstr->len)
+   return true;
+
+  BigDecimal128 a = bigdecimal128_ctor_cstream(astr->str, astr->len);
+  BigDecimal128 b = bigdecimal128_ctor_cstream(bstr->str, bstr->len);
+
+  buint_bool result = lt? bigdecimal128_lt(&a, &b) : bigdecimal128_eq(&a, &b);
+
+  if (!!result != !!expected) {
+   print_relation_result(stderr, lt?"lt(a,b)":"eq(a,b)", &a, &b, expected, result);
+   pass = false;
+  }
+  return pass;
+}
+
 bool test_eq0() {
  bool pass = true;
  for (int i = 0; i < input_len; ++i) {
-  const PrecTestInputType *ti = &any_in[i];
-  const PrecTestOutputType *expected = &eq_out[i];
-  if (BIGDECCAP < ti->num1.len || BIGDECCAP < ti->num2.len)
-   continue;
-
-  BigDecimal128 a = bigdecimal128_ctor_cstream(ti->num1.str, ti->num1.len);
-  BigDecimal128 b = bigdecimal128_ctor_cstream(ti->num2.str, ti->num2.len);
-
-  buint_bool eq = bigdecimal128_eq(&a, &b);
-  buint_bool eqrev = bigdecimal128_eq(&b, &a);
-
-  int result = (!!eq != !!expected->rel);
-  int resultrev = (!!eqrev != !!expected->rel);
-
-  if (result != 0) {
-   print_relation_result(stderr, "eq(a,b)", &a, &b, expected->rel, eq);
-   pass = false;
-  }
-  if (resultrev != 0) {
-   print_relation_result(stderr, "eq(a,b)", &b, &a, expected->rel, eqrev);
-   pass = false;
-  }
+  const CStr *ti = &samples[i][0];
+  bool expected = cstr_to_bool(&ti[2]);
+  pass &= check_relation(&ti[0], &ti[1], expected, false);
+  pass &= check_relation(&ti[1], &ti[0], expected, false);
  }
  return pass;
 }
@@ -207,29 +130,12 @@ bool test_eq1() {
 bool test_lt0() {
  bool pass = true;
  for (int i = 0; i < input_len; ++i) {
-  const PrecTestInputType *ti = &any_in[i];
-  const PrecTestOutputType *expected = &lt_out[i];
-  const PrecTestOutputType *eqexp = &eq_out[i];
-  if (BIGDECCAP < ti->num1.len || BIGDECCAP < ti->num2.len)
-   continue;
-
-  BigDecimal128 a = bigdecimal128_ctor_cstream(ti->num1.str, ti->num1.len);
-  BigDecimal128 b = bigdecimal128_ctor_cstream(ti->num2.str, ti->num2.len);
-
-  buint_bool lt = bigdecimal128_lt(&a, &b);
-  buint_bool ltrev = bigdecimal128_lt(&b, &a);
-
-  int result = (!!lt != !!expected->rel);
-  int resultrev = (!!ltrev != !!(!expected->rel && !eqexp->rel));
-
-  if (result != 0) {
-   print_relation_result(stderr, "lt(a,b)", &a, &b, expected->rel, lt);
-   pass = false;
-  }
-  if (resultrev != 0) {
-   print_relation_result(stderr, "lt(a,b)", &b, &a, !expected->rel && !eqexp->rel, ltrev);
-   pass = false;
-  }
+  const CStr *ti = &samples[i][0];
+  bool eqexp = cstr_to_bool(&ti[2]);
+  bool expected = cstr_to_bool(&ti[3]);
+  bool expected_rev = (!expected && !eqexp);
+  pass &= check_relation(&ti[0], &ti[1], expected, true);
+  pass &= check_relation(&ti[1], &ti[0], expected_rev, true);
  }
  return pass;
 }
