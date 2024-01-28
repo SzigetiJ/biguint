@@ -235,6 +235,7 @@ int main(int argc, char **argv) {
  assert(test_eq1());
 
  assert(test_ltx());
+
  return 0;
 }
 

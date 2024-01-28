@@ -69,11 +69,13 @@ buint_bool bigdecimal128_prec_safe(BigDecimal128 *dest, const BigDecimal128 *a, 
  @brief Addition.
 */
 BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b);
+buint_bool bigdecimal128_add_safe(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b);
 
 /**
  @brief Subtraction.
 */
 BigDecimal128 bigdecimal128_sub(const BigDecimal128 *a, const BigDecimal128 *b);
+buint_bool bigdecimal128_sub_safe(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b);
 
 /**
  @brief Multiplication.

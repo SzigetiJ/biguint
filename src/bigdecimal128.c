@@ -48,6 +48,7 @@ static inline UInt oom_lb_(UInt prec, const BigUInt128 *val);
 static inline UInt oom_ub_(UInt prec, const BigUInt128 *val);
 static buint_bool tune_prec_(BigUInt128 *a, UInt *aprec, UInt trg_prec, buint_bool *has_remainder);
 static buint_bool compare_(const BigDecimal128 *a, const BigDecimal128 *b, buint_bool lt);
+static inline buint_bool addsub_safe_(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b, buint_bool add);
 
 // IMPLEMENTATION
 // internal functions
@@ -225,6 +226,37 @@ static buint_bool compare_(const BigDecimal128 *a, const BigDecimal128 *b, buint
    (altz && b->prec == bprec)); // or a was truncated and for negative values this means that a became greater, thus originally a lt b.
 }
 
+static inline buint_bool addsub_safe_(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b, buint_bool add) {
+ buint_bool carry = 0;
+ buint_bool retv = 1;
+ static void (*fun[])(BigUInt128 *dest, const BigUInt128 *a, const BigUInt128 *b, buint_bool * carry) = {
+  biguint128_adc_replace,
+  biguint128_sbc_replace
+ };
+ if (a->prec == b->prec) {
+  fun[!add](&dest->val, &a->val, &b->val, &carry);
+  dest->prec = a->prec;
+ } else {
+  BigDecimal128 av = *a;
+  BigDecimal128 bv = *b;
+  buint_bool altz = bigint128_ltz(&a->val);
+  buint_bool bltz = bigint128_ltz(&b->val);
+  if (altz) {
+   bigint128_negate_assign(&av.val);
+  }
+  if (bltz) {
+   bigint128_negate_assign(&bv.val);
+  }
+  retv = gen_common_hiprec_safe_(&av.prec, &bv.prec, &av.val, &bv.val);
+  fun[!add != (altz != bltz)](&dest->val, &av.val, &bv.val, &carry);
+  if (altz) {
+   bigint128_negate_assign(&dest->val);
+  }
+  dest->prec = av.prec;
+ }
+ return retv;
+}
+
 // interface functions
 BigDecimal128 bigdecimal128_ctor_default() {
  return (BigDecimal128){biguint128_ctor_default(), 0};
@@ -273,10 +305,18 @@ BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b) 
  return (BigDecimal128){biguint128_add(&cp.a.val, &cp.b.val), cp.prec};
 }
 
+buint_bool bigdecimal128_add_safe(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b) {
+ return addsub_safe_(dest, a, b, 1);
+}
+
 BigDecimal128 bigdecimal128_sub(const BigDecimal128 *a, const BigDecimal128 *b) {
  BigDecimalCommon128 cp = gen_common_prec_(a,b);
 
  return (BigDecimal128){biguint128_sub(&cp.a.val, &cp.b.val), cp.prec};
+}
+
+buint_bool bigdecimal128_sub_safe(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b) {
+ return addsub_safe_(dest, a, b, 0);
 }
 
 BigDecimal128 bigdecimal128_mul(const BigDecimal128 *a, const BigDecimal128 *b) {

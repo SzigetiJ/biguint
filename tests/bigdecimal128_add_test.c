@@ -107,10 +107,83 @@ bool test_sub0() {
  return !fail;
 }
 
+bool test_sub_approx0() {
+ BigDecimal128 a = {
+  {1}, 0};
+ BigDecimal128 b = {
+  {2}, 0};
+ BigDecimal128 c = {
+  {9}, 0};
+
+ bool pass = true;
+ for (int i = 1; pass && i < 3 * 128 / 10 + 1; ++i) {
+  c.prec = i;
+  b = bigdecimal128_sub(&b, &c);
+  pass &= bigdecimal128_lt(&a, &b);
+  if (!pass) {
+   fprintf(stderr, "Failure approximating a value at prec %u", (unsigned int) i);
+  }
+ }
+ return pass;
+}
+
+bool test_add_safe0(bool add, bool inverta, bool invertb) {
+ BigDecimal128 a = {
+  {1}, 0};
+ BigDecimal128 b = {
+  {1}, 0};
+ BigDecimal128 sum;
+
+ int loops = 128;
+ int loops_ok_ub = 3 * 128 / 10 + (128 / 100);
+ int loops_fail_lb = 3 * 128 / 10 + 2 + (128 / 96);
+
+ bool pass = true;
+
+ if (inverta) {
+  bigint128_negate_assign(&a.val);
+ }
+ if (invertb) {
+  bigint128_negate_assign(&b.val);
+ }
+ for (int i = 0; pass && i < loops; ++i) {
+  b.prec = i;
+  buint_bool res = add ?
+    bigdecimal128_add_safe(&sum, &a, &b) :
+    bigdecimal128_sub_safe(&sum, &a, &b);
+  if (i < loops_ok_ub) {
+   if (!res) {
+    fprintf(stderr, "Add/sub (%s, %s, %s) safe should work with precision %u\n", bool_to_str(add), bool_to_str(inverta), bool_to_str(invertb), (unsigned int) i);
+    pass = false;
+   }
+   if ((add != invertb) ? !bigdecimal128_lt(&a, &sum) : !bigdecimal128_lt(&sum, &a)) {
+    fprintf(stderr, "Add/sub (%s, %s, %s) safe sum error at precision %u\n", bool_to_str(add), bool_to_str(inverta), bool_to_str(invertb), (unsigned int) i);
+    pass = false;
+   }
+  }
+  if (loops_fail_lb < i) {
+   if (res) {
+    fprintf(stderr, "Add/sub (%s, %s, %s) safe should not work with precision %u\n", bool_to_str(add), bool_to_str(inverta), bool_to_str(invertb), (unsigned int) i);
+    pass = false;
+   }
+  }
+ }
+ return pass;
+}
+
 int main(int argc, char **argv) {
+
+ if (1 < argc) {
+  fprintf(stderr, "%s does not require command line arguments\n", argv[0]);
+ }
 
  assert(test_add0());
  assert(test_sub0());
+
+ assert(test_sub_approx0());
+ for (unsigned int i = 0; i < 8; ++i) {
+  assert(test_add_safe0(i & 4, i & 2, i & 1));
+ }
 
  return 0;
 }
