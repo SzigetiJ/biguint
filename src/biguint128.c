@@ -1057,6 +1057,10 @@ BigUIntPair128 bigint128_divv(const BigUInt128 a, const BigUInt128 b) {
  return bigint128_div(&a, &b);
 }
 
+BigUInt128 bigint128_absv(const BigUInt128 a, buint_bool *b) {
+ return bigint128_abs(&a, b);
+}
+
 BigUInt128 biguint128_andv(const BigUInt128 a, const BigUInt128 b) {
  return biguint128_and(&a, &b);
 }

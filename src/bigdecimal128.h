@@ -130,6 +130,7 @@ BigDecimal128 bigdecimal128_addv(const BigDecimal128 a, const BigDecimal128 b);
 BigDecimal128 bigdecimal128_subv(const BigDecimal128 a, const BigDecimal128 b);
 BigDecimal128 bigdecimal128_mulv(const BigDecimal128 a, const BigDecimal128 b);
 BigDecimal128 bigdecimal128_divv(const BigDecimal128 a, const BigDecimal128 b, UInt prec);
+BigDecimal128 bigdecimal128_absv(const BigDecimal128 a, buint_bool *result_inv);
 buint_bool bigdecimal128_ltv(const BigDecimal128 a, const BigDecimal128 b);
 buint_bool bigdecimal128_eqv(const BigDecimal128 a, const BigDecimal128 b);
 buint_size_t bigdecimal128_printv(const BigDecimal128 a, char *buf, buint_size_t buf_len);

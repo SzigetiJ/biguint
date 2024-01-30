@@ -376,6 +376,7 @@ BigUInt128 biguint128_subv(const BigUInt128 a, const BigUInt128 b);
 BigUInt128 biguint128_mulv(const BigUInt128 a, const BigUInt128 b);
 BigUIntPair128 biguint128_divv(const BigUInt128 a, const BigUInt128 b);
 BigUIntPair128 bigint128_divv(const BigUInt128 a, const BigUInt128 b);
+BigUInt128 bigint128_absv(const BigUInt128 a, buint_bool *b);
 
 BigUInt128 biguint128_andv(const BigUInt128 a, const BigUInt128 b);
 BigUInt128 biguint128_orv(const BigUInt128 a, const BigUInt128 b);

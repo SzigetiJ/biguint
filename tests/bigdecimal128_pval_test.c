@@ -109,6 +109,21 @@ static bool compare_all() {
     pass = false;
    }
   }
+  { // bigint abs
+   buint_bool expected_inv, actual_inv[2];
+   BigDecimal128 expected = {bigint128_abs(&a.val, &expected_inv),a.prec};
+   BigDecimal128 actual[] = {
+    {bigint128_absv(a.val, &actual_inv[0]),a.prec},
+    bigdecimal128_absv(a, &actual_inv[1])
+   };
+   for (unsigned int j=0; j<2; ++j) {
+    pass &= compare_result_(stderr, "biguint abs function", &expected, &actual[j], i, j);
+    if (!!expected_inv != !!actual_inv[j]) {
+     fprintf(stderr, "pass-by-value result error at sample #%u, abs#%u result_inv\n", i, j);
+     pass = false;
+    }
+   }
+  }
  }
  return pass;
 }

@@ -433,6 +433,11 @@ BigDecimal128 bigdecimal128_mulv(const BigDecimal128 a, const BigDecimal128 b) {
 BigDecimal128 bigdecimal128_divv(const BigDecimal128 a, const BigDecimal128 b, UInt prec) {
  return bigdecimal128_div(&a, &b, prec);
 }
+
+BigDecimal128 bigdecimal128_absv(const BigDecimal128 a, buint_bool *result_inv) {
+ return (BigDecimal128){bigint128_absv(a.val, result_inv), a.prec};
+}
+
 buint_bool bigdecimal128_ltv(const BigDecimal128 a, const BigDecimal128 b) {
  return bigdecimal128_lt(&a, &b);
 }
