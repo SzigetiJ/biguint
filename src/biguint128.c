@@ -574,6 +574,25 @@ BigUInt128 bigint128_negate(const BigUInt128 *a) {
  return retv;
 }
 
+BigUInt128 bigint128_abs(const BigUInt128 *a, buint_bool *result_inv) {
+ buint_bool inv = bigint128_ltz(a);
+ if (result_inv != NULL) {
+  *result_inv = inv;
+ }
+ return inv ? bigint128_negate(a) : *a;
+}
+
+BigUInt128 *bigint128_abs_assign(BigUInt128 *a, buint_bool *result_inv) {
+ buint_bool inv = bigint128_ltz(a);
+ if (result_inv != NULL) {
+  *result_inv = inv;
+ }
+ if (inv) {
+  bigint128_negate_assign(a);
+ }
+ return a;
+}
+
 // END SUB   //
 ///////////////
 
@@ -855,17 +874,9 @@ BigUIntPair128 biguint128_div(const BigUInt128 *a, const BigUInt128 *b) {
 }
 
 BigUIntPair128 bigint128_div(const BigUInt128 *a, const BigUInt128 *b) {
+ buint_bool neg[2];
  // work with copies
- BigUInt128 ab[] = {biguint128_ctor_copy(a), biguint128_ctor_copy(b)};
- // check signs
- buint_bool neg[] = {is_bigint_negative_(a), is_bigint_negative_(b)};
- // convert
- for (unsigned int i = 0U; i<2; ++i) {
-  if (neg[i]) {
-   biguint128_dec(&ab[i]);
-   biguint128_not_assign(&ab[i]);
-  }
- }
+ BigUInt128 ab[] = {bigint128_abs(a, &neg[0]), bigint128_abs(b, &neg[1])};
 
  // calling the wrapped function
  BigUIntPair128 retv = biguint128_div(&ab[0], &ab[1]);

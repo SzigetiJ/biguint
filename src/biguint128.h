@@ -161,6 +161,8 @@ void biguint128_sbc_replace(BigUInt128 *dest, const BigUInt128 *a, const BigUInt
  */
 BigUInt128 bigint128_negate(const BigUInt128 *a);
 BigUInt128 *bigint128_negate_assign(BigUInt128 *a);
+BigUInt128 bigint128_abs(const BigUInt128 *a, buint_bool *result_inv);
+BigUInt128 *bigint128_abs_assign(BigUInt128 *a, buint_bool *result_inv);
 
 /**
  @brief Sub-assignment of UInt to biguint.

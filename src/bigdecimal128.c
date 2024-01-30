@@ -192,12 +192,9 @@ static buint_bool compare_(const BigDecimal128 *a, const BigDecimal128 *b, buint
  // at this point ltz(a)==ltz(b) is sure.
 
  // check #2: order of magnitude
- BigUInt128 av = a->val;
- BigUInt128 bv = b->val;
- if (altz) {
-  bigint128_negate_assign(&av);
-  bigint128_negate_assign(&bv);
- }
+ BigUInt128 av = bigint128_abs(&a->val, NULL);
+ BigUInt128 bv = bigint128_abs(&b->val, NULL);
+
  UInt ooma_lo = oom_lb_(a->prec, &av);
  UInt ooma_hi = oom_ub_(a->prec, &av);
  UInt oomb_lo = oom_lb_(b->prec, &bv);
@@ -237,16 +234,11 @@ static inline buint_bool addsub_safe_(BigDecimal128 *dest, const BigDecimal128 *
   fun[!add](&dest->val, &a->val, &b->val, &carry);
   dest->prec = a->prec;
  } else {
-  BigDecimal128 av = *a;
-  BigDecimal128 bv = *b;
-  buint_bool altz = bigint128_ltz(&a->val);
-  buint_bool bltz = bigint128_ltz(&b->val);
-  if (altz) {
-   bigint128_negate_assign(&av.val);
-  }
-  if (bltz) {
-   bigint128_negate_assign(&bv.val);
-  }
+  buint_bool altz;
+  buint_bool bltz;
+  BigDecimal128 av = {bigint128_abs(&a->val, &altz),a->prec};
+  BigDecimal128 bv = {bigint128_abs(&b->val, &bltz),b->prec};
+
   retv = gen_common_hiprec_safe_(&av.prec, &bv.prec, &av.val, &bv.val);
   fun[!add != (altz != bltz)](&dest->val, &av.val, &bv.val, &carry);
   if (altz) {
@@ -289,14 +281,14 @@ BigDecimal128 bigdecimal128_ctor_prec(const BigDecimal128 *a, UInt prec) {
 }
 
 buint_bool bigdecimal128_prec_safe(BigDecimal128 *dest, const BigDecimal128 *a, UInt prec) {
- *dest = *a;
- if (bigint128_ltz(&a->val)) {
+ buint_bool altz;
+ dest->val = bigint128_abs(&a->val, &altz);
+ dest->prec = a->prec;
+ buint_bool retv = tune_prec_(&dest->val, &dest->prec, prec, NULL);
+ if (altz) {
   bigint128_negate_assign(&dest->val);
-  buint_bool retv = tune_prec_(&dest->val, &dest->prec, prec, NULL);
-  bigint128_negate_assign(&dest->val);
-  return retv;
  }
- return tune_prec_(&dest->val, &dest->prec, prec, NULL);
+ return retv;
 }
 
 BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b) {
