@@ -315,6 +315,22 @@ BigDecimal128 bigdecimal128_mul(const BigDecimal128 *a, const BigDecimal128 *b) 
  return (BigDecimal128){biguint128_mul(&a->val, &b->val), a->prec + b->prec};
 }
 
+buint_bool bigdecimal128_mul_safe(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b) {
+ buint_bool inv[2];
+ BigUInt128 par[] = {bigint128_abs(&a->val, &inv[0]),bigint128_abs(&b->val, &inv[1])};
+ BigUIntPair128 dmul = biguint128_dmul(&par[0], &par[1]);
+ buint_bool valid = biguint128_eqz(&dmul.second);
+ if (!!inv[0] != !!inv[1]) { // result should be not positive
+  bigint128_negate_assign(&dmul.first);
+  valid &= bigint128_ltz(&dmul.first) || biguint128_eqz(&dmul.first);
+ } else {
+  valid &= !bigint128_ltz(&dmul.first);
+ }
+ dest->val = dmul.first;
+ dest->prec = a->prec + b->prec;
+ return valid;
+}
+
 BigDecimal128 bigdecimal128_div_fast(const BigDecimal128 *a, const BigDecimal128 *b, UInt prec) {
  UInt ac_prec = a->prec + b->prec + prec;
  BigDecimal128 ac = bigdecimal128_ctor_prec(a, ac_prec);
@@ -340,6 +356,52 @@ BigDecimal128 bigdecimal128_div(const BigDecimal128 *a, const BigDecimal128 *b, 
  }
  retv.prec = curprec;
  return retv;
+}
+
+buint_bool bigdecimal128_div_safe(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b, UInt prec) {
+ static buint_bool first = 1;
+ static BigUInt128 max;
+ if (first) {
+  BigUInt128 minusone = bigint128_value_of_uint(-1);
+  BigUInt128 maxx = biguint128_div5(&minusone).first;
+  max = biguint128_shr(&maxx, 2);
+ first = 0;
+ }
+ buint_bool ainv, binv;
+ BigUInt128 av = bigint128_abs(&a->val, &ainv);
+ BigUInt128 bv = bigint128_abs(&b->val, &binv);
+
+ // div.prec = a.prec - b.prec
+ // mul10 iterations: prec - div.prec = prec + b.prec - a.prec
+ // 10 / 0.3 = 33 -- a.prec=0, b.prec=1
+ // 100.00 / 3 = 33(.33) -- a.prec=2, b.prec=0
+ if (a->prec < prec + b->prec) {
+  UInt i = a->prec;
+  dest->val = biguint128_ctor_default();
+  while (1) {
+   BigUIntPair128 qq = biguint128_div(&av, &bv);
+   biguint128_add_assign(&dest->val, &qq.first);
+   av = qq.second;
+   if (i == prec + b->prec) break;
+   ++i;
+   if (biguint128_lt(&max, &dest->val)) return 0;
+   dest->val = biguint128_mul10(&dest->val);
+   av = biguint128_mul10(&av);
+  }
+  for (UInt i = a->prec; i < prec + b->prec; ++i) {
+
+  }
+ } else {
+  for (UInt i = prec + b->prec; i < a->prec; ++i) {
+   av = biguint128_div10(&av).first;
+  }
+  dest->val = biguint128_div(&av, &bv).first;
+ }
+ dest->prec = prec;
+ if (ainv != binv) {
+  bigint128_negate_assign(&dest->val);
+ }
+ return 1;
 }
 
 // I/O

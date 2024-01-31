@@ -81,6 +81,7 @@ buint_bool bigdecimal128_sub_safe(BigDecimal128 *dest, const BigDecimal128 *a, c
  @brief Multiplication.
 */
 BigDecimal128 bigdecimal128_mul(const BigDecimal128 *a, const BigDecimal128 *b);
+buint_bool bigdecimal128_mul_safe(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b);
 
 /**
  @brief Fast division algorithm with narrow operating range.
@@ -98,6 +99,7 @@ BigDecimal128 bigdecimal128_div_fast(const BigDecimal128 *a, const BigDecimal128
  TODO: insert if (remainder==0) break.
 */
 BigDecimal128 bigdecimal128_div(const BigDecimal128 *a, const BigDecimal128 *b, UInt prec);
+buint_bool bigdecimal128_div_safe(BigDecimal128 *dest, const BigDecimal128 *a, const BigDecimal128 *b, UInt prec);
 
 /**
  @brief 'Less than' relation between signed decimal numbers.
