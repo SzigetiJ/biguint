@@ -47,7 +47,17 @@ const PrecTestOutputType output[] = {
  {STR("-10000000000000")}
 };
 
-int input_len = sizeof(input) / sizeof(input[0]);
+const CStr trunc_samples[][3] = {
+ {STR("0.00"),STR("0"),STR("0")},
+ {STR("10"),STR("10"),STR("0")},
+ {STR("-21"),STR("-21"),STR("0")},
+ {STR("-12.004"),STR("-12"),STR("-4")},
+ {STR("51.300"),STR("51"),STR("300")},
+ {STR("44.3035"),STR("44"),STR("3035")},
+ {STR("-0.00000000000000000000012"),STR("0"),STR("-12")}
+};
+
+int input_len = ARRAYSIZE(input);
 
 // Assert print(prec(parse(input.str),input.prec))==output.
 bool test_prec0() {
@@ -120,12 +130,39 @@ bool test_prec_safe(unsigned int init_prec, unsigned int str_crop) {
  return pass;
 }
 
+bool test_trunc() {
+ bool pass = true;
+ for (unsigned int i = 0; i < ARRAYSIZE(trunc_samples); ++i) {
+  BigDecimal128 a = bigdecimal128_ctor_cstream(trunc_samples[i][0].str, trunc_samples[i][0].len);
+  BigUInt128 exp_int = bigint128_ctor_deccstream(trunc_samples[i][1].str, trunc_samples[i][1].len);
+  BigUInt128 exp_frac = bigint128_ctor_deccstream(trunc_samples[i][2].str, trunc_samples[i][2].len);
+
+  BigUIntPair128 result = bigdecimal128_trunc(&a);
+
+  if (!biguint128_eq(&exp_int, &result.first) || !biguint128_eq(&exp_frac, &result.second)) {
+   char buf_int[BUFLEN + 1];
+   char buf_frac[BUFLEN + 1];
+   buf_int[bigint128_print_dec(&result.first, buf_int, BUFLEN)] = 0;
+   buf_frac[bigint128_print_dec(&result.second, buf_frac, BUFLEN)] = 0;
+   fprintf(stderr, "trunc(%s) failed. expected: (%s, %s), actual: (%s, %s)\n",
+     trunc_samples[i][0].str,
+     trunc_samples[i][1].str,
+     trunc_samples[i][2].str,
+     buf_int, buf_frac
+     );
+   pass = false;
+  }
+ }
+ return pass;
+}
+
 int main() {
 
  assert(test_prec0());
  assert(test_prec_safe(7,2));
  assert(test_prec_safe(8,4));
  assert(test_prec_safe(8,20));
+ assert(test_trunc());
 
  return 0;
 }

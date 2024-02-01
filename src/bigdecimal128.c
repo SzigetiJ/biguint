@@ -291,6 +291,27 @@ buint_bool bigdecimal128_prec_safe(BigDecimal128 *dest, const BigDecimal128 *a, 
  return retv;
 }
 
+BigUIntPair128 bigdecimal128_trunc(const BigDecimal128 *a) {
+ buint_bool altz;
+ BigUIntTinyPair128 atmp = {bigint128_abs(&a->val, &altz), 0};
+ BigUInt128 afrac = biguint128_ctor_default();
+ BigUInt128 m10i = biguint128_ctor_unit();
+ UInt pi = a->prec;
+ while (pi) {
+  atmp = biguint128_div10(&atmp.first);
+  BigUInt128 ifrac = biguint128_value_of_uint(atmp.second);
+  ifrac = biguint128_mul(&ifrac, &m10i);
+  biguint128_add_assign(&afrac, &ifrac);
+  --pi;
+  m10i = biguint128_mul10(&m10i);
+ }
+ if (altz) {
+  bigint128_negate_assign(&atmp.first);
+  bigint128_negate_assign(&afrac);
+ }
+ return (BigUIntPair128){atmp.first, afrac};
+}
+
 BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b) {
  BigDecimalCommon128 cp = gen_common_prec_(a,b);
 

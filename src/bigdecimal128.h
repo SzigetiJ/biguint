@@ -66,6 +66,13 @@ BigDecimal128 bigdecimal128_ctor_prec(const BigDecimal128 *a, UInt prec);
 buint_bool bigdecimal128_prec_safe(BigDecimal128 *dest, const BigDecimal128 *a, UInt prec);
 
 /**
+ * @brief Breaks a decimal number into two: integer and fractional parts.
+ * @param a Input value.
+ * @return first: integer part, second: fractional part (together with a.prec forms a BigDecimal128 value).
+ */
+BigUIntPair128 bigdecimal128_trunc(const BigDecimal128 *a);
+
+/**
  @brief Addition.
 */
 BigDecimal128 bigdecimal128_add(const BigDecimal128 *a, const BigDecimal128 *b);
