@@ -109,11 +109,11 @@ bool test_sub0() {
 
 bool test_sub_approx0() {
  BigDecimal128 a = {
-  {1}, 0};
+  {{1}}, 0};
  BigDecimal128 b = {
-  {2}, 0};
+  {{2}}, 0};
  BigDecimal128 c = {
-  {9}, 0};
+  {{9}}, 0};
 
  bool pass = true;
  for (int i = 1; pass && i < 3 * 128 / 10 + 1; ++i) {
@@ -129,9 +129,9 @@ bool test_sub_approx0() {
 
 bool test_add_safe0(bool add, bool inverta, bool invertb) {
  BigDecimal128 a = {
-  {1}, 0};
+  {{1}}, 0};
  BigDecimal128 b = {
-  {1}, 0};
+  {{1}}, 0};
  BigDecimal128 sum;
 
  int loops = 128;
