@@ -13,6 +13,7 @@
 #include "bigdecimal128.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 
 // Writes bigdecimal to out with accompanying message

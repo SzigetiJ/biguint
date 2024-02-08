@@ -1,5 +1,6 @@
 #ifndef PERF_COMMON_H
 #define PERF_COMMON_H
+#include <stdint.h>
 #include <stdbool.h>
 #include "uint_types.h"
 
