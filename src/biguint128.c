@@ -891,6 +891,30 @@ BigUIntPair128 bigint128_div(const BigUInt128 *a, const BigUInt128 *b) {
  return retv;
 }
 
+#define NUINT_CELLS (BIGUINT128_CELLS * sizeof(UInt) / sizeof(nUInt))
+BigUIntTinyPair128 biguint128_div_uint(const BigUInt128 *a, UInt b) {
+ nUInt bx = (nUInt)b;
+ nUInt *aptr = (nUInt*) a->dat;
+ BigUInt128 retv = biguint128_ctor_default();
+ nUInt *retvptr = (nUInt*) retv.dat;
+ wUInt frame;
+ nUInt *frameptr = (nUInt*) (&frame);
+ wUInt d;
+ nUInt *dptr = (nUInt*) (&d);
+ wUInt m;
+ nUInt *mptr = (nUInt*) (&m);
+ frameptr[1] = 0;
+ for (unsigned int i = 0; i < NUINT_CELLS; ++i) {
+  frameptr[0] = aptr[NUINT_CELLS - 1 - i];
+  d = frame / bx;
+  m = frame % bx;
+  retvptr[NUINT_CELLS - 1 - i] = dptr[0];
+  frameptr[1] = mptr[0];
+ }
+ return (BigUIntTinyPair128){retv, (UInt)frameptr[1]};
+}
+#undef NUINT_CELLS
+
 // ### Section COMPARISON
 buint_bool biguint128_lt(const BigUInt128 *a, const BigUInt128 *b) {
  FOREACHCELLREV(j) {

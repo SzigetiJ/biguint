@@ -2,13 +2,22 @@ AC_PREREQ([2.69])
 AC_INIT([biguint],[1.2.1])
 AM_INIT_AUTOMAKE
 AC_PROG_CC
+AC_PROG_CC_STDC
 AC_PROG_RANLIB
 AC_PROG_SED
 
-AC_DEFINE(USE_STD_TYPES)
+if test x$ac_cv_prog_cc_stdc != xno; then
+ AC_DEFINE(USE_STD_TYPES)
+fi
 
+AC_CHECK_SIZEOF([unsigned long long])
+AC_CHECK_SIZEOF([unsigned long])
+AC_CHECK_SIZEOF([unsigned int])
+AC_CHECK_SIZEOF([unsigned short])
 AC_CHECK_SIZEOF([UInt],,[#include "$srcdir/src/uint_types.h"])
+
 AS_VAR_ARITH([UINT_BITS], [$ac_cv_sizeof_UInt \* 8])
+AM_CONDITIONAL([SIZEOF_UINT_LE_4], [test $ac_cv_sizeof_UInt -le 4])
 
 dnl ===SECTION BITLENSKIP BEGIN===
 AC_ARG_WITH([biguint256], AS_HELP_STRING([--without-biguint256], [Do not generate Biguint256 codes.]))
@@ -89,6 +98,8 @@ dnl ===SECTION EXTRABITLEN END===
 dnl ===SECTION PASS-BY-VALUE BEGIN===
 AC_ARG_ENABLE([pass-by-value],
     AS_HELP_STRING([--disable-pass-by-value], [Do not generate function with parameters passed by value.]))
+
+AM_CONDITIONAL([WITHOUT_PASSBYVAL], [test "x$enable_pass_by_value" == xno])
 
 if test "x$enable_pass_by_value" == xno; then
  AC_DEFINE([WITHOUT_PASS_BY_VALUE_FUNCTIONS])

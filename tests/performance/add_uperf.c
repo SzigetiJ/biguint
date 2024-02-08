@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #include <time.h>
 #include "uint.h"
@@ -61,7 +60,7 @@ static inline void exec_uint_test_(UintFunction fun, UInt buf_init, UInt buf_ste
  clock_t t0, t1;
  uint32_t loop_cnt;
  UInt sum = (fun==SUB || fun==SUB2 || fun == SUB_ASSIGN || fun == SUB_ASSIGN2?-1:0);
- buint_bool carry = false;
+ buint_bool carry = 0;
 
  // generate some numbers
  UInt num[BUFSIZE];

@@ -114,6 +114,12 @@ bool test_dmul0() {
 }
 
 bool test_div10_a() {
+ static const char *fnname[]={
+  "div1000(mul100(x))",
+  "div30(mul3(x))",
+  "div10(x)",
+  "div_uint(x,10)"
+ };
  BigUInt128 divisor = biguint128_value_of_uint(10U);
  bool fail = false;
  for (unsigned int i = 0; i < div10_sample_len; ++i) {
@@ -123,33 +129,32 @@ bool test_div10_a() {
   }
   BigUIntPair128 expected = biguint128_div(&val, &divisor);
 
-  BigUInt128 tmp1 = biguint128_mul100(&val);
-  BigUInt128 actual1 = biguint128_div1000(&tmp1).first;
+  BigUInt128 tmp1[] = {
+   biguint128_mul100(&val),
+   biguint128_mul3(&val)
+  };
+  BigUIntPair128 tmp2[] = {
+   biguint128_div1000(&tmp1[0]),
+   biguint128_div30(&tmp1[1])
+  };
+  BigUIntTinyPair128 actual[] = {
+   {tmp2[0].first, tmp2[0].second.dat[0] / 100},
+   {tmp2[1].first, tmp2[1].second.dat[0] / 3},
+   biguint128_div10(&val),
+   biguint128_div_uint(&val, 10)
+  };
 
-  BigUInt128 tmp2 = biguint128_mul3(&val);
-  BigUInt128 actual2 = biguint128_div30(&tmp2).first;
-
-  BigUIntTinyPair128 actual3 = biguint128_div10(&val);
-
-  if (!biguint128_eq(&actual1, &expected.first)) {
-   fprintf(stderr, "failed div1000(mul100(x)) test at test input #%u\n", i);
-   fail = true;
+  for (unsigned int j = 0; j < ARRAYSIZE(fnname); ++j) {
+   if (!biguint128_eq(&actual[j].first, &expected.first)) {
+    fprintf(stderr, "failed %s at test input #%u\n", fnname[j], i);
+    fail = true;
+   }
+   if (actual[j].second != expected.second.dat[0]) {
+    fprintf(stderr, "failed %s (remainder) at test input #%u: expected: %"PRIuint", actual: %"PRIuint"\n",
+      fnname[j], i, expected.second.dat[0], actual[j].second);
+    fail = true;
+   }
   }
-
-  if (!biguint128_eq(&actual2, &expected.first)) {
-   fprintf(stderr, "failed div30(mul3(x)) test at test input #%u\n", i);
-   fail = true;
-  }
-
-  if (!biguint128_eq(&actual3.first, &expected.first)) {
-   fprintf(stderr, "failed div10(x) test at test input #%u\n", i);
-   fail = true;
-  }
-  if (actual3.second != expected.second.dat[0]) {
-   fprintf(stderr, "failed div10(x) remainder test at test input #%u\n", i);
-   fail = true;
-  }
-
  }
 
  return !fail;

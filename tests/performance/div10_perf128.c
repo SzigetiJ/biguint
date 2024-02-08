@@ -16,14 +16,16 @@ typedef enum {
  VARIANT_DIV_X_10,
  VARIANT_DIV1000_MUL100_X,
  VARIANT_DIV30_MUL3_X,
- VARIANT_DIV10_X
+ VARIANT_DIV10_X,
+ VARIANT_DIV_TINY_X_10
 } Div10Variant;
 
 const char *funname[] = {
  "div(x,10)",
  "d1000(m100(x))",
  "div30(mul3(x))",
- "div10(x)"
+ "div10(x)",
+ "div_uint(x,10)"
 };
 
 static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const StandardArgs *args, UInt *chkval) {
@@ -32,8 +34,8 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const
  BigUInt128 res0;
  BigUIntPair128 res;
  BigUIntTinyPair128 rest;
- BigUInt128 *procref1 = fun == VARIANT_DIV10_X?&rest.first:&res.first;
- UInt *procref2 = fun == VARIANT_DIV10_X?&rest.second:&res.second.dat[0];
+ BigUInt128 *procref1 = fun == VARIANT_DIV10_X || fun == VARIANT_DIV_TINY_X_10?&rest.first:&res.first;
+ UInt *procref2 = fun == VARIANT_DIV10_X || fun == VARIANT_DIV_TINY_X_10?&rest.second:&res.second.dat[0];
  unsigned int loop_cnt;
 
  for (loop_cnt = 0; loop_cnt < args->loops; ++loop_cnt) {
@@ -47,6 +49,8 @@ static unsigned int exec_function_loop_(unsigned int ai, unsigned int fun, const
    res0 = biguint128_mul3(&a);
    res = biguint128_div30(&res0);
    res.second.dat[0]/=3;
+  } else if (fun == VARIANT_DIV_TINY_X_10) {
+   rest = biguint128_div_uint(&a,10);
   } else {
    rest = biguint128_div10(&a);
   }
